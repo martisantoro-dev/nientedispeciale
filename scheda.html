@@ -178,7 +178,6 @@
 }
 .country-option:hover { background: rgba(138,104,40,0.06); color: var(--ink); }
 </style>
-<script src="watermark.js"></script>
 </head>
 <body>
 
@@ -514,20 +513,35 @@ let currentSchedaId = null;
 const Scheda = {
   async load() {
     const session = JSON.parse(sessionStorage.getItem('nds_session')||'{}');
+    const uid = session.uid;
     const username = session.username;
-    if(!username) return null;
+    if(!uid && !username) return null;
 
     if(window.__db) {
-      const { collection, query, where, getDocs } = window.__fb;
-      const q = query(collection(window.__db,'schede'), where('username','==',username));
-      const snap = await getDocs(q);
-      if(!snap.empty) {
-        currentSchedaId = snap.docs[0].id;
-        return snap.docs[0].data();
+      const { collection, query, where, getDocs, doc, getDoc } = window.__fb;
+      // Prima cerca per uid (nuovo sistema), poi fallback per username (vecchio)
+      if(uid) {
+        try {
+          // Prova come documento con ID = uid
+          const snap = await getDocs(query(collection(window.__db,'schede'), where('uid','==',uid)));
+          if(!snap.empty) {
+            currentSchedaId = snap.docs[0].id;
+            return snap.docs[0].data();
+          }
+        } catch(e) {}
       }
+      // Fallback per username
+      try {
+        const q = query(collection(window.__db,'schede'), where('username','==',username));
+        const snap = await getDocs(q);
+        if(!snap.empty) {
+          currentSchedaId = snap.docs[0].id;
+          return snap.docs[0].data();
+        }
+      } catch(e) {}
     } else {
       const all = JSON.parse(localStorage.getItem('nds_schede')||'[]');
-      const found = all.find(s=>s.username===username);
+      const found = all.find(s=>s.uid===uid || s.username===username);
       if(found) { currentSchedaId = found.id; return found; }
     }
     return null;
@@ -612,6 +626,7 @@ const Scheda = {
 
   async save() {
     const session = JSON.parse(sessionStorage.getItem('nds_session')||'{}');
+    const uid = session.uid||'';
     const username = session.username;
     const err = document.getElementById('form-error');
     const suc = document.getElementById('form-success');
@@ -627,7 +642,7 @@ const Scheda = {
     btn.disabled = true;
 
     const data = {
-      username, age, country, email, phrase,
+      uid: session.uid||'', username, age, country, email, phrase,
       gender:     radioState['rg-gender']||'',
       lookingfor: radioState['rg-lookingfor']||'indistinto',
       seeking:    radioState['rg-seeking']||'entrambi',
