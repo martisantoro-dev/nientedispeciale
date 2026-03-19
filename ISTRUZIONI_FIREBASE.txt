@@ -1,0 +1,45 @@
+CONFIGURAZIONE FIREBASE — Action URL
+═════════════════════════════════════════════════════════════
+
+Dopo aver caricato i file su Netlify, fai questo passaggio
+in Firebase Console per far sì che i link nelle email
+portino alla tua pagina verifica.html invece di quella di Google.
+
+PASSO 1 — Imposta l'Action URL
+───────────────────────────────
+1. Vai su console.firebase.google.com
+2. Seleziona il progetto "niente-di-speciale"
+3. Vai su Authentication → Templates
+4. Clicca su "Email address verification"
+5. In fondo alla pagina clicca "Personalizza URL azione"
+6. Inserisci: https://martisantoro-dev.github.io/nientedispeciale/verifica.html
+   (oppure il tuo dominio personalizzato se ce l'hai)
+7. Salva
+
+PASSO 2 — Aggiungi il dominio agli autorizzati
+───────────────────────────────────────────────
+1. Authentication → Settings → Authorized domains
+2. Clicca "Aggiungi dominio"
+3. Inserisci: martisantoro-dev.github.io
+4. Salva
+
+Dopo questi due passi:
+- La email di verifica manderà l'utente su verifica.html
+- verifica.html legge il codice dall'URL e attiva il profilo
+- L'utente vede la pagina con il CSS del sito e può accedere
+
+PLACEHOLDER DA SOSTITUIRE in email_attivazione.html
+──────────────────────────────────────────────────────
+{{USERNAME}}         → nome utente registrato
+{{ACTIVATION_LINK}}  → link generato da Firebase (letto dall'email di verifica)
+{{EMAIL}}            → email del destinatario
+{{DOMAIN}}           → es. niente-di-speciale.netlify.app
+
+Nota: Firebase invia già in automatico la sua email di verifica
+(con il link corretto) quando chiami sendEmailVerification().
+Il file email_attivazione.html è il template da usare se vuoi
+personalizzare quella email tramite un servizio come SendGrid o
+Mailgun (via Cloud Functions). Per usarlo nativamente su Firebase,
+vai su Authentication → Templates → Email address verification
+e sostituisci il testo con quello del template.
+═════════════════════════════════════════════════════════════

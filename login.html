@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accesso — Niente di speciale</title>
+<style>body{visibility:hidden;}
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.body.style.visibility='visible';
+    const _d=localStorage.getItem('nds_device')||'desktop';
+    document.documentElement.setAttribute('data-device',_d);
+  });
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+           sendEmailVerification, onAuthStateChanged, sendPasswordResetEmail }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, setDoc, getDoc, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE",
+    authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale",
+    storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063",
+    appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  window.__auth = auth;
+  window.__db   = db;
+  window.__fb   = { doc, setDoc, getDoc, serverTimestamp };
+  window.__fbAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword,
+                      sendEmailVerification, onAuthStateChanged, sendPasswordResetEmail };
+
+  onAuthStateChanged(auth, user => {
+    if(user && user.emailVerified) window.location.href = 'dashboard.html';
+  });
+
+  window.__firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+
+.login-wrap {
+  max-width:440px; margin:0 auto;
+  padding:120px 48px 80px;
+  position:relative; z-index:2;
+}
+.login-ornament {
+  width:1px; height:48px;
+  background:linear-gradient(transparent,var(--gold),transparent);
+  margin:0 auto 40px;
+}
+.login-tabs {
+  display:flex; border-bottom:1px solid var(--rule); margin-bottom:40px;
+}
+.login-tab {
+  flex:1; text-align:center;
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.95rem;
+  color:var(--ink-light); opacity:0.45; cursor:pointer; padding:10px 0;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  transition:all 0.25s ease; background:none;
+  border-left:none; border-right:none; border-top:none;
+}
+.login-tab.active { opacity:1; color:var(--ink); border-bottom:2px solid var(--gold); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; animation:fadeIn 0.5s ease both; }
+.password-toggle { position:relative; }
+.password-toggle .field-input { padding-right:52px; }
+.show-pwd {
+  position:absolute; right:0; top:10px;
+  font-size:0.68rem; color:var(--ink-light); opacity:0.4;
+  cursor:pointer; letter-spacing:0.06em; text-transform:uppercase;
+  font-family:'Cormorant Garamond',serif; background:none; border:none;
+  transition:opacity 0.2s;
+}
+.show-pwd:hover { opacity:0.8; }
+.form-footer {
+  margin-top:32px; display:flex; align-items:center;
+  justify-content:space-between; flex-wrap:wrap; gap:16px;
+}
+.forgot-link {
+  font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.82rem;
+  color:var(--gold); opacity:0.7; background:none; border:none;
+  cursor:pointer; letter-spacing:0.04em; transition:opacity 0.2s;
+}
+.forgot-link:hover { opacity:1; }
+.pending-box {
+  display:none; margin-top:24px; padding:22px 24px;
+  border-left:2px solid var(--gold); background:rgba(138,104,40,0.05);
+}
+.pending-box p { font-size:0.88rem; line-height:1.85; color:var(--ink-light); }
+.pending-box p:first-child {
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1.05rem; color:var(--ink); margin-bottom:8px;
+}
+.pending-box.visible { display:block; animation:fadeIn 0.4s ease both; }
+.resend-btn {
+  margin-top:12px; font-family:'Cormorant Garamond',serif;
+  font-style:italic; font-size:0.82rem; color:var(--gold);
+  opacity:0.7; background:none; border:none; cursor:pointer;
+  text-decoration:underline; transition:opacity 0.2s; padding:0;
+}
+.resend-btn:hover { opacity:1; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<header class="running-head">
+  <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true">
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/>
+      <circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/>
+      <circle cx="50" cy="50" r="9"  fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/>
+      <circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/>
+    </svg>
+    <span style="font-family:'Cormorant Garamond',serif;font-style:italic;">Niente di speciale</span>
+  </a>
+  <span class="running-head-center" id="rh-label">Accesso</span>
+  <div class="lang-switcher" id="lang-switcher"></div>
+</header>
+
+<div class="login-wrap">
+  <div class="login-ornament"></div>
+  <div class="page-epigraph" data-t="epigraph">Accesso</div>
+  <h1 class="page-title" data-t="title">Bentornato</h1>
+  <div class="page-rule"></div>
+
+  <div class="login-tabs">
+    <button class="login-tab active" onclick="Tab.show('login')" data-t="tab_login">Accedere</button>
+    <button class="login-tab" onclick="Tab.show('register')" data-t="tab_register">Prima volta</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="tab-panel active" id="panel-login">
+    <div class="field-group">
+      <label class="field-label" data-t="label_email">Email</label>
+      <input class="field-input" id="login-email" type="email" data-t-ph="ph_email" placeholder="La tua email" autocomplete="email">
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_password">Password</label>
+      <div class="password-toggle">
+        <input class="field-input" id="login-password" type="password" data-t-ph="ph_password" placeholder="La tua password" autocomplete="current-password">
+        <button class="show-pwd" onclick="togglePwd('login-password')" data-t="show">mostra</button>
+      </div>
+    </div>
+    <p class="msg-error" id="login-error"></p>
+    <div class="pending-box" id="login-pending">
+      <p data-t="verify_title">Email non ancora verificata.</p>
+      <p data-t="verify_body">Controlla la casella e clicca il link di attivazione.</p>
+      <button class="resend-btn" onclick="Auth.resendVerification()" data-t="resend">Invia di nuovo</button>
+    </div>
+    <div class="form-footer">
+      <button class="btn-primary" onclick="Auth.login()" data-t="btn_login">Accedere</button>
+      <button class="forgot-link" onclick="Tab.show('reset')" data-t="forgot">Password dimenticata?</button>
+    </div>
+    <div style="margin-top:16px;">
+      <a href="index.html" class="btn-ghost" style="padding:10px 20px;font-size:0.85rem;" data-t="btn_back">← Home</a>
+    </div>
+  </div>
+
+  <!-- REGISTRAZIONE -->
+  <div class="tab-panel" id="panel-register">
+    <div class="field-group">
+      <label class="field-label" data-t="label_username">Nome utente</label>
+      <input class="field-input" id="reg-username" type="text" data-t-ph="ph_username" placeholder="Come vuoi essere chiamato" autocomplete="username">
+      <p class="field-hint" data-t="hint_username">Non il nome completo. Quello che senti tuo.</p>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_email">Email</label>
+      <input class="field-input" id="reg-email" type="email" data-t-ph="ph_email" placeholder="La tua email" autocomplete="email">
+      <p class="field-hint" data-t="hint_email">Riceverai un link per attivare il profilo.</p>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_email_confirm">Conferma email</label>
+      <input class="field-input" id="reg-email-confirm" type="email" data-t-ph="ph_email_confirm" placeholder="Ripeti la tua email" autocomplete="email">
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_password">Password</label>
+      <div class="password-toggle">
+        <input class="field-input" id="reg-password" type="password" data-t-ph="ph_new_password" placeholder="Almeno 6 caratteri" autocomplete="new-password">
+        <button class="show-pwd" onclick="togglePwd('reg-password')" data-t="show">mostra</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_confirm">Conferma password</label>
+      <div class="password-toggle">
+        <input class="field-input" id="reg-confirm" type="password" data-t-ph="ph_confirm" placeholder="Ripeti la password" autocomplete="new-password">
+        <button class="show-pwd" onclick="togglePwd('reg-confirm')" data-t="show">mostra</button>
+      </div>
+    </div>
+    <p class="msg-error" id="reg-error"></p>
+    <div class="pending-box" id="reg-pending">
+      <p data-t="pending_title">Un passo ancora.</p>
+      <p data-t="pending_body">Abbiamo inviato un link di attivazione. Clicca il link per entrare.</p>
+      <button class="resend-btn" onclick="Auth.resendVerification()" data-t="resend">Invia di nuovo</button>
+    </div>
+    <div class="form-footer" style="margin-top:28px;">
+      <button class="btn-primary" onclick="Auth.register()" data-t="btn_register">Registrarsi</button>
+      <a href="index.html" class="btn-ghost" style="padding:10px 20px;font-size:0.85rem;" data-t="btn_back">← Home</a>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div class="tab-panel" id="panel-reset">
+    <p style="font-size:0.9rem;color:var(--ink-light);opacity:0.7;font-style:italic;line-height:1.8;margin-bottom:28px;" data-t="reset_intro">
+      Inserisci la tua email. Ti mandiamo un link per scegliere una nuova password.
+    </p>
+    <div class="field-group">
+      <label class="field-label" data-t="label_email">Email</label>
+      <input class="field-input" id="reset-email" type="email" data-t-ph="ph_email" placeholder="La tua email" autocomplete="email">
+    </div>
+    <p class="msg-error"   id="reset-error"></p>
+    <p class="msg-success" id="reset-success" data-t="reset_sent" style="display:none;margin-top:8px;"></p>
+    <div class="form-footer">
+      <button class="btn-primary" onclick="Auth.resetPassword()" data-t="btn_reset">Inviare il link</button>
+      <button class="forgot-link" onclick="Tab.show('login')" data-t="back_login">← Accedere</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const T={it:{epigraph:'Accesso',title:'Bentornato',tab_login:'Accedere',tab_register:'Prima volta',label_email:'Email',label_email_confirm:'Conferma email',label_username:'Nome utente',label_password:'Password',label_confirm:'Conferma password',ph_email:'La tua email',ph_email_confirm:'Ripeti la tua email',ph_username:'Come vuoi essere chiamato',ph_password:'La tua password',ph_new_password:'Almeno 6 caratteri',ph_confirm:'Ripeti la password',hint_username:'Non il nome completo. Quello che senti tuo.',hint_email:'Riceverai un link per attivare il profilo.',show:'mostra',btn_login:'Accedere',btn_register:'Registrarsi',btn_back:'← Home',forgot:'Password dimenticata?',back_login:'← Accedere',btn_reset:'Inviare il link',reset_intro:'Inserisci la tua email. Ti mandiamo un link per scegliere una nuova password.',reset_sent:'Email inviata. Controlla la tua casella.',verify_title:'Email non ancora verificata.',verify_body:'Controlla la casella e clicca il link di attivazione.',resend:'Invia di nuovo',pending_title:'Un passo ancora.',pending_body:'Abbiamo inviato un link di attivazione. Clicca il link per entrare.',err_fields:'Compila tutti i campi.',err_email_match:'Le email non coincidono.',err_pwd_match:'Le password non coincidono.',err_pwd_short:'Password troppo corta (minimo 6 caratteri).',err_email_invalid:'Indirizzo email non valido.',err_in_use:'Email già registrata.',err_wrong_pwd:'Email o password non corretti.',err_not_found:'Nessun account con questa email.',err_too_many:'Troppi tentativi. Riprova tra qualche minuto.',err_generic:'Qualcosa è andato storto. Riprova.',toast_resent:'Email inviata di nuovo.',toast_reset:'Link inviato. Controlla la tua casella.'},en:{epigraph:'Sign in',title:'Welcome back',tab_login:'Sign in',tab_register:'First time',label_email:'Email',label_email_confirm:'Confirm email',label_username:'Username',label_password:'Password',label_confirm:'Confirm password',ph_email:'Your email',ph_email_confirm:'Repeat your email',ph_username:'What you want to be called',ph_password:'Your password',ph_new_password:'At least 6 characters',ph_confirm:'Repeat password',hint_username:'Not your full name. What feels like yours.',hint_email:'You will receive an activation link.',show:'show',btn_login:'Sign in',btn_register:'Register',btn_back:'← Home',forgot:'Forgot password?',back_login:'← Sign in',btn_reset:'Send link',reset_intro:'Enter your email. We will send you a reset link.',reset_sent:'Email sent. Check your inbox.',verify_title:'Email not yet verified.',verify_body:'Check your inbox and click the activation link.',resend:'Send again',pending_title:'One more step.',pending_body:'We sent an activation link. Click the link to enter.',err_fields:'Please fill in all fields.',err_email_match:'Email addresses do not match.',err_pwd_match:'Passwords do not match.',err_pwd_short:'Password too short (minimum 6 characters).',err_email_invalid:'Invalid email address.',err_in_use:'Email already registered.',err_wrong_pwd:'Email or password incorrect.',err_not_found:'No account with this email.',err_too_many:'Too many attempts. Please try again in a few minutes.',err_generic:'Something went wrong. Please try again.',toast_resent:'Email sent again.',toast_reset:'Link sent. Check your inbox.'},fr:{epigraph:'Connexion',title:'Bienvenue',tab_login:'Se connecter',tab_register:'Première fois',label_email:'Email',label_email_confirm:'Confirmer email',label_username:"Nom d'utilisateur",label_password:'Mot de passe',label_confirm:'Confirmer mot de passe',ph_email:'Votre email',ph_email_confirm:'Répétez votre email',ph_username:'Comment vous voulez être appelé',ph_password:'Votre mot de passe',ph_new_password:'Au moins 6 caractères',ph_confirm:'Répétez le mot de passe',hint_username:'Pas le nom complet.',hint_email:"Vous recevrez un lien d'activation.",show:'afficher',btn_login:'Se connecter',btn_register:"S'inscrire",btn_back:'← Accueil',forgot:'Mot de passe oublié?',back_login:'← Connexion',btn_reset:'Envoyer le lien',reset_intro:'Entrez votre email. Nous vous enverrons un lien.',reset_sent:'Email envoyé.',verify_title:'Email pas encore vérifiée.',verify_body:"Cliquez le lien d'activation.",resend:'Renvoyer',pending_title:'Encore une étape.',pending_body:"Cliquez le lien pour entrer.",err_fields:'Remplissez tous les champs.',err_email_match:'Les emails ne correspondent pas.',err_pwd_match:'Les mots de passe ne correspondent pas.',err_pwd_short:'Mot de passe trop court (minimum 6).',err_email_invalid:'Email invalide.',err_in_use:'Email déjà enregistrée.',err_wrong_pwd:'Email ou mot de passe incorrect.',err_not_found:'Aucun compte avec cet email.',err_too_many:'Trop de tentatives.',err_generic:'Quelque chose a mal tourné.',toast_resent:'Email renvoyé.',toast_reset:'Lien envoyé.'},de:{epigraph:'Anmeldung',title:'Willkommen zurück',tab_login:'Anmelden',tab_register:'Erstes Mal',label_email:'E-Mail',label_email_confirm:'E-Mail bestätigen',label_username:'Benutzername',label_password:'Passwort',label_confirm:'Passwort bestätigen',ph_email:'Deine E-Mail',ph_email_confirm:'E-Mail wiederholen',ph_username:'Wie möchtest du genannt werden',ph_password:'Dein Passwort',ph_new_password:'Mindestens 6 Zeichen',ph_confirm:'Passwort wiederholen',hint_username:'Nicht der vollständige Name.',hint_email:'Du erhältst einen Aktivierungslink.',show:'zeigen',btn_login:'Anmelden',btn_register:'Registrieren',btn_back:'← Startseite',forgot:'Passwort vergessen?',back_login:'← Anmelden',btn_reset:'Link senden',reset_intro:'Gib deine E-Mail ein.',reset_sent:'E-Mail gesendet.',verify_title:'E-Mail noch nicht verifiziert.',verify_body:'Klicke den Aktivierungslink.',resend:'Erneut senden',pending_title:'Noch ein Schritt.',pending_body:'Klicke den Link zum Einloggen.',err_fields:'Bitte alle Felder ausfüllen.',err_email_match:'E-Mails stimmen nicht überein.',err_pwd_match:'Passwörter stimmen nicht überein.',err_pwd_short:'Passwort zu kurz (mindestens 6).',err_email_invalid:'Ungültige E-Mail.',err_in_use:'E-Mail bereits registriert.',err_wrong_pwd:'E-Mail oder Passwort falsch.',err_not_found:'Kein Konto mit dieser E-Mail.',err_too_many:'Zu viele Versuche.',err_generic:'Etwas ist schiefgelaufen.',toast_resent:'E-Mail erneut gesendet.',toast_reset:'Link gesendet.'},es:{epigraph:'Acceso',title:'Bienvenido',tab_login:'Acceder',tab_register:'Primera vez',label_email:'Email',label_email_confirm:'Confirmar email',label_username:'Nombre de usuario',label_password:'Contraseña',label_confirm:'Confirmar contraseña',ph_email:'Tu email',ph_email_confirm:'Repite tu email',ph_username:'Cómo quieres que te llamen',ph_password:'Tu contraseña',ph_new_password:'Al menos 6 caracteres',ph_confirm:'Repite la contraseña',hint_username:'No el nombre completo.',hint_email:'Recibirás un enlace de activación.',show:'mostrar',btn_login:'Acceder',btn_register:'Registrarse',btn_back:'← Inicio',forgot:'¿Olvidaste tu contraseña?',back_login:'← Acceder',btn_reset:'Enviar enlace',reset_intro:'Introduce tu email.',reset_sent:'Email enviado.',verify_title:'Email aún no verificado.',verify_body:'Haz clic en el enlace de activación.',resend:'Enviar de nuevo',pending_title:'Un paso más.',pending_body:'Haz clic para entrar.',err_fields:'Completa todos los campos.',err_email_match:'Los emails no coinciden.',err_pwd_match:'Las contraseñas no coinciden.',err_pwd_short:'Contraseña demasiado corta (mínimo 6).',err_email_invalid:'Email inválido.',err_in_use:'Email ya registrado.',err_wrong_pwd:'Email o contraseña incorrectos.',err_not_found:'No hay cuenta con este email.',err_too_many:'Demasiados intentos.',err_generic:'Algo salió mal.',toast_resent:'Email enviado de nuevo.',toast_reset:'Enlace enviado.'},pt:{epigraph:'Acesso',title:'Bem-vindo',tab_login:'Entrar',tab_register:'Primeira vez',label_email:'Email',label_email_confirm:'Confirmar email',label_username:'Nome de usuário',label_password:'Senha',label_confirm:'Confirmar senha',ph_email:'Seu email',ph_email_confirm:'Repita seu email',ph_username:'Como quer ser chamado',ph_password:'Sua senha',ph_new_password:'Mínimo 6 caracteres',ph_confirm:'Repita a senha',hint_username:'Não o nome completo.',hint_email:'Você receberá um link de ativação.',show:'mostrar',btn_login:'Entrar',btn_register:'Registrar',btn_back:'← Início',forgot:'Esqueceu a senha?',back_login:'← Entrar',btn_reset:'Enviar link',reset_intro:'Digite seu email.',reset_sent:'Email enviado.',verify_title:'Email ainda não verificado.',verify_body:'Clique no link de ativação.',resend:'Enviar novamente',pending_title:'Mais um passo.',pending_body:'Clique no link para entrar.',err_fields:'Preencha todos os campos.',err_email_match:'Os emails não coincidem.',err_pwd_match:'As senhas não coincidem.',err_pwd_short:'Senha muito curta (mínimo 6).',err_email_invalid:'Email inválido.',err_in_use:'Email já registrado.',err_wrong_pwd:'Email ou senha incorretos.',err_not_found:'Nenhuma conta com este email.',err_too_many:'Muitas tentativas.',err_generic:'Algo deu errado.',toast_resent:'Email enviado novamente.',toast_reset:'Link enviado.'},zh:{epigraph:'登录',title:'欢迎回来',tab_login:'登录',tab_register:'首次注册',label_email:'邮箱',label_email_confirm:'确认邮箱',label_username:'用户名',label_password:'密码',label_confirm:'确认密码',ph_email:'您的邮箱',ph_email_confirm:'重复您的邮箱',ph_username:'您希望如何被称呼',ph_password:'您的密码',ph_new_password:'至少6位',ph_confirm:'重复密码',hint_username:'不是全名。',hint_email:'您将收到激活链接。',show:'显示',btn_login:'登录',btn_register:'注册',btn_back:'← 主页',forgot:'忘记密码?',back_login:'← 登录',btn_reset:'发送链接',reset_intro:'输入您的邮箱，我们将发送重置链接。',reset_sent:'邮件已发送。',verify_title:'邮箱尚未验证。',verify_body:'请点击激活链接。',resend:'重新发送',pending_title:'还差一步。',pending_body:'请点击链接进入。',err_fields:'请填写所有字段。',err_email_match:'邮箱不匹配。',err_pwd_match:'密码不匹配。',err_pwd_short:'密码太短（最少6位）。',err_email_invalid:'邮箱无效。',err_in_use:'该邮箱已注册。',err_wrong_pwd:'邮箱或密码不正确。',err_not_found:'该邮箱没有账户。',err_too_many:'尝试次数过多。',err_generic:'出了点问题。',toast_resent:'邮件已重发。',toast_reset:'链接已发送。'}};
+
+const LANGS=['it','en','fr','de','es','pt','zh'];
+const LANG_LABELS={it:'IT',en:'EN',fr:'FR',de:'DE',es:'ES',pt:'PT',zh:'中'};
+let currentLang=localStorage.getItem('nds_lang')||'it';
+function tr(k){return(T[currentLang]||T.it)[k]||(T.it[k]||k);}
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>{const v=tr(el.getAttribute('data-t'));if(v)el.textContent=v;});
+  document.querySelectorAll('[data-t-ph]').forEach(el=>{const v=tr(el.getAttribute('data-t-ph'));if(v)el.placeholder=v;});
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+  document.getElementById('rh-label').textContent=tr('epigraph');
+}
+function buildLangSwitcher(){
+  const sw=document.getElementById('lang-switcher');
+  LANGS.forEach(l=>{const b=document.createElement('button');b.className='lang-btn';b.dataset.lang=l;b.textContent=LANG_LABELS[l];b.onclick=()=>{currentLang=l;localStorage.setItem('nds_lang',l);applyLang();};sw.appendChild(b);});
+}
+function showToast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('visible');setTimeout(()=>e.classList.remove('visible'),2800);}
+function togglePwd(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+
+const Tab={
+  show(name){
+    document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',['login','register','reset'][i]===name));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+name).classList.add('active');
+  }
+};
+
+function fbError(code){
+  const map={'auth/email-already-in-use':tr('err_in_use'),'auth/invalid-email':tr('err_email_invalid'),'auth/weak-password':tr('err_pwd_short'),'auth/wrong-password':tr('err_wrong_pwd'),'auth/invalid-credential':tr('err_wrong_pwd'),'auth/user-not-found':tr('err_not_found'),'auth/too-many-requests':tr('err_too_many')};
+  return map[code]||tr('err_generic');
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.classList.add('visible');}
+function clearErr(id){const el=document.getElementById(id);el.classList.remove('visible');}
+
+let _lastUser=null;
+
+const Auth={
+  async login(){
+    const email=document.getElementById('login-email').value.trim();
+    const password=document.getElementById('login-password').value;
+    clearErr('login-error');
+    document.getElementById('login-pending').classList.remove('visible');
+    if(!email||!password){showErr('login-error',tr('err_fields'));return;}
+    const btn=document.querySelector('#panel-login .btn-primary');
+    btn.disabled=true;btn.textContent='…';
+    try{
+      const cred=await window.__fbAuth.signInWithEmailAndPassword(window.__auth,email,password);
+      _lastUser=cred.user;
+      if(!cred.user.emailVerified){
+        document.getElementById('login-pending').classList.add('visible');
+        btn.disabled=false;btn.textContent=tr('btn_login');return;
+      }
+      await this._loadSession(cred.user);
+      localStorage.setItem('nds_lang',currentLang);
+      window.location.href='dashboard.html';
+    }catch(e){showErr('login-error',fbError(e.code));btn.disabled=false;btn.textContent=tr('btn_login');}
+  },
+
+  async register(){
+    const username=document.getElementById('reg-username').value.trim();
+    const email=document.getElementById('reg-email').value.trim().toLowerCase();
+    const emailConf=document.getElementById('reg-email-confirm').value.trim().toLowerCase();
+    const password=document.getElementById('reg-password').value;
+    const confirm=document.getElementById('reg-confirm').value;
+    clearErr('reg-error');
+    document.getElementById('reg-pending').classList.remove('visible');
+    if(!username||!email||!emailConf||!password||!confirm){showErr('reg-error',tr('err_fields'));return;}
+    if(email!==emailConf){showErr('reg-error',tr('err_email_match'));return;}
+    if(password!==confirm){showErr('reg-error',tr('err_pwd_match'));return;}
+    if(password.length<6){showErr('reg-error',tr('err_pwd_short'));return;}
+    const btn=document.querySelector('#panel-register .btn-primary');
+    btn.disabled=true;btn.textContent='…';
+    try{
+      const cred=await window.__fbAuth.createUserWithEmailAndPassword(window.__auth,email,password);
+      _lastUser=cred.user;
+      if(window.__db){
+        const {doc,setDoc,serverTimestamp}=window.__fb;
+        await setDoc(doc(window.__db,'users',cred.user.uid),{
+          uid:cred.user.uid,username,email,
+          createdAt:serverTimestamp(),emailVerified:false
+        });
+      }
+      await window.__fbAuth.sendEmailVerification(cred.user);
+      document.getElementById('reg-pending').classList.add('visible');
+    }catch(e){showErr('reg-error',fbError(e.code));}
+    btn.disabled=false;btn.textContent=tr('btn_register');
+  },
+
+  async resetPassword(){
+    const email=document.getElementById('reset-email').value.trim();
+    clearErr('reset-error');
+    const suc=document.getElementById('reset-success');suc.style.display='none';
+    if(!email){showErr('reset-error',tr('err_fields'));return;}
+    const btn=document.querySelector('#panel-reset .btn-primary');
+    btn.disabled=true;btn.textContent='…';
+    try{
+      await window.__fbAuth.sendPasswordResetEmail(window.__auth,email);
+      suc.textContent=tr('reset_sent');suc.style.display='block';
+      showToast(tr('toast_reset'));
+    }catch(e){showErr('reset-error',fbError(e.code));}
+    btn.disabled=false;btn.textContent=tr('btn_reset');
+  },
+
+  async resendVerification(){
+    if(!_lastUser)return;
+    try{await window.__fbAuth.sendEmailVerification(_lastUser);showToast(tr('toast_resent'));}
+    catch(e){showToast(tr('err_generic'));}
+  },
+
+  async _loadSession(user){
+    if(window.__db){
+      const {doc,getDoc}=window.__fb;
+      try{
+        const snap=await getDoc(doc(window.__db,'users',user.uid));
+        if(snap.exists()){
+          sessionStorage.setItem('nds_session',JSON.stringify({uid:user.uid,username:snap.data().username,email:user.email}));
+          return;
+        }
+      }catch(e){}
+    }
+    sessionStorage.setItem('nds_session',JSON.stringify({uid:user.uid,username:user.email.split('@')[0],email:user.email}));
+  }
+};
+
+buildLangSwitcher();
+applyLang();
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const active=document.querySelector('.tab-panel.active');
+  if(active?.id==='panel-login')Auth.login();
+  if(active?.id==='panel-register')Auth.register();
+  if(active?.id==='panel-reset')Auth.resetPassword();
+});
+</script>
+</body>
+</html>

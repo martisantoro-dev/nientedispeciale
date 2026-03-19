@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="4" stitchTiles="stitch" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+      <feBlend in="SourceGraphic" in2="gray" mode="multiply"/>
+    </filter>
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%"   stop-color="#2c2418" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#0f0d0b" stop-opacity="1"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sfondo con gradiente radiale caldo -->
+  <rect width="1080" height="1920" fill="url(#bg-glow)"/>
+
+  <!-- Grain overlay -->
+  <rect width="1080" height="1920" fill="#c8a870" opacity="0.045" filter="url(#grain)"/>
+
+  <!-- ── Cerchi concentricici centrati nella parte alta (zona naturale dello sguardo) ── -->
+  <!-- Cerchio 1 — più esterno, quasi invisibile -->
+  <circle cx="540" cy="820" r="480" fill="none" stroke="#d4aa5a" stroke-width="1.2" opacity="0.08"/>
+  <!-- Cerchio 2 -->
+  <circle cx="540" cy="820" r="380" fill="none" stroke="#d4aa5a" stroke-width="1.4" opacity="0.13"/>
+  <!-- Cerchio 3 -->
+  <circle cx="540" cy="820" r="290" fill="none" stroke="#d4aa5a" stroke-width="1.6" opacity="0.18"/>
+  <!-- Cerchio 4 — medio principale -->
+  <circle cx="540" cy="820" r="210" fill="none" stroke="#d4aa5a" stroke-width="2.2" opacity="0.55"/>
+  <!-- Cerchio 5 -->
+  <circle cx="540" cy="820" r="140" fill="none" stroke="#d4aa5a" stroke-width="1.8" opacity="0.35"/>
+  <!-- Cerchio 6 — interno -->
+  <circle cx="540" cy="820" r="80"  fill="none" stroke="#d4aa5a" stroke-width="1.4" opacity="0.28"/>
+  <!-- Cerchio 7 — piccolo -->
+  <circle cx="540" cy="820" r="34"  fill="none" stroke="#d4aa5a" stroke-width="1.2" opacity="0.42"/>
+  <!-- Punto centrale -->
+  <circle cx="540" cy="820" r="7"   fill="#d4aa5a" opacity="0.82"/>
+
+  <!-- Linea orizzontale sottile attraverso il centro — appena percettibile -->
+  <line x1="80" y1="820" x2="460" y2="820" stroke="#d4aa5a" stroke-width="0.5" opacity="0.12"/>
+  <line x1="620" y1="820" x2="1000" y2="820" stroke="#d4aa5a" stroke-width="0.5" opacity="0.12"/>
+</svg>

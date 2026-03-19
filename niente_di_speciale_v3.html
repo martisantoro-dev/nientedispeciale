@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Niente di speciale — un incontro diverso. Connessioni autentiche basate su chi sei davvero.">
+<meta property="og:title" content="Niente di speciale">
+<meta property="og:description" content="Non cerchiamo la versione migliore di te. Cerchiamo te.">
+<meta property="og:type" content="website">
+<title>Niente di speciale</title>
+<style>body{visibility:hidden;}
+/* ── NDS LOGO (dark bg) ── */
+.nds-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nds-logo svg { flex-shrink:0; }
+.nds-logo-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; color:var(--mist); opacity:0.6; letter-spacing:0.04em; }
+.nds-watermark { position:absolute; pointer-events:none; z-index:0; opacity:0.06; transition:opacity 0.4s; color:var(--gold); }
+.composer-watermark-wrap:focus-within .nds-watermark { opacity:0.025; }
+
+
+/* ── WATERMARK CERCHI (dark) ── */
+
+
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{document.body.style.visibility='visible';});</script>
+
+<!-- Firebase -->
+<script src="test-data.js"></script>
+<script src="watermark.js" data-theme="dark"></script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, onSnapshot, query, where, orderBy, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE",
+    authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale",
+    storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063",
+    appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.__db = db;
+  window.__fb = { collection, addDoc, onSnapshot, query, where, orderBy, doc, setDoc, getDoc, getDocs, updateDoc, arrayUnion, serverTimestamp };
+  window.__firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #141210;
+  --ink2: #1c1916;
+  --parchment: #f2ece0;
+  --mist: #d8d0be;
+  --gold: #b8944a;
+  --gold2: #d4aa5a;
+  --rust: #7a3020;
+  --border: rgba(184,148,74,0.18);
+  --border2: rgba(184,148,74,0.35);
+  --panel: #1a1714;
+  --chat-sent: rgba(184,148,74,0.08);
+  --chat-recv: rgba(255,255,255,0.03);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 300;
+  min-height: 100vh;
+  cursor: default;
+}
+
+body::before {
+  content:'';
+  position: fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:9999; opacity:0.5; mix-blend-mode: overlay;
+}
+
+/* ── LANGUAGE SELECTOR ── */
+.lang-selector {
+  position: fixed; top: 16px; right: 20px;
+  z-index: 1000;
+  display: flex; align-items: center; gap: 6px;
+}
+.lang-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--mist); font-family: 'Crimson Pro', serif;
+  font-size: 0.72rem; letter-spacing: 0.08em;
+  padding: 4px 9px; cursor: pointer;
+  transition: all 0.2s ease; opacity: 0.5;
+}
+.lang-btn:hover, .lang-btn.active { border-color: var(--gold); color: var(--gold); opacity: 1; }
+
+/* ── SCREENS ── */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; }
+#explore.active, #chat.active { display:block; }
+
+/* ── LANDING ── */
+#landing {
+  position: relative;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 40px;
+}
+.landing-bg {
+  position: absolute; inset:0;
+  background: radial-gradient(ellipse at 30% 60%, rgba(122,48,32,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 75% 30%, rgba(184,148,74,0.06) 0%, transparent 50%);
+}
+.landing-lines {
+  position: absolute; inset:0;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(184,148,74,0.04) 80px);
+}
+.landing-inner {
+  position: relative; z-index:1;
+  max-width: 520px;
+  animation: fadeUp 1.4s ease both;
+}
+.landing-ornament {
+  width: 1px; height: 60px;
+  background: linear-gradient(transparent, var(--gold), transparent);
+  margin: 0 auto 40px;
+}
+.landing-pretitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.72rem; font-style: italic;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold); opacity: 0.65; margin-bottom: 20px;
+}
+.landing-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: 4rem;
+  line-height: 1.0; letter-spacing: -0.01em; margin-bottom: 16px;
+}
+.landing-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-weight: 300;
+  font-size: 1.1rem; color: var(--mist);
+  opacity: 0.6; letter-spacing: 0.06em; margin-bottom: 48px;
+}
+.landing-divider {
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 0 auto 40px;
+}
+.landing-manifesto {
+  font-size: 0.98rem; line-height: 1.95;
+  color: var(--mist); opacity: 0.65;
+  font-style: italic; margin-bottom: 52px;
+}
+.landing-actions {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+}
+.btn-gold {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--ink); background: var(--gold);
+  border: none; padding: 14px 52px;
+  cursor: pointer; letter-spacing: 0.04em;
+  transition: all 0.35s ease;
+}
+.btn-gold:hover { background: var(--parchment); }
+.btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-ghost {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.9rem;
+  color: var(--gold); background: transparent;
+  border: 1px solid var(--border2);
+  padding: 11px 40px; cursor: pointer;
+  letter-spacing: 0.04em; transition: all 0.35s ease;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--parchment); }
+.landing-bottom {
+  font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--mist); opacity: 0.25;
+  margin-top: 52px; padding-bottom: 40px;
+}
+
+/* ── REGISTER / LOGIN ── */
+#register, #login { align-items: center; justify-content: center; padding: 60px 40px; }
+.form-container { max-width: 480px; width: 100%; animation: fadeUp 0.8s ease both; }
+.form-header { text-align:center; margin-bottom: 48px; }
+.form-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 2rem; margin-bottom: 10px; }
+.form-sub { font-size: 0.88rem; color: var(--mist); opacity:0.55; font-style: italic; }
+.field-group { margin-bottom: 24px; }
+.field-label { display: block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); opacity: 0.7; margin-bottom: 8px; }
+.field-input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1rem; font-weight: 300; padding: 12px 16px; outline: none; transition: border 0.3s ease; }
+.field-input:focus { border-color: var(--gold2); }
+.field-input::placeholder { color: var(--mist); opacity: 0.3; }
+select.field-input option { background: var(--ink2); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+.radio-option { flex: 1; min-width: 120px; border: 1px solid var(--border); padding: 12px 16px; cursor: pointer; transition: all 0.25s ease; text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--mist); opacity: 0.7; }
+.radio-option:hover { border-color: var(--border2); opacity: 1; }
+.radio-option.selected { border-color: var(--gold); color: var(--gold); opacity: 1; background: rgba(184,148,74,0.06); }
+.form-divider { width: 100%; height: 1px; background: var(--border); margin: 32px 0; }
+.form-section-title { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; color: var(--gold); margin-bottom: 20px; opacity: 0.8; }
+.score-import-tabs { display: flex; gap: 0; margin-bottom: 24px; }
+.tab { flex: 1; padding: 10px; border: 1px solid var(--border); text-align: center; cursor: pointer; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mist); opacity: 0.6; transition: all 0.25s ease; }
+.tab:first-child { border-right: none; }
+.tab.active { border-color: var(--gold); color: var(--gold); opacity: 1; background: rgba(184,148,74,0.05); }
+.score-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.score-field { display: flex; flex-direction: column; gap: 6px; }
+.score-label-sm { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.5; }
+.score-num-input { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.1rem; padding: 10px 14px; outline: none; transition: border 0.3s; width: 100%; }
+.score-num-input:focus { border-color: var(--gold2); }
+.phrase-count { font-size: 0.72rem; color: var(--mist); opacity: 0.4; text-align: right; margin-top: 4px; }
+
+/* ── LANGUAGE PICK for profile ── */
+.lang-profile-select {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  padding: 12px 16px;
+  outline: none;
+}
+.lang-profile-select option { background: var(--ink2); }
+
+/* ── EXPLORE ── */
+#explore { padding: 0; }
+.explore-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink); border-bottom: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.explore-logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.1rem; font-style: italic; color: var(--gold); letter-spacing: 0.02em; }
+.explore-nav { display: flex; gap: 16px; align-items: center; }
+.explore-nav-btn { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.9rem; color: var(--mist); opacity: 0.5; background: none; border: none; cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.04em; position: relative; }
+.explore-nav-btn:hover { opacity: 0.9; }
+.explore-nav-btn .notif-dot { position: absolute; top: -3px; right: -8px; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; display: none; }
+.explore-nav-btn .notif-dot.visible { display: block; }
+.explore-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.filter-select { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--mist); font-family: 'Crimson Pro', serif; font-size: 0.85rem; padding: 7px 12px; outline: none; cursor: pointer; }
+.filter-select option { background: var(--ink2); }
+.profiles-container { max-width: 900px; margin: 0 auto; padding: 48px 40px 80px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+
+/* ── PROFILE CARD ── */
+.profile-card { border: 1px solid var(--border); background: var(--panel); padding: 28px 24px; cursor: pointer; transition: all 0.35s ease; position: relative; overflow: hidden; animation: fadeUp 0.6s ease both; }
+.profile-card::before { content:''; position: absolute; top:0; left:0; right:0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.35s ease; }
+.profile-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.profile-card:hover::before { opacity: 1; }
+.card-seeking { font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); opacity: 0.6; margin-bottom: 16px; }
+.card-archetype { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 1.3rem; line-height: 1.3; margin-bottom: 16px; color: var(--parchment); }
+.card-scores { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.score-badge { font-size: 0.68rem; letter-spacing: 0.08em; padding: 3px 9px; border: 1px solid transparent; display: flex; align-items: center; gap: 5px; }
+.score-badge.ei { border-color: rgba(126,201,154,0.3); color: #7ec99a; }
+.score-badge.logic { border-color: rgba(122,184,212,0.3); color: #7ab8d4; }
+.score-badge.ethics { border-color: rgba(212,165,116,0.3); color: #d4a574; }
+.score-badge.pain { border-color: rgba(192,122,184,0.3); color: #c07ab8; }
+.card-phrase { font-size: 0.88rem; line-height: 1.7; color: var(--mist); opacity: 0.65; font-style: italic; margin-bottom: 16px; border-left: 1px solid var(--border); padding-left: 12px; }
+.card-lang-badge { display: inline-block; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; border: 1px solid var(--border); color: var(--mist); opacity: 0.5; padding: 2px 7px; margin-bottom: 12px; }
+.card-meta { font-size: 0.72rem; color: var(--mist); opacity: 0.35; letter-spacing: 0.05em; }
+.card-action { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.btn-interest { flex: 1; padding: 9px; border: 1px solid var(--border2); background: transparent; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.88rem; color: var(--gold); cursor: pointer; transition: all 0.25s ease; }
+.btn-interest:hover { background: rgba(184,148,74,0.08); }
+.btn-interest.sent { opacity: 0.4; pointer-events: none; }
+.btn-pass { padding: 9px 14px; border: 1px solid var(--border); background: transparent; font-size: 0.8rem; color: var(--mist); opacity: 0.4; cursor: pointer; transition: all 0.25s ease; }
+.btn-pass:hover { opacity: 0.7; }
+
+/* ── CHAT SCREEN ── */
+#chat { padding: 0; min-height: 100vh; display: flex; flex-direction: column; }
+.chat-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink); border-bottom: 1px solid var(--border);
+  padding: 16px 32px;
+  display: flex; align-items: center; gap: 20px;
+}
+.chat-back { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem; color: var(--mist); opacity: 0.4; background: none; border: none; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+.chat-back:hover { opacity: 0.8; }
+.chat-header-info { flex: 1; }
+.chat-correspondent { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.1rem; font-style: italic; }
+.chat-correspondent-arch { font-size: 0.72rem; color: var(--gold); opacity: 0.6; letter-spacing: 0.06em; margin-top: 2px; }
+.chat-translate-toggle {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--mist); opacity: 0.5; cursor: pointer; user-select: none;
+  transition: opacity 0.2s;
+}
+.chat-translate-toggle:hover { opacity: 0.8; }
+.chat-translate-toggle input { display: none; }
+.toggle-pill {
+  width: 32px; height: 16px; background: var(--border2); border-radius: 8px;
+  position: relative; transition: background 0.3s;
+}
+.toggle-pill::after { content:''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; background: var(--mist); border-radius: 50%; transition: all 0.3s; }
+.chat-translate-toggle input:checked + .toggle-pill { background: var(--gold); }
+.chat-translate-toggle input:checked + .toggle-pill::after { left: 18px; background: var(--ink); }
+
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 40px 32px;
+  display: flex; flex-direction: column; gap: 28px;
+  max-width: 700px; width: 100%; margin: 0 auto;
+}
+.msg-block { display: flex; flex-direction: column; gap: 6px; }
+.msg-block.sent { align-items: flex-end; }
+.msg-block.received { align-items: flex-start; }
+
+.msg-meta { font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mist); opacity: 0.35; }
+.msg-bubble {
+  max-width: 80%;
+  padding: 18px 22px;
+  border: 1px solid var(--border);
+  line-height: 1.85;
+  font-size: 0.97rem;
+  font-style: italic;
+  position: relative;
+}
+.msg-block.sent .msg-bubble { background: var(--chat-sent); border-color: var(--border2); }
+.msg-block.received .msg-bubble { background: var(--chat-recv); }
+
+.msg-original { font-size: 0.78rem; color: var(--mist); opacity: 0.4; margin-top: 8px; font-style: normal; border-left: 1px solid var(--border); padding-left: 8px; line-height: 1.5; }
+.msg-translating { font-size: 0.72rem; color: var(--gold); opacity: 0.5; font-style: italic; letter-spacing: 0.06em; }
+
+.chat-composer {
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  background: var(--ink);
+  max-width: 700px; width: 100%; margin: 0 auto;
+  box-sizing: border-box;
+}
+.composer-inner { display: flex; gap: 12px; align-items: flex-end; }
+.composer-textarea {
+  flex: 1;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.97rem; font-weight: 300;
+  font-style: italic;
+  padding: 14px 18px;
+  outline: none; resize: none;
+  min-height: 52px; max-height: 160px;
+  transition: border 0.3s ease;
+  line-height: 1.7;
+}
+.composer-textarea:focus { border-color: var(--gold2); }
+.composer-textarea::placeholder { color: var(--mist); opacity: 0.3; font-style: italic; }
+.composer-send {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.9rem;
+  color: var(--ink); background: var(--gold);
+  border: none; padding: 14px 24px;
+  cursor: pointer; letter-spacing: 0.04em;
+  transition: all 0.3s ease; white-space: nowrap;
+  align-self: stretch;
+}
+.composer-send:hover { background: var(--parchment); }
+.composer-send:disabled { opacity: 0.4; cursor: not-allowed; }
+.composer-hint { font-size: 0.68rem; color: var(--mist); opacity: 0.3; margin-top: 8px; letter-spacing: 0.06em; }
+
+/* ── CONVERSATIONS LIST ── */
+#conversations { padding: 0; }
+.conv-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--ink); border-bottom: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.conv-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.3rem; font-style: italic; }
+.conv-list { max-width: 600px; margin: 0 auto; padding: 40px; }
+.conv-item {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 22px 24px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.conv-item:hover { border-color: var(--border2); }
+.conv-item-left {}
+.conv-item-name { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; margin-bottom: 4px; }
+.conv-item-preview { font-size: 0.82rem; color: var(--mist); opacity: 0.5; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.conv-item-right { text-align: right; }
+.conv-item-time { font-size: 0.68rem; color: var(--mist); opacity: 0.3; letter-spacing: 0.06em; }
+.conv-item-unread { display: inline-block; background: var(--gold); color: var(--ink); font-size: 0.6rem; letter-spacing: 0.06em; padding: 2px 6px; margin-top: 4px; }
+.conv-empty { text-align: center; padding: 80px 0; font-style: italic; color: var(--mist); opacity: 0.35; line-height: 1.8; }
+
+/* ── MY PROFILE ── */
+#myprofile { align-items: center; justify-content: center; padding: 60px 40px; }
+#myprofile.active { display: flex; }
+.myprofile-container { max-width: 500px; width: 100%; animation: fadeUp 0.8s ease both; }
+.myprofile-header { text-align: center; margin-bottom: 48px; }
+.myprofile-archetype { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic; font-size: 2.2rem; margin-bottom: 10px; }
+.myprofile-badge { display: inline-block; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--border2); padding: 4px 14px; opacity: 0.7; margin-bottom: 24px; }
+.profile-score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+.profile-score-item { background: var(--panel); border: 1px solid var(--border); padding: 16px; text-align: center; }
+.psi-label { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.5; margin-bottom: 8px; }
+.psi-val { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; }
+.profile-phrase-display { border: 1px solid var(--border); padding: 20px; font-style: italic; line-height: 1.8; color: var(--mist); opacity: 0.75; margin-bottom: 32px; font-size: 0.95rem; }
+.profile-interests-section { margin-bottom: 32px; }
+.interests-title { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); opacity: 0.6; margin-bottom: 14px; }
+.interest-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+.interest-item:last-child { border-bottom: none; }
+.interest-archetype { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; }
+.interest-status { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; }
+.interest-status.matched { color: var(--gold); opacity: 1; }
+
+/* ── MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,8,6,0.92); z-index: 500; align-items: center; justify-content: center; padding: 40px; }
+.modal-overlay.active { display: flex; }
+.modal { max-width: 440px; width: 100%; border: 1px solid var(--gold); background: var(--ink2); padding: 48px 40px; text-align: center; animation: fadeUp 0.5s ease both; position: relative; }
+.modal-ornament { width: 1px; height: 40px; background: linear-gradient(transparent, var(--gold), transparent); margin: 0 auto 28px; }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 1.9rem; font-style: italic; margin-bottom: 12px; }
+.modal-sub { font-size: 0.9rem; color: var(--mist); opacity: 0.6; line-height: 1.8; font-style: italic; margin-bottom: 32px; }
+.modal-reveal { background: rgba(184,148,74,0.06); border: 1px solid var(--border2); padding: 20px; margin-bottom: 28px; }
+.modal-reveal-label { font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); opacity: 0.6; margin-bottom: 10px; }
+.modal-reveal-name { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-style: italic; }
+.modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--mist); opacity: 0.3; font-size: 1.2rem; cursor: pointer; transition: opacity 0.2s; }
+.modal-close:hover { opacity: 0.7; }
+
+/* ── UTILS ── */
+.back-btn { position: fixed; top: 22px; left: 24px; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem; color: var(--mist); opacity: 0.4; background: none; border: none; cursor: pointer; transition: opacity 0.2s; z-index: 200; }
+.back-btn:hover { opacity: 0.8; }
+.error-msg { font-size: 0.8rem; color: #d98080; margin-top: 6px; font-style: italic; display: none; }
+.error-msg.visible { display: block; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--gold); color: var(--ink);
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  padding: 12px 28px; font-size: 0.95rem;
+  opacity: 0; transition: all 0.4s ease; z-index: 9000;
+  pointer-events: none;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media(max-width:600px){
+  .landing-title { font-size: 2.6rem; }
+  .profiles-container { padding: 30px 20px; grid-template-columns: 1fr; }
+  .explore-header { padding: 15px 20px; }
+  .field-row { grid-template-columns: 1fr; }
+  .score-inputs { grid-template-columns: 1fr 1fr; }
+  #register, #myprofile, #login { padding: 40px 24px; }
+  .chat-messages, .chat-composer { padding-left: 20px; padding-right: 20px; }
+  .chat-header { padding: 12px 20px; }
+  .conv-list { padding: 24px 20px; }
+  .explore-header { flex-wrap: wrap; }
+}
+
+/* ═══════════════ ANATOMIA TEST (scoped) ═══════════════ */
+#nds-test-wrapper {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 200;
+  min-height: 100vh;
+}
+
+:root {
+  --ink:#1a1714; --parchment:#f5f0e8; --gold:#c9a84c;
+  --mist:#e8e2d4; --deep:#0f0d0b; --panel:#201c18;
+  --border:rgba(201,168,76,0.2);
+  --c-ei:#7ec99a; --c-logic:#7ab8d4; --c-ethics:#d4a574; --c-pain:#c07ab8;
+}
+
+
+#nds-test-wrapper{background:var(--ink);color:var(--parchment);font-family:'Crimson Pro',Georgia,serif;font-weight:200;min-height:100vh;}
+.grain{position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.35;}
+
+
+
+
+/* INTRO */
+#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 40px;}
+#intro.active{display:flex;}
+.intro-epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.8rem;color:var(--gold);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:28px;opacity:0.8;animation:fadeUp 1s ease both;}
+.intro-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:3rem;line-height:1.1;margin-bottom:20px;animation:fadeUp 1s 0.15s ease both;}
+.divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px auto;animation:fadeUp 1s 0.25s ease both;}
+.intro-sub{font-size:1.05rem;color:var(--mist);opacity:0.65;font-style:italic;max-width:480px;line-height:1.8;margin-bottom:44px;animation:fadeUp 1s 0.35s ease both;}
+.intro-tests{display:flex;gap:16px;margin-bottom:48px;animation:fadeUp 1s 0.45s ease both;flex-wrap:wrap;justify-content:center;}
+.test-pill{padding:9px 20px;border:1px solid var(--border);font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);opacity:0.7;}
+.btn-primary{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:15px 48px;cursor:pointer;letter-spacing:0.05em;transition:all 0.3s ease;animation:fadeUp 1s 0.55s ease both;}
+.btn-primary:hover{background:var(--parchment);}
+
+/* TEST */
+#test-screen.active{display:block;}
+.test-header{position:sticky;top:0;z-index:100;background:var(--deep);border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.test-title-bar{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--gold);}
+.progress-area{display:flex;align-items:center;gap:16px;}
+.progress-text{font-size:0.78rem;color:var(--mist);opacity:0.55;letter-spacing:0.05em;}
+.progress-bar-outer{width:160px;height:2px;background:rgba(255,255,255,0.08);}
+.progress-bar-inner{height:100%;background:var(--gold);transition:width 0.4s ease;}
+.test-container{max-width:760px;margin:0 auto;padding:56px 40px 130px;}
+.question-card{margin-bottom:52px;border-left:1px solid var(--border);padding-left:26px;position:relative;opacity:0;transform:translateY(14px);transition:opacity 0.5s ease,transform 0.5s ease;}
+.question-card.visible{opacity:1;transform:translateY(0);}
+.q-number{position:absolute;left:-13px;top:2px;width:24px;height:24px;background:var(--ink);border:1px solid var(--gold);border-radius:50%;font-family:'Cormorant Garamond',serif;font-size:0.7rem;color:var(--gold);display:flex;align-items:center;justify-content:center;}
+.q-note{font-size:0.76rem;color:var(--gold);font-style:italic;opacity:0.65;letter-spacing:0.03em;margin-bottom:9px;}
+.q-text{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.22rem;line-height:1.5;margin-bottom:16px;color:var(--parchment);}
+.options{display:flex;flex-direction:column;gap:8px;}
+.option{display:flex;align-items:flex-start;gap:12px;padding:11px 15px;border:1px solid rgba(245,240,232,0.08);cursor:pointer;transition:all 0.25s ease;background:rgba(255,255,255,0.012);}
+.option:hover{border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.04);}
+.option.selected{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.opt-letter{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:0.85rem;min-width:17px;opacity:0.7;margin-top:1px;}
+.opt-text{font-size:0.91rem;line-height:1.55;color:var(--mist);opacity:0.82;}
+.test-footer{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,var(--deep) 40%);padding:28px 40px 28px;display:flex;justify-content:space-between;align-items:center;}
+.answer-count{font-size:0.78rem;color:var(--mist);opacity:0.45;font-style:italic;}
+.btn-next{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:12px 40px;cursor:pointer;letter-spacing:0.04em;transition:all 0.3s ease;opacity:0.35;pointer-events:none;}
+.btn-next.ready{opacity:1;pointer-events:all;}
+.btn-next:hover{background:var(--parchment);}
+
+/* TRANSITION */
+#transition-screen{align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:60px 40px;}
+#transition-screen.active{display:flex;}
+.transition-badge{width:64px;height:64px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--gold);margin-bottom:28px;}
+.transition-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2rem;margin-bottom:14px;font-style:italic;}
+.transition-sub{font-size:0.95rem;color:var(--mist);opacity:0.6;max-width:420px;line-height:1.8;margin-bottom:40px;font-style:italic;}
+
+/* PROFILE */
+#profile-screen.active{display:block;}
+.profile-hero{text-align:center;padding:80px 40px 56px;border-bottom:1px solid var(--border);}
+.profile-epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--gold);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:18px;opacity:0.7;}
+.profile-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.6rem;line-height:1.15;margin-bottom:8px;}
+.profile-container{max-width:820px;margin:0 auto;padding:56px 40px 100px;}
+.section-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.25rem;color:var(--gold);margin-bottom:26px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+
+/* SCORES */
+.scores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:56px;}
+.score-card{padding:24px 16px;text-align:center;border:1px solid var(--border);background:var(--panel);}
+.score-label{font-size:0.68rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:14px;}
+.score-number{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:300;line-height:1;margin-bottom:6px;}
+.score-sub{font-size:0.72rem;opacity:0.45;}
+.score-bar-outer{width:100%;height:2px;background:rgba(255,255,255,0.08);margin-top:14px;}
+.score-bar-inner{height:100%;transition:width 1.8s cubic-bezier(0.22,1,0.36,1);}
+.score-card.ei .score-number{color:var(--c-ei);} .score-card.ei .score-bar-inner{background:var(--c-ei);}
+.score-card.logic .score-number{color:var(--c-logic);} .score-card.logic .score-bar-inner{background:var(--c-logic);}
+.score-card.ethics .score-number{color:var(--c-ethics);} .score-card.ethics .score-bar-inner{background:var(--c-ethics);}
+.score-card.pain .score-number{color:var(--c-pain);} .score-card.pain .score-bar-inner{background:var(--c-pain);}
+
+/* ARCHETYPE */
+.archetype-card{padding:40px;border:1px solid var(--gold);text-align:center;margin-bottom:56px;background:rgba(201,168,76,0.03);}
+.archetype-label{font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);opacity:0.6;margin-bottom:14px;}
+.archetype-name{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.1rem;font-style:italic;margin-bottom:14px;}
+.archetype-desc{font-size:0.94rem;line-height:1.82;color:var(--mist);opacity:0.72;max-width:520px;margin:0 auto;font-style:italic;}
+
+/* CHART */
+.chart-section{margin-bottom:56px;}
+.chart-wrapper{display:flex;justify-content:center;padding:16px 0;}
+
+/* DIMS */
+.dimensions-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:56px;}
+.dim-row{display:flex;flex-direction:column;gap:5px;}
+.dim-top{display:flex;justify-content:space-between;align-items:baseline;}
+.dim-name{font-size:0.83rem;color:var(--mist);opacity:0.72;}
+.dim-score-text{font-family:'Cormorant Garamond',serif;font-size:0.88rem;color:var(--gold);opacity:0.8;}
+.dim-bar-outer{width:100%;height:2px;background:rgba(255,255,255,0.06);}
+.dim-bar-inner{height:100%;transition:width 1.8s cubic-bezier(0.22,1,0.36,1);}
+
+/* NARRATIVE */
+.narrative-section{margin-bottom:56px;}
+.narrative-block{padding:28px;border:1px solid var(--border);background:var(--panel);margin-bottom:18px;}
+.narrative-block h3{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.1rem;margin-bottom:13px;display:flex;align-items:center;gap:11px;}
+.ndot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.narrative-block p{font-size:0.93rem;line-height:1.87;color:var(--mist);opacity:0.74;}
+
+.btn-restart{display:block;width:fit-content;margin:0 auto;font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:13px 42px;cursor:pointer;transition:all 0.3s ease;}
+.btn-restart:hover{background:var(--parchment);}
+
+to{opacity:1;transform:translateY(0);}}
+
+  .test-header{padding:14px 18px;}
+  .test-container{padding:36px 18px 120px;}
+  .profile-container{padding:36px 18px 80px;}
+}
+
+/* Test screen fills viewport */
+#test-anatomia {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  overflow-y: auto;
+  background: var(--ink);
+  display: none;
+}
+#test-anatomia.active {
+  display: block;
+}
+#nds-test-wrapper .btn-primary {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--ink);
+  background: var(--gold);
+  border: none;
+  padding: 15px 48px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+#nds-test-wrapper .btn-primary:hover { background: var(--parchment); }
+#nds-test-wrapper .btn-restart {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--ink);
+  background: var(--gold);
+  border: none;
+  padding: 13px 42px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+#nds-test-wrapper .btn-restart:hover { background: var(--parchment); }
+#nds-test-wrapper .screen { display: none; min-height: 100vh; }
+#nds-test-wrapper .screen.active { display: block; }
+#nds-test-wrapper #intro { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 40px; }
+#nds-test-wrapper #intro.active { display: flex; }
+#nds-test-wrapper #transition-screen { display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 60px 40px; }
+#nds-test-wrapper #transition-screen.active { display: flex; }
+#nds-test-wrapper #profile-screen.active { display: block; }
+#nds-test-wrapper #test-screen.active { display: block; }
+/* Override grain for test */
+#nds-test-wrapper .grain {
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1000; opacity: 0.35;
+}
+.test-back-btn {
+  position: fixed; top: 18px; left: 20px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.85rem;
+  color: var(--mist); opacity: 0.4;
+  background: rgba(20,18,16,0.9);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  cursor: pointer; transition: opacity 0.2s;
+  z-index: 1100;
+}
+.test-back-btn:hover { opacity: 0.8; }
+/* Result export button */
+.btn-use-scores {
+  display: block; width: fit-content;
+  margin: 20px auto 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; font-style: italic;
+  color: var(--ink); background: #7ec99a;
+  border: none; padding: 13px 42px;
+  cursor: pointer; transition: all 0.3s ease;
+  letter-spacing: 0.04em;
+}
+.btn-use-scores:hover { background: var(--parchment); }
+
+</style>
+</head>
+<body>
+
+<!-- LANGUAGE SELECTOR -->
+<div class="lang-selector" id="lang-selector">
+  <button class="lang-btn active" onclick="Lang.set('it')">IT</button>
+  <button class="lang-btn" onclick="Lang.set('en')">EN</button>
+  <button class="lang-btn" onclick="Lang.set('fr')">FR</button>
+  <button class="lang-btn" onclick="Lang.set('de')">DE</button>
+  <button class="lang-btn" onclick="Lang.set('es')">ES</button>
+  <button class="lang-btn" onclick="Lang.set('pt')">PT</button>
+  <button class="lang-btn" onclick="Lang.set('zh')">中</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ── LANDING ── -->
+<div id="landing" class="screen active">
+  <div class="landing-bg"></div>
+  <div class="landing-lines"></div>
+  <div class="landing-inner">
+    <div class="landing-ornament"></div>
+    <div class="landing-pretitle" data-t="landing_pretitle">Un incontro diverso</div>
+    <h1 class="landing-title">Niente di speciale</h1>
+    <p class="landing-subtitle" data-t="landing_subtitle">Unicamente sé stessi</p>
+    <div class="landing-divider"></div>
+    <p class="landing-manifesto" data-t="landing_manifesto">
+      Non cerchiamo la versione migliore di te.<br>
+      Cerchiamo te — con le tue contraddizioni,<br>
+      la tua profondità, il tuo modo di stare nel dolore.<br>
+      Chi ti troverà, troverà quello.
+    </p>
+    <div class="landing-actions">
+      <button class="btn-gold" onclick="App.goTo('register')" data-t="btn_start">Cominciare</button>
+      <button class="btn-ghost" onclick="App.goTo('login')" data-t="btn_already">Ho già un profilo</button>
+    </div>
+  </div>
+  <div class="landing-bottom" data-t="landing_bottom">Nessun algoritmo. Solo persone.</div>
+</div>
+
+<!-- ── REGISTER ── -->
+<div id="register" class="screen">
+  <button class="back-btn" onclick="App.goTo('landing')">← <span data-t="back">Indietro</span></button>
+  <div class="form-container">
+    <div class="form-header">
+      <h2 class="form-title" data-t="reg_title">Creare il profilo</h2>
+      <p class="form-sub" data-t="reg_sub">Nessuna foto. Nessun nome completo.<br>Solo quello che sei.</p>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" data-t="label_name">Come ti chiami</label>
+      <input class="field-input" id="reg-name" type="text" data-t-ph="ph_name" placeholder="Un nome, anche solo il primo" maxlength="40">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label" data-t="label_age">Età</label>
+        <input class="field-input" id="reg-age" type="number" placeholder="Es. 38" min="18" max="99">
+      </div>
+      <div class="field-group">
+        <label class="field-label" data-t="label_city">Città o area</label>
+        <input class="field-input" id="reg-city" type="text" data-t-ph="ph_city" placeholder="Es. Milano">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" data-t="label_mylan">La mia lingua</label>
+      <select class="lang-profile-select" id="reg-lang">
+        <option value="it">Italiano</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+        <option value="pt">Português</option>
+        <option value="zh">中文</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" data-t="label_iam">Sono</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'gender','uomo')" data-t="opt_man">Uomo</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'gender','donna')" data-t="opt_woman">Donna</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'gender','altro')" data-t="opt_other">Altro</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_looking">Cerco</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'lookingfor','uomo')" data-t="opt_man">Uomo</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'lookingfor','donna')" data-t="opt_woman">Donna</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'lookingfor','indistinto')" data-t="opt_any">Indistinto</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_seeking">Sto cercando</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'seeking','romantico')" data-t="opt_romantic">Connessione romantica</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'seeking','amicizia')" data-t="opt_friend">Amicizia profonda</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'seeking','entrambi')" data-t="opt_both">Entrambi</div>
+      </div>
+    </div>
+
+    <div class="form-divider"></div>
+    <div class="form-section-title" data-t="section_lifestyle">Stile di vita</div>
+
+    <div class="field-group">
+      <label class="field-label" data-t="label_smoke">Fumo</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'smoke','mai')" data-t="opt_never">Mai</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'smoke','avolte')" data-t="opt_sometimes">A volte</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'smoke','si')" data-t="opt_yes">Sì</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'smoke','conta')" data-t="opt_depends">Conta la persona</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_alcohol">Alcool</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'alcohol','mai')" data-t="opt_never">Mai</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'alcohol','occasionalmente')" data-t="opt_occasionally">Occasionalmente</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'alcohol','si')" data-t="opt_yes">Sì</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'alcohol','conta')" data-t="opt_depends">Conta la persona</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_pets">Animali in casa</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'pets','si')" data-t="opt_have_pets">Ho animali</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'pets','no')" data-t="opt_no_pets">Non ho animali</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'pets','conta')" data-t="opt_depends">Conta la persona</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_children">Figli</label>
+      <div class="radio-group" style="flex-wrap:wrap;">
+        <div class="radio-option" onclick="App.selectRadio(this,'children','ho')" data-t="opt_have_kids">Ho figli</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'children','no')" data-t="opt_no_kids">Non ho figli</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'children','vorrei')" data-t="opt_want_kids">Vorrei</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'children','nonvorrei')" data-t="opt_no_want_kids">Non vorrei</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'children','conta')" data-t="opt_depends">Conta la persona</div>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_work">Lavoro</label>
+      <div class="radio-group">
+        <div class="radio-option" onclick="App.selectRadio(this,'work','si')" data-t="opt_work_yes">Lavoro</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'work','no')" data-t="opt_work_no">Non in questo momento</div>
+        <div class="radio-option" onclick="App.selectRadio(this,'work','conta')" data-t="opt_depends">Conta la persona</div>
+      </div>
+    </div>
+
+    <div class="form-divider"></div>
+    <div class="form-section-title" data-t="section_psych">Il tuo profilo psicologico</div>
+    <div class="score-import-tabs">
+      <div class="tab active" id="tab-import" onclick="App.switchTab('import')" data-t="tab_scores">Inserisci punteggi</div>
+      <div class="tab" id="tab-test" onclick="App.switchTab('test')" data-t="tab_test">Fai il test ora</div>
+    </div>
+    <div id="panel-import">
+      <p style="font-size:0.82rem;color:var(--mist);opacity:0.5;font-style:italic;margin-bottom:16px;" data-t="score_hint">
+        Se hai già completato <em>Anatomia di una Persona</em>, inserisci i tuoi punteggi (0–100).
+      </p>
+      <div class="score-inputs">
+        <div class="score-field">
+          <span class="score-label-sm" style="color:#7ec99a" data-t="sc_ei">Int. Emotiva</span>
+          <input class="score-num-input" id="sc-ei" type="number" min="0" max="100" placeholder="74">
+        </div>
+        <div class="score-field">
+          <span class="score-label-sm" style="color:#7ab8d4" data-t="sc_logic">Logica</span>
+          <input class="score-num-input" id="sc-logic" type="number" min="0" max="100" placeholder="68">
+        </div>
+        <div class="score-field">
+          <span class="score-label-sm" style="color:#d4a574" data-t="sc_ethics">Etica</span>
+          <input class="score-num-input" id="sc-ethics" type="number" min="0" max="100" placeholder="81">
+        </div>
+        <div class="score-field">
+          <span class="score-label-sm" style="color:#c07ab8" data-t="sc_pain">Cons. Dolore</span>
+          <input class="score-num-input" id="sc-pain" type="number" min="0" max="100" placeholder="77">
+        </div>
+      </div>
+    </div>
+    <div id="panel-test" style="display:none;">
+      <p style="font-size:0.88rem;color:var(--mist);opacity:0.55;font-style:italic;line-height:1.8;">
+        170 domande su intelligenza emotiva, logica, etica e rapporto col dolore.<br>
+        Al termine, i punteggi verranno inseriti automaticamente nel tuo profilo.
+      </p>
+      <button class="btn-ghost" style="margin-top:20px;width:100%;" onclick="document.getElementById('test-anatomia').classList.add('active');window.scrollTo(0,0);">
+        Fare il test →
+      </button>
+    </div>
+    <div class="form-divider"></div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_phrase">Una frase che ti descrive</label>
+      <textarea class="field-input" id="reg-phrase" rows="3"
+        data-t-ph="ph_phrase"
+        placeholder="Non una presentazione. Qualcosa di vero."
+        maxlength="200" style="resize:none;line-height:1.6"
+        oninput="document.getElementById('phrase-count').textContent=this.value.length+'/200'"></textarea>
+      <div class="phrase-count" id="phrase-count">0/200</div>
+    </div>
+    <p class="error-msg" id="reg-error" data-t="err_fill">Completa tutti i campi per continuare.</p>
+    <button class="btn-gold" style="width:100%;margin-top:8px" onclick="App.register()" data-t="btn_enter">Entrare</button>
+  </div>
+</div>
+
+<!-- ── LOGIN ── -->
+<div id="login" class="screen">
+  <button class="back-btn" onclick="App.goTo('landing')">← <span data-t="back">Indietro</span></button>
+  <div class="form-container" style="max-width:380px;">
+    <div class="form-header">
+      <h2 class="form-title" data-t="login_title">Bentornato</h2>
+      <p class="form-sub" data-t="login_sub">Inserisci il nome con cui ti sei registrato.</p>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-t="label_name">Il tuo nome</label>
+      <input class="field-input" id="login-name" type="text" data-t-ph="ph_name" placeholder="Come ti chiami">
+    </div>
+    <p class="error-msg" id="login-error" data-t="err_not_found">Profilo non trovato.</p>
+    <button class="btn-gold" style="width:100%;margin-top:8px" onclick="App.login()" data-t="btn_access">Accedere</button>
+  </div>
+</div>
+
+<!-- ── EXPLORE ── -->
+<div id="explore" class="screen">
+  <div class="explore-header">
+    <div class="explore-logo nds-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#f0e8d8" stroke-width="0.9" opacity="0.22"/><circle cx="50" cy="50" r="24" fill="none" stroke="#d4aa5a" stroke-width="1.1" opacity="0.68"/><circle cx="50" cy="50" r="9" fill="none" stroke="#d4aa5a" stroke-width="0.7" opacity="0.38"/><circle cx="50" cy="50" r="2.8" fill="#d4aa5a" opacity="0.88"/></svg><span class="nds-logo-text">Niente di speciale</span></div>
+    <div class="explore-filters">
+      <select class="filter-select" id="filter-gender" onchange="App.renderProfiles()">
+        <option value="" data-t="filter_any_gender">Qualsiasi genere</option>
+        <option value="uomo" data-t="opt_man">Uomo</option>
+        <option value="donna" data-t="opt_woman">Donna</option>
+        <option value="altro" data-t="opt_other">Altro</option>
+      </select>
+      <select class="filter-select" id="filter-seeking" onchange="App.renderProfiles()">
+        <option value="" data-t="filter_all">Tutti</option>
+        <option value="romantico" data-t="opt_romantic_short">Romantico</option>
+        <option value="amicizia" data-t="opt_friend_short">Amicizia</option>
+        <option value="entrambi" data-t="opt_both">Entrambi</option>
+      </select>
+      <select class="filter-select" id="filter-age" onchange="App.renderProfiles()">
+        <option value="" data-t="filter_any_age">Qualsiasi età</option>
+        <option value="18-30">18–30</option>
+        <option value="31-45">31–45</option>
+        <option value="46-60">46–60</option>
+        <option value="60+">60+</option>
+      </select>
+    </div>
+    <div class="explore-nav">
+      <button class="explore-nav-btn" onclick="App.goTo('conversations')">
+        <span data-t="nav_messages">Messaggi</span>
+        <span class="notif-dot" id="notif-dot"></span>
+      </button>
+      <button class="explore-nav-btn" onclick="App.goTo('myprofile')" id="explore-username">
+        <span data-t="nav_myprofile">Il mio profilo</span>
+      </button>
+    </div>
+  </div>
+  <div class="profiles-container" id="profiles-container"></div>
+</div>
+
+<!-- ── CONVERSATIONS ── -->
+<div id="conversations" class="screen">
+  <div class="conv-header">
+    <button class="btn-ghost" style="padding:8px 20px;" onclick="App.goTo('explore')">← <span data-t="back_explore">Esplora</span></button>
+    <div class="conv-title" data-t="conv_title">Corrispondenze</div>
+    <div style="width:80px;"></div>
+  </div>
+  <div class="conv-list" id="conv-list">
+    <div class="conv-empty" data-t="conv_empty">Nessuna corrispondenza ancora.<br>Quando avverrà un incontro reciproco,<br>potrete scrivervi qui.</div>
+  </div>
+</div>
+
+<!-- ── CHAT ── -->
+<div id="chat" class="screen">
+  <div class="chat-header">
+    <button class="chat-back" onclick="App.goTo('conversations')">← <span data-t="back_conv">Corrispondenze</span></button>
+    <div class="chat-header-info">
+      <div class="chat-correspondent" id="chat-correspondent-name">—</div>
+      <div class="chat-correspondent-arch" id="chat-correspondent-arch"></div>
+    </div>
+    <label class="chat-translate-toggle" title="Traduci messaggi ricevuti">
+      <input type="checkbox" id="translate-toggle" onchange="App.toggleTranslate(this.checked)">
+      <div class="toggle-pill"></div>
+      <span data-t="toggle_translate">Traduci</span>
+    </label>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-composer" id="chat-composer-wrap" style="position:relative">
+    <div class="composer-inner">
+      <textarea class="composer-textarea" id="composer-input"
+        data-t-ph="ph_compose"
+        placeholder="Scrivi la tua lettera…"
+        rows="2"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();App.sendMessage();}"></textarea>
+      <button class="composer-send" onclick="App.sendMessage()" data-t="btn_send">Inviare</button>
+    </div>
+    <div class="composer-hint" data-t="composer_hint">Invio per spedire · Shift+Invio per andare a capo</div>
+  </div>
+</div>
+
+<!-- ── MY PROFILE ── -->
+<div id="myprofile" class="screen">
+  <button class="back-btn" onclick="App.goTo('explore')">← <span data-t="back_explore">Esplora</span></button>
+  <div class="myprofile-container">
+    <div class="myprofile-header">
+      <div class="myprofile-archetype" id="mp-archetype">—</div>
+      <div class="myprofile-badge" id="mp-seeking">—</div>
+    </div>
+    <div class="profile-score-grid" id="mp-scores"></div>
+    <div class="profile-phrase-display" id="mp-phrase">—</div>
+    <div class="profile-interests-section">
+      <div class="interests-title" data-t="interests_title">Interessi espressi</div>
+      <div id="mp-interests"></div>
+    </div>
+    <button class="btn-ghost" style="width:100%;" onclick="App.logout()" data-t="btn_logout">Uscire dal profilo</button>
+  </div>
+</div>
+
+<!-- ── MATCH MODAL ── -->
+<div class="modal-overlay" id="match-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="App.closeModal()">✕</button>
+    <div class="modal-ornament"></div>
+    <h2 class="modal-title" data-t="match_title">Un incontro</h2>
+    <p class="modal-sub" data-t="match_sub">L'interesse è reciproco.<br>Adesso potete scrivervi.</p>
+    <div class="modal-reveal">
+      <div class="modal-reveal-label" data-t="match_label">Il nome svelato</div>
+      <div class="modal-reveal-name" id="modal-name">—</div>
+    </div>
+    <button class="btn-gold" style="width:100%" onclick="App.openChatFromModal()" data-t="btn_write">Scrivere ora</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ SCRIPT ════════════════════════════════════════ -->
+<script>
+
+// ──────────────────────────────────────────────────
+// TRANSLATIONS
+// ──────────────────────────────────────────────────
+const TRANSLATIONS = {
+  it: {
+    landing_pretitle: 'Un incontro diverso',
+    landing_subtitle: 'Unicamente sé stessi',
+    landing_manifesto: 'Non cerchiamo la versione migliore di te.<br>Cerchiamo te — con le tue contraddizioni,<br>la tua profondità, il tuo modo di stare nel dolore.<br>Chi ti troverà, troverà quello.',
+    landing_bottom: 'Nessun algoritmo. Solo persone.',
+    btn_start: 'Cominciare', btn_already: 'Ho già un profilo',
+    back: 'Indietro', back_explore: 'Esplora', back_conv: 'Corrispondenze',
+    reg_title: 'Creare il profilo', reg_sub: 'Nessuna foto. Nessun nome completo.<br>Solo quello che sei.',
+    label_name: 'Come ti chiami', label_age: 'Età', label_city: 'Città o area',
+    label_mylan: 'La mia lingua', label_iam: 'Sono', label_looking: 'Cerco',
+    label_seeking: 'Sto cercando', label_smoke: 'Fumo', label_alcohol: 'Alcool',
+    label_pets: 'Animali in casa', label_children: 'Figli', label_work: 'Lavoro',
+    label_phrase: 'Una frase che ti descrive',
+    ph_name: 'Un nome, anche solo il primo', ph_city: 'Es. Milano, Nord Italia',
+    ph_phrase: 'Non una presentazione. Qualcosa di vero.',
+    ph_compose: 'Scrivi la tua lettera…',
+    opt_man: 'Uomo', opt_woman: 'Donna', opt_other: 'Altro', opt_any: 'Indistinto',
+    opt_romantic: 'Connessione romantica', opt_friend: 'Amicizia profonda', opt_both: 'Entrambi',
+    opt_romantic_short: 'Romantico', opt_friend_short: 'Amicizia',
+    opt_never: 'Mai', opt_sometimes: 'A volte', opt_yes: 'Sì', opt_depends: 'Conta la persona',
+    opt_occasionally: 'Occasionalmente', opt_have_pets: 'Ho animali', opt_no_pets: 'Non ho animali',
+    opt_have_kids: 'Ho figli', opt_no_kids: 'Non ho figli', opt_want_kids: 'Vorrei', opt_no_want_kids: 'Non vorrei',
+    opt_work_yes: 'Lavoro', opt_work_no: 'Non in questo momento',
+    section_lifestyle: 'Stile di vita', section_psych: 'Il tuo profilo psicologico',
+    tab_scores: 'Inserisci punteggi', tab_test: 'Fai il test ora',
+    score_hint: 'Se hai già completato <em>Anatomia di una Persona</em>, inserisci i tuoi punteggi (0–100).',
+    sc_ei: 'Int. Emotiva', sc_logic: 'Logica', sc_ethics: 'Etica', sc_pain: 'Cons. Dolore',
+    btn_enter: 'Entrare', btn_access: 'Accedere', btn_send: 'Inviare',
+    btn_logout: 'Uscire dal profilo', btn_write: 'Scrivere ora',
+    err_fill: 'Completa tutti i campi per continuare.', err_not_found: 'Profilo non trovato.',
+    login_title: 'Bentornato', login_sub: 'Inserisci il nome con cui ti sei registrato.',
+    filter_any_gender: 'Qualsiasi genere', filter_all: 'Tutti', filter_any_age: 'Qualsiasi età',
+    nav_messages: 'Messaggi', nav_myprofile: 'Il mio profilo',
+    interests_title: 'Interessi espressi',
+    match_title: 'Un incontro', match_sub: "L'interesse è reciproco.<br>Adesso potete scrivervi.",
+    match_label: 'Il nome svelato',
+    toggle_translate: 'Traduci',
+    composer_hint: 'Invio per spedire · Shift+Invio per andare a capo',
+    conv_title: 'Corrispondenze',
+    conv_empty: 'Nessuna corrispondenza ancora.<br>Quando avverrà un incontro reciproco,<br>potrete scrivervi qui.',
+    seek_romantic: 'Cerca connessione romantica', seek_friend: 'Cerca amicizia profonda', seek_both: 'Aperto a entrambi',
+    card_interest: 'Esprimere interesse', card_sent: 'Interesse inviato', card_matched: '✓ Incontro', card_pass: 'Passa',
+    translating: 'traduzione in corso…', translated_from: 'originale',
+    toast_match: 'Un incontro — potete scrivervi.',
+    loading: 'Caricamento…', no_profiles: 'Nessun profilo trovato con questi filtri.',
+    in_attesa: 'In attesa', incontro: 'Incontro ✓',
+  },
+  en: {
+    landing_pretitle: 'A different encounter',
+    landing_subtitle: 'Simply yourself',
+    landing_manifesto: 'We are not looking for the best version of you.<br>We are looking for you — with your contradictions,<br>your depth, your way of living with pain.<br>Whoever finds you, will find that.',
+    landing_bottom: 'No algorithm. Just people.',
+    btn_start: 'Begin', btn_already: 'I already have a profile',
+    back: 'Back', back_explore: 'Explore', back_conv: 'Correspondence',
+    reg_title: 'Create your profile', reg_sub: 'No photo. No full name.<br>Just who you are.',
+    label_name: 'Your name', label_age: 'Age', label_city: 'City or area',
+    label_mylan: 'My language', label_iam: 'I am', label_looking: 'Looking for',
+    label_seeking: 'I am seeking', label_smoke: 'Smoking', label_alcohol: 'Alcohol',
+    label_pets: 'Pets', label_children: 'Children', label_work: 'Work',
+    label_phrase: 'A phrase that describes you',
+    ph_name: 'A name, even just the first', ph_city: 'E.g. London, North of England',
+    ph_phrase: 'Not a presentation. Something true.',
+    ph_compose: 'Write your letter…',
+    opt_man: 'Man', opt_woman: 'Woman', opt_other: 'Other', opt_any: 'Indistinct',
+    opt_romantic: 'Romantic connection', opt_friend: 'Deep friendship', opt_both: 'Both',
+    opt_romantic_short: 'Romantic', opt_friend_short: 'Friendship',
+    opt_never: 'Never', opt_sometimes: 'Sometimes', opt_yes: 'Yes', opt_depends: 'Person matters',
+    opt_occasionally: 'Occasionally', opt_have_pets: 'I have pets', opt_no_pets: 'No pets',
+    opt_have_kids: 'I have children', opt_no_kids: 'No children', opt_want_kids: 'Would like', opt_no_want_kids: 'Would not',
+    opt_work_yes: 'I work', opt_work_no: 'Not at the moment',
+    section_lifestyle: 'Lifestyle', section_psych: 'Your psychological profile',
+    tab_scores: 'Enter scores', tab_test: 'Take the test now',
+    score_hint: 'If you have completed <em>Anatomy of a Person</em>, enter your scores (0–100).',
+    sc_ei: 'Emotional Int.', sc_logic: 'Logic', sc_ethics: 'Ethics', sc_pain: 'Pain Aware.',
+    btn_enter: 'Enter', btn_access: 'Access', btn_send: 'Send',
+    btn_logout: 'Sign out', btn_write: 'Write now',
+    err_fill: 'Please complete all required fields.', err_not_found: 'Profile not found.',
+    login_title: 'Welcome back', login_sub: 'Enter the name you registered with.',
+    filter_any_gender: 'Any gender', filter_all: 'All', filter_any_age: 'Any age',
+    nav_messages: 'Messages', nav_myprofile: 'My profile',
+    interests_title: 'Expressed interests',
+    match_title: 'An encounter', match_sub: 'The interest is mutual.<br>Now you can write to each other.',
+    match_label: 'The revealed name',
+    toggle_translate: 'Translate',
+    composer_hint: 'Enter to send · Shift+Enter for new line',
+    conv_title: 'Correspondence',
+    conv_empty: 'No correspondence yet.<br>When a mutual encounter happens,<br>you will be able to write here.',
+    seek_romantic: 'Seeking romantic connection', seek_friend: 'Seeking deep friendship', seek_both: 'Open to both',
+    card_interest: 'Express interest', card_sent: 'Interest sent', card_matched: '✓ Matched', card_pass: 'Pass',
+    translating: 'translating…', translated_from: 'original',
+    toast_match: 'A match — you can now write to each other.',
+    loading: 'Loading…', no_profiles: 'No profiles found with these filters.',
+    in_attesa: 'Pending', incontro: 'Matched ✓',
+  },
+  fr: {
+    landing_pretitle: 'Une rencontre différente',
+    landing_subtitle: 'Uniquement soi-même',
+    landing_manifesto: 'Nous ne cherchons pas la meilleure version de vous.<br>Nous cherchons vous — avec vos contradictions,<br>votre profondeur, votre façon de vivre la douleur.<br>Celui qui vous trouvera, trouvera cela.',
+    landing_bottom: 'Aucun algorithme. Seulement des personnes.',
+    btn_start: 'Commencer', btn_already: "J'ai déjà un profil",
+    back: 'Retour', back_explore: 'Explorer', back_conv: 'Correspondances',
+    reg_title: 'Créer le profil', reg_sub: 'Pas de photo. Pas de nom complet.<br>Juste ce que vous êtes.',
+    label_name: 'Votre prénom', label_age: 'Âge', label_city: 'Ville ou région',
+    label_mylan: 'Ma langue', label_iam: 'Je suis', label_looking: 'Je cherche',
+    label_seeking: 'Je recherche', label_smoke: 'Tabac', label_alcohol: 'Alcool',
+    label_pets: 'Animaux', label_children: 'Enfants', label_work: 'Travail',
+    label_phrase: 'Une phrase qui vous décrit',
+    ph_name: 'Un prénom suffit', ph_city: 'Ex. Paris, Île-de-France',
+    ph_phrase: 'Pas une présentation. Quelque chose de vrai.',
+    ph_compose: 'Écrivez votre lettre…',
+    opt_man: 'Homme', opt_woman: 'Femme', opt_other: 'Autre', opt_any: 'Indistinct',
+    opt_romantic: 'Connexion romantique', opt_friend: 'Amitié profonde', opt_both: 'Les deux',
+    opt_romantic_short: 'Romantique', opt_friend_short: 'Amitié',
+    opt_never: 'Jamais', opt_sometimes: 'Parfois', opt_yes: 'Oui', opt_depends: 'Ça dépend',
+    opt_occasionally: 'Occasionnellement', opt_have_pets: "J'ai des animaux", opt_no_pets: 'Sans animaux',
+    opt_have_kids: "J'ai des enfants", opt_no_kids: 'Sans enfants', opt_want_kids: 'Je voudrais', opt_no_want_kids: 'Je ne veux pas',
+    opt_work_yes: 'Je travaille', opt_work_no: 'Pas en ce moment',
+    section_lifestyle: 'Mode de vie', section_psych: 'Votre profil psychologique',
+    tab_scores: 'Entrer les scores', tab_test: 'Faire le test',
+    score_hint: 'Si vous avez complété <em>Anatomie d\'une Personne</em>, entrez vos scores (0–100).',
+    sc_ei: 'Int. Émotionnelle', sc_logic: 'Logique', sc_ethics: 'Éthique', sc_pain: 'Cons. Douleur',
+    btn_enter: 'Entrer', btn_access: 'Accéder', btn_send: 'Envoyer',
+    btn_logout: 'Déconnexion', btn_write: 'Écrire maintenant',
+    err_fill: 'Veuillez compléter tous les champs.', err_not_found: 'Profil introuvable.',
+    login_title: 'Bienvenue', login_sub: 'Entrez le nom avec lequel vous vous êtes inscrit.',
+    filter_any_gender: 'Tout genre', filter_all: 'Tous', filter_any_age: 'Tout âge',
+    nav_messages: 'Messages', nav_myprofile: 'Mon profil',
+    interests_title: 'Intérêts exprimés',
+    match_title: 'Une rencontre', match_sub: "L'intérêt est réciproque.<br>Vous pouvez maintenant vous écrire.",
+    match_label: 'Le nom révélé',
+    toggle_translate: 'Traduire',
+    composer_hint: 'Entrée pour envoyer · Maj+Entrée pour nouvelle ligne',
+    conv_title: 'Correspondances',
+    conv_empty: 'Pas encore de correspondance.<br>Quand une rencontre mutuelle se produira,<br>vous pourrez vous écrire ici.',
+    seek_romantic: 'Cherche connexion romantique', seek_friend: 'Cherche amitié profonde', seek_both: 'Ouvert aux deux',
+    card_interest: 'Exprimer un intérêt', card_sent: 'Intérêt envoyé', card_matched: '✓ Rencontré', card_pass: 'Passer',
+    translating: 'traduction en cours…', translated_from: 'original',
+    toast_match: 'Une rencontre — vous pouvez maintenant vous écrire.',
+    loading: 'Chargement…', no_profiles: 'Aucun profil trouvé avec ces filtres.',
+    in_attesa: 'En attente', incontro: 'Rencontré ✓',
+  },
+  de: {
+    landing_pretitle: 'Eine andere Begegnung',
+    landing_subtitle: 'Nur sich selbst sein',
+    landing_manifesto: 'Wir suchen nicht die beste Version von dir.<br>Wir suchen dich — mit deinen Widersprüchen,<br>deiner Tiefe, deiner Art, mit Schmerz umzugehen.<br>Wer dich findet, findet das.',
+    landing_bottom: 'Kein Algorithmus. Nur Menschen.',
+    btn_start: 'Beginnen', btn_already: 'Ich habe bereits ein Profil',
+    back: 'Zurück', back_explore: 'Erkunden', back_conv: 'Korrespondenz',
+    reg_title: 'Profil erstellen', reg_sub: 'Kein Foto. Kein vollständiger Name.<br>Nur das, was du bist.',
+    label_name: 'Dein Name', label_age: 'Alter', label_city: 'Stadt oder Gebiet',
+    label_mylan: 'Meine Sprache', label_iam: 'Ich bin', label_looking: 'Ich suche',
+    label_seeking: 'Ich suche nach', label_smoke: 'Rauchen', label_alcohol: 'Alkohol',
+    label_pets: 'Haustiere', label_children: 'Kinder', label_work: 'Arbeit',
+    label_phrase: 'Ein Satz, der dich beschreibt',
+    ph_name: 'Ein Name, auch nur der erste', ph_city: 'z.B. Berlin, Norddeutschland',
+    ph_phrase: 'Keine Vorstellung. Etwas Wahres.',
+    ph_compose: 'Schreibe deinen Brief…',
+    opt_man: 'Mann', opt_woman: 'Frau', opt_other: 'Andere', opt_any: 'Offen',
+    opt_romantic: 'Romantische Verbindung', opt_friend: 'Tiefe Freundschaft', opt_both: 'Beides',
+    opt_romantic_short: 'Romantisch', opt_friend_short: 'Freundschaft',
+    opt_never: 'Nie', opt_sometimes: 'Manchmal', opt_yes: 'Ja', opt_depends: 'Kommt auf die Person an',
+    opt_occasionally: 'Gelegentlich', opt_have_pets: 'Ich habe Haustiere', opt_no_pets: 'Keine Haustiere',
+    opt_have_kids: 'Ich habe Kinder', opt_no_kids: 'Keine Kinder', opt_want_kids: 'Ich möchte', opt_no_want_kids: 'Ich möchte nicht',
+    opt_work_yes: 'Ich arbeite', opt_work_no: 'Gerade nicht',
+    section_lifestyle: 'Lebensstil', section_psych: 'Dein psychologisches Profil',
+    tab_scores: 'Punkte eingeben', tab_test: 'Test jetzt machen',
+    score_hint: 'Wenn du <em>Anatomie einer Person</em> abgeschlossen hast, gib deine Punkte ein (0–100).',
+    sc_ei: 'Emot. Intelligenz', sc_logic: 'Logik', sc_ethics: 'Ethik', sc_pain: 'Schmerzbewusstsein',
+    btn_enter: 'Eintreten', btn_access: 'Zugang', btn_send: 'Senden',
+    btn_logout: 'Abmelden', btn_write: 'Jetzt schreiben',
+    err_fill: 'Bitte alle Felder ausfüllen.', err_not_found: 'Profil nicht gefunden.',
+    login_title: 'Willkommen zurück', login_sub: 'Gib den Namen ein, mit dem du dich registriert hast.',
+    filter_any_gender: 'Jedes Geschlecht', filter_all: 'Alle', filter_any_age: 'Jedes Alter',
+    nav_messages: 'Nachrichten', nav_myprofile: 'Mein Profil',
+    interests_title: 'Ausgedrückte Interessen',
+    match_title: 'Eine Begegnung', match_sub: 'Das Interesse ist gegenseitig.<br>Ihr könnt euch jetzt schreiben.',
+    match_label: 'Der enthüllte Name',
+    toggle_translate: 'Übersetzen',
+    composer_hint: 'Enter zum Senden · Shift+Enter für neue Zeile',
+    conv_title: 'Korrespondenz',
+    conv_empty: 'Noch keine Korrespondenz.<br>Wenn eine gegenseitige Begegnung stattfindet,<br>könnt ihr euch hier schreiben.',
+    seek_romantic: 'Sucht romantische Verbindung', seek_friend: 'Sucht tiefe Freundschaft', seek_both: 'Offen für beides',
+    card_interest: 'Interesse ausdrücken', card_sent: 'Interesse gesendet', card_matched: '✓ Getroffen', card_pass: 'Weiter',
+    translating: 'Übersetzung läuft…', translated_from: 'Original',
+    toast_match: 'Eine Begegnung — ihr könnt euch jetzt schreiben.',
+    loading: 'Lädt…', no_profiles: 'Keine Profile mit diesen Filtern gefunden.',
+    in_attesa: 'Ausstehend', incontro: 'Getroffen ✓',
+  },
+  es: {
+    landing_pretitle: 'Un encuentro diferente',
+    landing_subtitle: 'Únicamente uno mismo',
+    landing_manifesto: 'No buscamos la mejor versión de ti.<br>Te buscamos a ti — con tus contradicciones,<br>tu profundidad, tu manera de vivir el dolor.<br>Quien te encuentre, encontrará eso.',
+    landing_bottom: 'Ningún algoritmo. Solo personas.',
+    btn_start: 'Comenzar', btn_already: 'Ya tengo un perfil',
+    back: 'Atrás', back_explore: 'Explorar', back_conv: 'Correspondencias',
+    reg_title: 'Crear el perfil', reg_sub: 'Sin foto. Sin nombre completo.<br>Solo lo que eres.',
+    label_name: 'Tu nombre', label_age: 'Edad', label_city: 'Ciudad o área',
+    label_mylan: 'Mi idioma', label_iam: 'Soy', label_looking: 'Busco',
+    label_seeking: 'Estoy buscando', label_smoke: 'Tabaco', label_alcohol: 'Alcohol',
+    label_pets: 'Mascotas', label_children: 'Hijos', label_work: 'Trabajo',
+    label_phrase: 'Una frase que te describe',
+    ph_name: 'Un nombre, incluso solo el primero', ph_city: 'Ej. Madrid, Norte de España',
+    ph_phrase: 'No una presentación. Algo verdadero.',
+    ph_compose: 'Escribe tu carta…',
+    opt_man: 'Hombre', opt_woman: 'Mujer', opt_other: 'Otro', opt_any: 'Indistinto',
+    opt_romantic: 'Conexión romántica', opt_friend: 'Amistad profunda', opt_both: 'Ambos',
+    opt_romantic_short: 'Romántico', opt_friend_short: 'Amistad',
+    opt_never: 'Nunca', opt_sometimes: 'A veces', opt_yes: 'Sí', opt_depends: 'Depende de la persona',
+    opt_occasionally: 'Ocasionalmente', opt_have_pets: 'Tengo mascotas', opt_no_pets: 'Sin mascotas',
+    opt_have_kids: 'Tengo hijos', opt_no_kids: 'Sin hijos', opt_want_kids: 'Quisiera', opt_no_want_kids: 'No quisiera',
+    opt_work_yes: 'Trabajo', opt_work_no: 'En este momento no',
+    section_lifestyle: 'Estilo de vida', section_psych: 'Tu perfil psicológico',
+    tab_scores: 'Insertar puntuaciones', tab_test: 'Hacer el test ahora',
+    score_hint: 'Si ya completaste <em>Anatomía de una Persona</em>, inserta tus puntuaciones (0–100).',
+    sc_ei: 'Int. Emocional', sc_logic: 'Lógica', sc_ethics: 'Ética', sc_pain: 'Conc. Dolor',
+    btn_enter: 'Entrar', btn_access: 'Acceder', btn_send: 'Enviar',
+    btn_logout: 'Salir del perfil', btn_write: 'Escribir ahora',
+    err_fill: 'Completa todos los campos para continuar.', err_not_found: 'Perfil no encontrado.',
+    login_title: 'Bienvenido', login_sub: 'Introduce el nombre con el que te registraste.',
+    filter_any_gender: 'Cualquier género', filter_all: 'Todos', filter_any_age: 'Cualquier edad',
+    nav_messages: 'Mensajes', nav_myprofile: 'Mi perfil',
+    interests_title: 'Intereses expresados',
+    match_title: 'Un encuentro', match_sub: 'El interés es recíproco.<br>Ahora podéis escribiros.',
+    match_label: 'El nombre revelado',
+    toggle_translate: 'Traducir',
+    composer_hint: 'Enter para enviar · Shift+Enter para nueva línea',
+    conv_title: 'Correspondencias',
+    conv_empty: 'Ninguna correspondencia aún.<br>Cuando se produzca un encuentro mutuo,<br>podréis escribiros aquí.',
+    seek_romantic: 'Busca conexión romántica', seek_friend: 'Busca amistad profunda', seek_both: 'Abierto a ambos',
+    card_interest: 'Expresar interés', card_sent: 'Interés enviado', card_matched: '✓ Encuentro', card_pass: 'Pasar',
+    translating: 'traduciendo…', translated_from: 'original',
+    toast_match: 'Un encuentro — podéis escribiros ahora.',
+    loading: 'Cargando…', no_profiles: 'No se encontraron perfiles con estos filtros.',
+    in_attesa: 'En espera', incontro: 'Encuentro ✓',
+  },
+  pt: {
+    landing_pretitle: 'Um encontro diferente',
+    landing_subtitle: 'Simplesmente você mesmo',
+    landing_manifesto: 'Não procuramos a melhor versão de você.<br>Procuramos você — com suas contradições,<br>sua profundidade, sua forma de lidar com a dor.<br>Quem te encontrar, encontrará isso.',
+    landing_bottom: 'Nenhum algoritmo. Só pessoas.',
+    btn_start: 'Começar', btn_already: 'Já tenho um perfil',
+    back: 'Voltar', back_explore: 'Explorar', back_conv: 'Correspondências',
+    reg_title: 'Criar o perfil', reg_sub: 'Sem foto. Sem nome completo.<br>Só o que você é.',
+    label_name: 'Seu nome', label_age: 'Idade', label_city: 'Cidade ou área',
+    label_mylan: 'Meu idioma', label_iam: 'Sou', label_looking: 'Procuro',
+    label_seeking: 'Estou procurando', label_smoke: 'Fumo', label_alcohol: 'Álcool',
+    label_pets: 'Animais de estimação', label_children: 'Filhos', label_work: 'Trabalho',
+    label_phrase: 'Uma frase que te descreve',
+    ph_name: 'Um nome, pelo menos o primeiro', ph_city: 'Ex. Lisboa, Norte de Portugal',
+    ph_phrase: 'Não uma apresentação. Algo verdadeiro.',
+    ph_compose: 'Escreva sua carta…',
+    opt_man: 'Homem', opt_woman: 'Mulher', opt_other: 'Outro', opt_any: 'Indistinto',
+    opt_romantic: 'Conexão romântica', opt_friend: 'Amizade profunda', opt_both: 'Ambos',
+    opt_romantic_short: 'Romântico', opt_friend_short: 'Amizade',
+    opt_never: 'Nunca', opt_sometimes: 'Às vezes', opt_yes: 'Sim', opt_depends: 'Depende da pessoa',
+    opt_occasionally: 'Ocasionalmente', opt_have_pets: 'Tenho animais', opt_no_pets: 'Sem animais',
+    opt_have_kids: 'Tenho filhos', opt_no_kids: 'Sem filhos', opt_want_kids: 'Gostaria', opt_no_want_kids: 'Não gostaria',
+    opt_work_yes: 'Trabalho', opt_work_no: 'No momento não',
+    section_lifestyle: 'Estilo de vida', section_psych: 'Seu perfil psicológico',
+    tab_scores: 'Inserir pontuações', tab_test: 'Fazer o teste agora',
+    score_hint: 'Se já completou <em>Anatomia de uma Pessoa</em>, insira suas pontuações (0–100).',
+    sc_ei: 'Int. Emocional', sc_logic: 'Lógica', sc_ethics: 'Ética', sc_pain: 'Consc. Dor',
+    btn_enter: 'Entrar', btn_access: 'Acessar', btn_send: 'Enviar',
+    btn_logout: 'Sair do perfil', btn_write: 'Escrever agora',
+    err_fill: 'Complete todos os campos para continuar.', err_not_found: 'Perfil não encontrado.',
+    login_title: 'Bem-vindo de volta', login_sub: 'Insira o nome com que se registrou.',
+    filter_any_gender: 'Qualquer gênero', filter_all: 'Todos', filter_any_age: 'Qualquer idade',
+    nav_messages: 'Mensagens', nav_myprofile: 'Meu perfil',
+    interests_title: 'Interesses expressos',
+    match_title: 'Um encontro', match_sub: 'O interesse é recíproco.<br>Agora podem escrever-se.',
+    match_label: 'O nome revelado',
+    toggle_translate: 'Traduzir',
+    composer_hint: 'Enter para enviar · Shift+Enter para nova linha',
+    conv_title: 'Correspondências',
+    conv_empty: 'Nenhuma correspondência ainda.<br>Quando houver um encontro mútuo,<br>poderão escrever-se aqui.',
+    seek_romantic: 'Busca conexão romântica', seek_friend: 'Busca amizade profunda', seek_both: 'Aberto a ambos',
+    card_interest: 'Expressar interesse', card_sent: 'Interesse enviado', card_matched: '✓ Encontro', card_pass: 'Passar',
+      translating: 'traduzindo…', translated_from: 'original',
+    toast_match: 'Um encontro — podem escrever-se agora.',
+    loading: 'Carregando…', no_profiles: 'Nenhum perfil encontrado com estes filtros.',
+    in_attesa: 'Aguardando', incontro: 'Encontro ✓',
+  },
+  zh: {
+    landing_pretitle: '一次不同的相遇',
+    landing_subtitle: '只做自己',
+    landing_manifesto: '我们不寻找你最好的版本。<br>我们寻找你——带着你的矛盾，<br>你的深度，你与痛苦共处的方式。<br>找到你的人，会找到这一切。',
+    landing_bottom: '没有算法。只有人。',
+    btn_start: '开始', btn_already: '我已有账户',
+    back: '返回', back_explore: '探索', back_conv: '通信',
+    reg_title: '创建档案', reg_sub: '没有照片。没有全名。<br>只是真实的你。',
+    label_name: '你的名字', label_age: '年龄', label_city: '城市或地区',
+    label_mylan: '我的语言', label_iam: '我是', label_looking: '我寻找',
+    label_seeking: '我在寻求', label_smoke: '吸烟', label_alcohol: '饮酒',
+    label_pets: '宠物', label_children: '子女', label_work: '工作',
+    label_phrase: '一句描述你的话',
+    ph_name: '一个名字，哪怕只是名', ph_city: '例如：北京，华北地区',
+    ph_phrase: '不是介绍。是真实的东西。',
+    ph_compose: '写下你的信…',
+    opt_man: '男', opt_woman: '女', opt_other: '其他', opt_any: '不限',
+    opt_romantic: '浪漫连接', opt_friend: '深度友谊', opt_both: '两者皆可',
+    opt_romantic_short: '浪漫', opt_friend_short: '友谊',
+    opt_never: '从不', opt_sometimes: '有时', opt_yes: '是', opt_depends: '因人而异',
+    opt_occasionally: '偶尔', opt_have_pets: '有宠物', opt_no_pets: '没有宠物',
+    opt_have_kids: '有子女', opt_no_kids: '没有子女', opt_want_kids: '想要', opt_no_want_kids: '不想要',
+    opt_work_yes: '工作中', opt_work_no: '目前没有',
+    section_lifestyle: '生活方式', section_psych: '你的心理档案',
+    tab_scores: '输入分数', tab_test: '现在做测试',
+    score_hint: '如果你已完成<em>一个人的解剖</em>，请输入你的分数（0–100）。',
+    sc_ei: '情商', sc_logic: '逻辑', sc_ethics: '伦理', sc_pain: '痛苦感知',
+    btn_enter: '进入', btn_access: '访问', btn_send: '发送',
+    btn_logout: '退出档案', btn_write: '现在写信',
+    err_fill: '请填写所有必填项。', err_not_found: '未找到档案。',
+    login_title: '欢迎回来', login_sub: '请输入注册时使用的名字。',
+    filter_any_gender: '任何性别', filter_all: '全部', filter_any_age: '任何年龄',
+    nav_messages: '消息', nav_myprofile: '我的档案',
+    interests_title: '表达的兴趣',
+    match_title: '一次相遇', match_sub: '兴趣是相互的。<br>现在你们可以互相写信了。',
+    match_label: '揭示的名字',
+    toggle_translate: '翻译',
+    composer_hint: 'Enter 发送 · Shift+Enter 换行',
+    conv_title: '通信',
+    conv_empty: '暂无通信。<br>当发生相互匹配时，<br>你们可以在这里互相写信。',
+    seek_romantic: '寻求浪漫连接', seek_friend: '寻求深度友谊', seek_both: '两者皆可',
+    card_interest: '表达兴趣', card_sent: '兴趣已发送', card_matched: '✓ 匹配', card_pass: '跳过',
+    translating: '翻译中…', translated_from: '原文',
+    toast_match: '匹配成功——你们现在可以互相写信了。',
+    loading: '加载中…', no_profiles: '未找到符合筛选条件的档案。',
+    in_attesa: '等待中', incontro: '已匹配 ✓',
+  }
+};
+
+// ──────────────────────────────────────────────────
+// LANGUAGE MODULE
+// ──────────────────────────────────────────────────
+const Lang = {
+  current: 'it',
+  set(code) {
+    this.current = code;
+    localStorage.setItem('nds_lang', code);
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.trim().toLowerCase() === code || (code === 'zh' && b.textContent.trim() === '中'));
+    });
+    this.apply();
+  },
+  t(key) { return (TRANSLATIONS[this.current] || TRANSLATIONS['it'])[key] || (TRANSLATIONS['it'][key] || key); },
+  apply() {
+    document.querySelectorAll('[data-t]').forEach(el => {
+      const key = el.getAttribute('data-t');
+      const val = this.t(key);
+      if(val) el.innerHTML = val;
+    });
+    document.querySelectorAll('[data-t-ph]').forEach(el => {
+      const key = el.getAttribute('data-t-ph');
+      const val = this.t(key);
+      if(val) el.placeholder = val;
+    });
+  },
+  init() {
+    const saved = localStorage.getItem('nds_lang') || 'it';
+    this.set(saved);
+  }
+};
+
+// ──────────────────────────────────────────────────
+// ARCHETYPES
+// ──────────────────────────────────────────────────
+const ARCHETYPES = {
+  it: {
+    'lucido': 'Il Testimone Lucido',
+    'custode': 'Il Custode Empatico',
+    'costruttore': 'Il Costruttore di Sistemi',
+    'garante': 'Il Garante Consapevole',
+    'alchimista': "L'Alchimista del Dolore",
+    'morale': 'Il Testimone Morale',
+    'integrata': 'La Presenza Integrata',
+    'giurista': "Il Giurista dell'Anima",
+    'persona': 'La Persona Integrata',
+    'transizione': 'Il Profilo in Transizione',
+    'mappa': 'La Mappa da Disegnare',
+  },
+  en: {
+    'lucido': 'The Lucid Witness',
+    'custode': 'The Empathic Guardian',
+    'costruttore': 'The System Builder',
+    'garante': 'The Conscious Guarantor',
+    'alchimista': 'The Pain Alchemist',
+    'morale': 'The Moral Witness',
+    'integrata': 'The Integrated Presence',
+    'giurista': 'The Soul Jurist',
+    'persona': 'The Integrated Person',
+    'transizione': 'The Transitional Profile',
+    'mappa': 'The Map Yet to Be Drawn',
+  },
+  fr: {
+    'lucido': 'Le Témoin Lucide',
+    'custode': "Le Gardien Empathique",
+    'costruttore': 'Le Constructeur de Systèmes',
+    'garante': 'Le Garant Conscient',
+    'alchimista': "L'Alchimiste de la Douleur",
+    'morale': 'Le Témoin Moral',
+    'integrata': 'La Présence Intégrée',
+    'giurista': "Le Juriste de l'Âme",
+    'persona': 'La Personne Intégrée',
+    'transizione': 'Le Profil en Transition',
+    'mappa': 'La Carte à Dessiner',
+  },
+  de: {
+    'lucido': 'Der Luzide Zeuge',
+    'custode': 'Der Empathische Hüter',
+    'costruttore': 'Der Systemerbauer',
+    'garante': 'Der Bewusste Garant',
+    'alchimista': 'Der Schmerz-Alchemist',
+    'morale': 'Der Moralische Zeuge',
+    'integrata': 'Die Integrierte Präsenz',
+    'giurista': 'Der Seelen-Jurist',
+    'persona': 'Die Integrierte Person',
+    'transizione': 'Das Übergangsprofil',
+    'mappa': 'Die Karte, die noch gezeichnet werden muss',
+  },
+  es: {
+    'lucido': 'El Testigo Lúcido',
+    'custode': 'El Guardián Empático',
+    'costruttore': 'El Constructor de Sistemas',
+    'garante': 'El Garante Consciente',
+    'alchimista': 'El Alquimista del Dolor',
+    'morale': 'El Testigo Moral',
+    'integrata': 'La Presencia Integrada',
+    'giurista': 'El Jurista del Alma',
+    'persona': 'La Persona Integrada',
+    'transizione': 'El Perfil en Transición',
+    'mappa': 'El Mapa por Dibujar',
+  },
+  pt: {
+    'lucido': 'A Testemunha Lúcida',
+    'custode': 'O Guardião Empático',
+    'costruttore': 'O Construtor de Sistemas',
+    'garante': 'O Garante Consciente',
+    'alchimista': 'O Alquimista da Dor',
+    'morale': 'A Testemunha Moral',
+    'integrata': 'A Presença Integrada',
+    'giurista': 'O Jurista da Alma',
+    'persona': 'A Pessoa Integrada',
+    'transizione': 'O Perfil em Transição',
+    'mappa': 'O Mapa por Desenhar',
+  },
+  zh: {
+    'lucido': '清醒的见证者',
+    'custode': '共情守护者',
+    'costruttore': '系统构建者',
+    'garante': '自觉保障者',
+    'alchimista': '痛苦的炼金术士',
+    'morale': '道德见证者',
+    'integrata': '整合的存在',
+    'giurista': '灵魂法官',
+    'persona': '整合的人',
+    'transizione': '过渡期档案',
+    'mappa': '待描绘的地图',
+  }
+};
+
+function getArchetypeKey(ei, lo, et, pa) {
+  const avg = (ei+lo+et+pa)/4;
+  if(ei>=75&&lo>=75&&et>=75&&pa>=70) return 'lucido';
+  if(ei>=75&&lo<55&&et>=70) return 'custode';
+  if(lo>=80&&ei<55&&pa<55) return 'costruttore';
+  if(et>=80&&ei>=65&&lo>=65) return 'garante';
+  if(pa>=80&&ei>=70) return 'alchimista';
+  if(et>=75&&pa>=75&&lo<60) return 'morale';
+  if(ei>=70&&pa>=70&&lo>=60) return 'integrata';
+  if(lo>=70&&et>=70&&ei<60) return 'giurista';
+  if(avg>=70) return 'persona';
+  if(avg>=55) return 'transizione';
+  return 'mappa';
+}
+
+function getArchetype(ei, lo, et, pa, lang) {
+  const l = lang || Lang.current;
+  const key = getArchetypeKey(ei, lo, et, pa);
+  return (ARCHETYPES[l] || ARCHETYPES['it'])[key] || ARCHETYPES['it'][key];
+}
+
+// ──────────────────────────────────────────────────
+// FIREBASE STORE (with localStorage fallback)
+// ──────────────────────────────────────────────────
+const DB = {
+  _local: { users: [], messages: {} },
+  useFirebase: false,
+  _unsubs: [],
+
+  async init() {
+    if(window.__firebaseReady || window.__db) {
+      this.useFirebase = true;
+    } else {
+      await new Promise(resolve => {
+        document.addEventListener('firebaseReady', () => { this.useFirebase = true; resolve(); }, { once: true });
+        setTimeout(resolve, 3000); // fallback timeout
+      });
+    }
+    this._loadLocal();
+  },
+
+  _loadLocal() {
+    try {
+      const u = localStorage.getItem('nds_users');
+      const m = localStorage.getItem('nds_messages');
+      if(u) this._local.users = JSON.parse(u);
+      if(m) this._local.messages = JSON.parse(m);
+    } catch(e) {}
+    if(this._local.users.length === 0) this._seedDemo();
+  },
+
+  _saveLocal() {
+    try {
+      localStorage.setItem('nds_users', JSON.stringify(this._local.users));
+      localStorage.setItem('nds_messages', JSON.stringify(this._local.messages));
+    } catch(e) {}
+  },
+
+  _seedDemo() {
+    const demos = [
+      {id:'demo_m',name:'M.',age:41,city:'Venezia',seeking:'romantico',gender:'donna',lookingfor:'indistinto',smoke:'mai',alcohol:'occasionalmente',pets:'si',children:'ho',work:'si',ei:82,logic:71,ethics:88,pain:79,lang:'it',phrase:'Non cerco qualcuno che mi completi. Cerco qualcuno con cui stare interi.',interests:[],matched:[]},
+      {id:'demo_t',name:'T.',age:36,city:'Milano',seeking:'amicizia',gender:'uomo',lookingfor:'indistinto',smoke:'mai',alcohol:'si',pets:'no',children:'no',work:'si',ei:65,logic:85,ethics:72,pain:60,lang:'it',phrase:'Penso molto e parlo poco. Ma quando parlo, dico quello che penso.',interests:[],matched:[]},
+      {id:'demo_r',name:'R.',age:48,city:'Roma',seeking:'entrambi',gender:'uomo',lookingfor:'donna',smoke:'avolte',alcohol:'occasionalmente',pets:'si',children:'ho',work:'si',ei:78,logic:68,ethics:91,pain:85,lang:'it',phrase:'Ho attraversato abbastanza da non aver paura delle domande difficili.',interests:[],matched:[]},
+      {id:'demo_l',name:'L.',age:33,city:'Torino',seeking:'romantico',gender:'donna',lookingfor:'uomo',smoke:'mai',alcohol:'mai',pets:'no',children:'vorrei',work:'si',ei:90,logic:74,ethics:80,pain:72,lang:'it',phrase:'Sono interessata alle persone con un rapporto onesto con la propria complessità.',interests:[],matched:[]},
+      {id:'demo_s',name:'S.',age:29,city:'London',seeking:'entrambi',gender:'donna',lookingfor:'indistinto',smoke:'mai',alcohol:'occasionalmente',pets:'si',children:'nonvorrei',work:'si',ei:74,logic:70,ethics:83,pain:91,lang:'en',phrase:'Pain has taught me more than anything I ever chose to study.',interests:[],matched:[]},
+      {id:'demo_k',name:'K.',age:44,city:'Berlin',seeking:'amicizia',gender:'uomo',lookingfor:'indistinto',smoke:'mai',alcohol:'si',pets:'no',children:'no',work:'si',ei:60,logic:88,ethics:76,pain:55,lang:'de',phrase:'Genauigkeit ist keine Kälte. Es ist Respekt vor der Realität.',interests:[],matched:[]},
+    ];
+    this._local.users = demos;
+    this._saveLocal();
+  },
+
+  // ── USERS ──
+  async getUsers() {
+    if(this.useFirebase && window.__db) {
+      try {
+        const { collection, getDocs } = window.__fb;
+        const snap = await getDocs(collection(window.__db, 'users'));
+        return snap.docs.map(d => ({id: d.id, ...d.data()}));
+      } catch(e) {}
+    }
+    return this._local.users;
+  },
+
+  async saveUser(user) {
+    if(!user.id) user.id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+    if(this.useFirebase && window.__db) {
+      try {
+        const { doc, setDoc } = window.__fb;
+        await setDoc(doc(window.__db, 'users', user.id), user);
+      } catch(e) {}
+    }
+    const idx = this._local.users.findIndex(u => u.id === user.id);
+    if(idx >= 0) this._local.users[idx] = user;
+    else this._local.users.push(user);
+    this._saveLocal();
+    return user;
+  },
+
+  async getUserByName(name) {
+    const all = await this.getUsers();
+    return all.find(u => u.name.toLowerCase() === name.toLowerCase()) || null;
+  },
+
+  // ── MESSAGES ──
+  _chatId(a, b) { return [a,b].sort().join('__'); },
+
+  async sendMessage(fromId, toId, text) {
+    const chatId = this._chatId(fromId, toId);
+    const msg = { id: 'm_'+Date.now(), chatId, fromId, toId, text, ts: Date.now() };
+    if(this.useFirebase && window.__db) {
+      try {
+        const { collection, addDoc, serverTimestamp } = window.__fb;
+        await addDoc(collection(window.__db, 'messages'), { ...msg, ts: serverTimestamp() });
+      } catch(e) {}
+    }
+    if(!this._local.messages[chatId]) this._local.messages[chatId] = [];
+    this._local.messages[chatId].push(msg);
+    this._saveLocal();
+    return msg;
+  },
+
+  async getMessages(userAId, userBId) {
+    const chatId = this._chatId(userAId, userBId);
+    if(this.useFirebase && window.__db) {
+      try {
+        const { collection, query, where, orderBy, getDocs } = window.__fb;
+        const q = query(collection(window.__db, 'messages'), where('chatId','==',chatId), orderBy('ts','asc'));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({id: d.id, ...d.data()}));
+      } catch(e) {}
+    }
+    return this._local.messages[chatId] || [];
+  },
+
+  listenMessages(userAId, userBId, cb) {
+    const chatId = this._chatId(userAId, userBId);
+    if(this.useFirebase && window.__db) {
+      try {
+        const { collection, query, where, orderBy, onSnapshot } = window.__fb;
+        const q = query(collection(window.__db, 'messages'), where('chatId','==',chatId), orderBy('ts','asc'));
+        const unsub = onSnapshot(q, snap => {
+          const msgs = snap.docs.map(d => ({id: d.id, ...d.data()}));
+          cb(msgs);
+        });
+        this._unsubs.push(unsub);
+        return unsub;
+      } catch(e) {}
+    }
+    // Fallback: poll every 2s for demo
+    const interval = setInterval(() => {
+      cb(this._local.messages[chatId] || []);
+    }, 2000);
+    cb(this._local.messages[chatId] || []);
+    const unsub = () => clearInterval(interval);
+    this._unsubs.push(unsub);
+    return unsub;
+  },
+
+  unsubAll() { this._unsubs.forEach(u => u && u()); this._unsubs = []; }
+};
+
+// ──────────────────────────────────────────────────
+// TRANSLATE via Claude API
+// ──────────────────────────────────────────────────
+const Translator = {
+  cache: {},
+  _langNames: {
+    it:'Italian', en:'English', fr:'French', de:'German', es:'Spanish', pt:'Portuguese', zh:'Chinese'
+  },
+
+  async translate(text, fromLang, toLang) {
+    if(!text || fromLang === toLang) return null;
+    const key = `${fromLang}_${toLang}_${text}`;
+    if(this.cache[key]) return this.cache[key];
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `You are a precise, literary translator. Translate the following message from ${this._langNames[fromLang]||fromLang} to ${this._langNames[toLang]||toLang}. Preserve the emotional tone, register, and style of the original. Return ONLY the translated text, nothing else — no explanations, no quotes.`,
+          messages: [{ role: 'user', content: text }]
+        })
+      });
+      const data = await response.json();
+      const translated = data.content?.[0]?.text?.trim();
+      if(translated) { this.cache[key] = translated; return translated; }
+    } catch(e) {}
+    return null;
+  }
+};
+
+// ──────────────────────────────────────────────────
+// MAIN APP
+// ──────────────────────────────────────────────────
+const App = {
+  radioSelections: {},
+  currentChatPartner: null,
+  _chatUnsub: null,
+  translateEnabled: false,
+  _matchPendingName: null,
+
+  async init() {
+    await DB.init();
+    Lang.init();
+    const saved = localStorage.getItem('nds_current');
+    if(saved) {
+      try {
+        const u = JSON.parse(saved);
+        // Re-fetch from store in case updated
+        const fresh = await DB.getUserByName(u.name);
+        Store.currentUser = fresh || u;
+        this.goTo('explore');
+      } catch(e) { this.goTo('landing'); }
+    }
+  },
+
+  goTo(screen) {
+    DB.unsubAll();
+    if(this._chatUnsub) { this._chatUnsub(); this._chatUnsub = null; }
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(screen);
+    if(el) { el.classList.add('active'); window.scrollTo(0,0); }
+    if(screen === 'explore') this.renderProfiles();
+    if(screen === 'myprofile') this.renderMyProfile();
+    if(screen === 'conversations') this.renderConversations();
+  },
+
+  selectRadio(el, group, val) {
+    el.closest('.radio-group').querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    this.radioSelections[group] = val;
+  },
+
+  switchTab(tab) {
+    document.getElementById('tab-import').classList.toggle('active', tab==='import');
+    document.getElementById('tab-test').classList.toggle('active', tab==='test');
+    document.getElementById('panel-import').style.display = tab==='import'?'block':'none';
+    document.getElementById('panel-test').style.display = tab==='test'?'block':'none';
+  },
+
+  async register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const age = parseInt(document.getElementById('reg-age').value);
+    const city = document.getElementById('reg-city').value.trim();
+    const lang = document.getElementById('reg-lang').value;
+    const gender = this.radioSelections['gender'];
+    const lookingfor = this.radioSelections['lookingfor'];
+    const seeking = this.radioSelections['seeking'];
+    const smoke = this.radioSelections['smoke']||'conta';
+    const alcohol = this.radioSelections['alcohol']||'conta';
+    const pets = this.radioSelections['pets']||'conta';
+    const children = this.radioSelections['children']||'conta';
+    const work = this.radioSelections['work']||'conta';
+    const ei = parseInt(document.getElementById('sc-ei').value)||0;
+    const logic = parseInt(document.getElementById('sc-logic').value)||0;
+    const ethics = parseInt(document.getElementById('sc-ethics').value)||0;
+    const pain = parseInt(document.getElementById('sc-pain').value)||0;
+    const phrase = document.getElementById('reg-phrase').value.trim();
+    const err = document.getElementById('reg-error');
+
+    if(!name||!age||!city||!gender||!lookingfor||!seeking||!phrase) {
+      err.classList.add('visible'); return;
+    }
+    err.classList.remove('visible');
+
+    const btn = document.querySelector('#register .btn-gold');
+    btn.disabled = true; btn.textContent = Lang.t('loading');
+
+    const user = {
+      name, age, city, lang, gender, lookingfor, seeking,
+      smoke, alcohol, pets, children, work,
+      ei: Math.min(100,Math.max(0,ei||50)),
+      logic: Math.min(100,Math.max(0,logic||50)),
+      ethics: Math.min(100,Math.max(0,ethics||50)),
+      pain: Math.min(100,Math.max(0,pain||50)),
+      phrase, interests:[], matched:[]
+    };
+
+    const saved = await DB.saveUser(user);
+    Store.currentUser = saved;
+    localStorage.setItem('nds_current', JSON.stringify(saved));
+    btn.disabled = false; btn.textContent = Lang.t('btn_enter');
+    this.goTo('explore');
+  },
+
+  async login() {
+    const name = document.getElementById('login-name').value.trim();
+    const err = document.getElementById('login-error');
+    const user = await DB.getUserByName(name);
+    if(!user) { err.classList.add('visible'); return; }
+    err.classList.remove('visible');
+    Store.currentUser = user;
+    localStorage.setItem('nds_current', JSON.stringify(user));
+    this.goTo('explore');
+  },
+
+  logout() {
+    Store.currentUser = null;
+    localStorage.removeItem('nds_current');
+    this.goTo('landing');
+  },
+
+  // ── EXPLORE ──
+  async renderProfiles() {
+    const me = Store.currentUser;
+    const container = document.getElementById('profiles-container');
+    const filterGender = document.getElementById('filter-gender').value;
+    const filterSeeking = document.getElementById('filter-seeking').value;
+    const filterAge = document.getElementById('filter-age').value;
+    if(me) document.getElementById('explore-username').querySelector('span').textContent = me.name;
+    container.innerHTML = `<p style="color:var(--mist);opacity:0.35;font-style:italic;grid-column:1/-1;text-align:center;padding:40px 0;">${Lang.t('loading')}</p>`;
+
+    const all = await DB.getUsers();
+    const others = all.filter(u => {
+      if(me && u.name === me.name) return false;
+      if(filterGender && u.gender !== filterGender) return false;
+      if(me && me.lookingfor && me.lookingfor !== 'indistinto' && u.gender && u.gender !== me.lookingfor) return false;
+      if(filterSeeking && u.seeking !== filterSeeking && u.seeking !== 'entrambi') return false;
+      if(filterAge) {
+        const [min,max] = filterAge === '60+' ? [60,999] : filterAge.split('-').map(Number);
+        if(u.age < min || u.age > max) return false;
+      }
+      return true;
+    });
+
+    container.innerHTML = '';
+    if(others.length === 0) {
+      container.innerHTML = `<p style="color:var(--mist);opacity:0.4;font-style:italic;grid-column:1/-1;text-align:center;padding:40px 0;">${Lang.t('no_profiles')}</p>`;
+      return;
+    }
+
+    others.forEach((u, i) => {
+      const archetype = getArchetype(u.ei, u.logic, u.ethics, u.pain, Lang.current);
+      const iSentInterest = me && (me.interests||[]).includes(u.name);
+      const isMatched = me && (me.matched||[]).includes(u.name);
+
+      const card = document.createElement('div');
+      card.className = 'profile-card';
+      card.style.animationDelay = (i*0.07)+'s';
+
+      const seekLabels = { romantico: Lang.t('seek_romantic'), amicizia: Lang.t('seek_friend'), entrambi: Lang.t('seek_both') };
+      const seekingLabel = seekLabels[u.seeking] || u.seeking;
+      const langLabel = { it:'🇮🇹 IT', en:'🇬🇧 EN', fr:'🇫🇷 FR', de:'🇩🇪 DE', es:'🇪🇸 ES', pt:'🇵🇹 PT', zh:'🇨🇳 中' }[u.lang] || u.lang || '';
+      const genderLabel = { uomo: Lang.t('opt_man'), donna: Lang.t('opt_woman'), altro: Lang.t('opt_other') }[u.gender] || '';
+
+      card.innerHTML = `
+        <div class="card-seeking">${seekingLabel}</div>
+        <div class="card-archetype">${archetype}</div>
+        <div class="card-scores">
+          <span class="score-badge ei">EI ${u.ei}</span>
+          <span class="score-badge logic">L ${u.logic}</span>
+          <span class="score-badge ethics">E ${u.ethics}</span>
+          <span class="score-badge pain">D ${u.pain}</span>
+        </div>
+        ${langLabel ? `<div class="card-lang-badge">${langLabel}</div>` : ''}
+        <div class="card-phrase">${u.phrase}</div>
+        <div class="card-meta">${genderLabel ? genderLabel+' · ' : ''}${u.age} · ${u.city}</div>
+        ${me ? `<div class="card-action">
+          <button class="btn-interest ${iSentInterest||isMatched?'sent':''}"
+            onclick="App.expressInterest('${u.name}',this)">
+            ${isMatched ? Lang.t('card_matched') : iSentInterest ? Lang.t('card_sent') : Lang.t('card_interest')}
+          </button>
+          <button class="btn-pass" onclick="this.closest('.profile-card').style.opacity='0.2'">${Lang.t('card_pass')}</button>
+        </div>` : ''}
+      `;
+      container.appendChild(card);
+    });
+
+    // Check unread messages
+    if(me) this._checkUnread();
+  },
+
+  async _checkUnread() {
+    // Simple unread indicator: if any matched user has sent messages
+    const me = Store.currentUser;
+    if(!me || !me.matched || me.matched.length === 0) return;
+    const dot = document.getElementById('notif-dot');
+    // For simplicity, show dot if there are any conversations
+    const all = await DB.getUsers();
+    for(const name of me.matched) {
+      const partner = all.find(u => u.name === name);
+      if(partner) {
+        const msgs = await DB.getMessages(me.id||me.name, partner.id||partner.name);
+        if(msgs.length > 0) { dot.classList.add('visible'); return; }
+      }
+    }
+  },
+
+  async expressInterest(targetName, btn) {
+    const me = Store.currentUser;
+    if(!me) return;
+    if(!me.interests) me.interests = [];
+    if(!me.matched) me.matched = [];
+    if(me.interests.includes(targetName)) return;
+
+    me.interests.push(targetName);
+
+    const all = await DB.getUsers();
+    const target = all.find(u => u.name === targetName);
+    if(target && (target.interests||[]).includes(me.name)) {
+      if(!me.matched.includes(targetName)) me.matched.push(targetName);
+      if(!target.matched) target.matched = [];
+      if(!target.matched.includes(me.name)) target.matched.push(me.name);
+      await DB.saveUser(target);
+      await DB.saveUser(me);
+      localStorage.setItem('nds_current', JSON.stringify(me));
+      Store.currentUser = me;
+      this._matchPendingName = targetName;
+      this.showMatch(targetName);
+    } else {
+      await DB.saveUser(me);
+      localStorage.setItem('nds_current', JSON.stringify(me));
+      Store.currentUser = me;
+      btn.textContent = Lang.t('card_sent');
+      btn.classList.add('sent');
+    }
+  },
+
+  showMatch(name) {
+    document.getElementById('modal-name').textContent = name;
+    document.getElementById('match-modal').classList.add('active');
+    showToast(Lang.t('toast_match'));
+  },
+
+  closeModal() {
+    document.getElementById('match-modal').classList.remove('active');
+    this.renderProfiles();
+  },
+
+  async openChatFromModal() {
+    document.getElementById('match-modal').classList.remove('active');
+    if(this._matchPendingName) {
+      await this.openChat(this._matchPendingName);
+      this._matchPendingName = null;
+    }
+  },
+
+  // ── CONVERSATIONS ──
+  async renderConversations() {
+    const me = Store.currentUser;
+    const list = document.getElementById('conv-list');
+    if(!me || !me.matched || me.matched.length === 0) {
+      list.innerHTML = `<div class="conv-empty">${Lang.t('conv_empty')}</div>`;
+      return;
+    }
+    list.innerHTML = `<p style="color:var(--mist);opacity:0.3;font-style:italic;text-align:center;padding:20px;">${Lang.t('loading')}</p>`;
+
+    const all = await DB.getUsers();
+    list.innerHTML = '';
+
+    for(const name of me.matched) {
+      const partner = all.find(u => u.name === name);
+      if(!partner) continue;
+      const arch = getArchetype(partner.ei, partner.logic, partner.ethics, partner.pain, Lang.current);
+      const msgs = await DB.getMessages(me.id||me.name, partner.id||partner.name);
+      const last = msgs[msgs.length-1];
+
+      const item = document.createElement('div');
+      item.className = 'conv-item';
+      item.onclick = () => this.openChat(partner.name);
+      item.innerHTML = `
+        <div class="conv-item-left">
+          <div class="conv-item-name">${partner.name} <span style="font-size:0.75rem;opacity:0.4;font-style:normal">· ${arch}</span></div>
+          <div class="conv-item-preview">${last ? last.text : '—'}</div>
+        </div>
+        <div class="conv-item-right">
+          <div class="conv-item-time">${last ? _fmtTime(last.ts) : ''}</div>
+        </div>
+      `;
+      list.appendChild(item);
+    }
+
+    if(list.children.length === 0) {
+      list.innerHTML = `<div class="conv-empty">${Lang.t('conv_empty')}</div>`;
+    }
+  },
+
+  // ── CHAT ──
+  async openChat(partnerName) {
+    const me = Store.currentUser;
+    if(!me) return;
+    const all = await DB.getUsers();
+    const partner = all.find(u => u.name === partnerName);
+    if(!partner) return;
+
+    this.currentChatPartner = partner;
+    document.getElementById('chat-correspondent-name').textContent = partner.name;
+    document.getElementById('chat-correspondent-arch').textContent = getArchetype(partner.ei, partner.logic, partner.ethics, partner.pain, Lang.current);
+    document.getElementById('translate-toggle').checked = this.translateEnabled;
+
+    this.goTo('chat');
+
+    // Listen for messages
+    const meId = me.id || me.name;
+    const partnerId = partner.id || partner.name;
+    this._chatUnsub = DB.listenMessages(meId, partnerId, (msgs) => {
+      this._renderMessages(msgs, me, partner);
+    });
+  },
+
+  _renderMessages(msgs, me, partner) {
+    const container = document.getElementById('chat-messages');
+    const wasAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 60;
+    container.innerHTML = '';
+
+    if(msgs.length === 0) {
+      container.innerHTML = `<div style="text-align:center;color:var(--mist);opacity:0.3;font-style:italic;margin-top:60px;line-height:1.9;">${partner.name}</div>`;
+      return;
+    }
+
+    const meId = me.id || me.name;
+    msgs.forEach(msg => {
+      const isMine = msg.fromId === meId || msg.fromId === me.name;
+      const block = document.createElement('div');
+      block.className = `msg-block ${isMine ? 'sent' : 'received'}`;
+      block.setAttribute('data-msgid', msg.id);
+
+      const timeStr = _fmtTime(msg.ts);
+      block.innerHTML = `
+        <div class="msg-meta">${isMine ? (me.name||'') : partner.name} · ${timeStr}</div>
+        <div class="msg-bubble">${_escHtml(msg.text)}</div>
+        ${!isMine && this.translateEnabled && msg.fromLang && msg.fromLang !== Lang.current ?
+          `<div class="msg-translating" data-original="${_escAttr(msg.text)}" data-from="${msg.fromLang}">${Lang.t('translating')}</div>` : ''}
+      `;
+      container.appendChild(block);
+
+      // Trigger translation if needed
+      if(!isMine && this.translateEnabled && msg.fromLang && msg.fromLang !== Lang.current) {
+        this._translateBubble(block, msg.text, msg.fromLang, Lang.current);
+      }
+    });
+
+    if(wasAtBottom) container.scrollTop = container.scrollHeight;
+  },
+
+  async _translateBubble(block, text, fromLang, toLang) {
+    const hint = block.querySelector('.msg-translating');
+    if(!hint) return;
+    const translated = await Translator.translate(text, fromLang, toLang);
+    if(translated) {
+      const bubble = block.querySelector('.msg-bubble');
+      bubble.textContent = translated;
+      hint.innerHTML = `<span style="opacity:0.5;">${Lang.t('translated_from')}:</span> ${_escHtml(text)}`;
+      hint.className = 'msg-original';
+    } else {
+      hint.remove();
+    }
+  },
+
+  toggleTranslate(enabled) {
+    this.translateEnabled = enabled;
+    // Re-render current messages
+    if(this.currentChatPartner && Store.currentUser) {
+      const me = Store.currentUser;
+      const partner = this.currentChatPartner;
+      DB.getMessages(me.id||me.name, partner.id||partner.name).then(msgs => {
+        this._renderMessages(msgs, me, partner);
+      });
+    }
+  },
+
+  async sendMessage() {
+    const me = Store.currentUser;
+    const partner = this.currentChatPartner;
+    if(!me || !partner) return;
+
+    const input = document.getElementById('composer-input');
+    const text = input.value.trim();
+    if(!text) return;
+
+    const btn = document.querySelector('.composer-send');
+    btn.disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+
+    const meId = me.id || me.name;
+    const partnerId = partner.id || partner.name;
+    await DB.sendMessage(meId, partnerId, text, me.lang || Lang.current);
+
+    btn.disabled = false;
+    input.focus();
+
+    // Update local messages display immediately
+    const msgs = await DB.getMessages(meId, partnerId);
+    this._renderMessages(msgs, me, partner);
+  },
+
+  // ── MY PROFILE ──
+  async renderMyProfile() {
+    const me = Store.currentUser;
+    if(!me) return;
+    const archetype = getArchetype(me.ei, me.logic, me.ethics, me.pain, Lang.current);
+    document.getElementById('mp-archetype').textContent = archetype;
+    const seekingLabel = {romantico: Lang.t('opt_romantic'), amicizia: Lang.t('opt_friend'), entrambi: Lang.t('opt_both')}[me.seeking]||'';
+    document.getElementById('mp-seeking').textContent = seekingLabel;
+    document.getElementById('mp-phrase').textContent = me.phrase;
+    document.getElementById('mp-scores').innerHTML = `
+      <div class="profile-score-item"><div class="psi-label" style="color:#7ec99a">${Lang.t('sc_ei')}</div><div class="psi-val" style="color:#7ec99a">${me.ei}</div></div>
+      <div class="profile-score-item"><div class="psi-label" style="color:#7ab8d4">${Lang.t('sc_logic')}</div><div class="psi-val" style="color:#7ab8d4">${me.logic}</div></div>
+      <div class="profile-score-item"><div class="psi-label" style="color:#d4a574">${Lang.t('sc_ethics')}</div><div class="psi-val" style="color:#d4a574">${me.ethics}</div></div>
+      <div class="profile-score-item"><div class="psi-label" style="color:#c07ab8">${Lang.t('sc_pain')}</div><div class="psi-val" style="color:#c07ab8">${me.pain}</div></div>
+    `;
+    const intContainer = document.getElementById('mp-interests');
+    const interests = me.interests || [];
+    const all = await DB.getUsers();
+    if(interests.length === 0) {
+      intContainer.innerHTML = `<p style="font-size:0.85rem;color:var(--mist);opacity:0.35;font-style:italic">${Lang.t('conv_empty')}</p>`;
+    } else {
+      intContainer.innerHTML = interests.map(name => {
+        const isMatch = (me.matched||[]).includes(name);
+        const target = all.find(u => u.name === name);
+        const arch = target ? getArchetype(target.ei,target.logic,target.ethics,target.pain,Lang.current) : '—';
+        return `<div class="interest-item">
+          <span class="interest-archetype">${arch} <span style="font-size:0.75rem;opacity:0.4">(${name})</span></span>
+          <span class="interest-status ${isMatch?'matched':''}">${isMatch ? Lang.t('incontro') : Lang.t('in_attesa')}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+};
+
+// ──────────────────────────────────────────────────
+// STORE (session-level)
+// ──────────────────────────────────────────────────
+const Store = { currentUser: null };
+
+// ──────────────────────────────────────────────────
+// UTILS
+// ──────────────────────────────────────────────────
+function _escHtml(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function _escAttr(t) { return String(t||'').replace(/"/g,'&quot;'); }
+function _fmtTime(ts) {
+  if(!ts) return '';
+  const d = typeof ts === 'number' ? new Date(ts) : (ts.toDate ? ts.toDate() : new Date(ts));
+  const now = new Date();
+  const diff = now - d;
+  if(diff < 86400000 && d.getDate() === now.getDate()) {
+    return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+  return d.toLocaleDateString([], {day:'numeric',month:'short'});
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+
+// ──────────────────────────────────────────────────
+// BOOT
+// ──────────────────────────────────────────────────
+App.init();
+
+// ═══════════════ ANATOMIA TEST ENGINE ═══════════════
+// TESTS caricati da test-data.js
+const TestEngine = (() => {
+
+  let currentTest = 0;
+  let answers = {}; // {testId: {qIndex: value}}
+  let scores = {};  // {testId: 0-100}
+  let dimScores = {}; // {testId: [d0,d1,...]}
+
+  function show(id) {
+    document.querySelectorAll('#nds-test-wrapper .screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function start() { renderTest(0); show('anat-test-screen'); }
+
+  function renderTest(idx) {
+    currentTest = idx;
+    const t = TESTS[idx];
+    if (!answers[t.id]) answers[t.id] = {};
+    document.getElementById('anat-test-title-bar').textContent = t.title;
+    updateProgress(t);
+    const container = document.getElementById('anat-question-container');
+    container.innerHTML = '';
+    t.questions.forEach((q, qi) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.id = `qc-${qi}`;
+      const letters = ['a','b','c','d'];
+      card.innerHTML = `
+        <div class="q-number">${qi+1}</div>
+        <div class="q-note">${q.note}</div>
+        <div class="q-text">${q.text}</div>
+        <div class="options">
+          ${q.opts.map((o,oi) => `
+            <div class="option ${answers[t.id][qi]===oi?'selected':''}" onclick="TestEngine.selectOption(${qi},${oi},${o.v},this)">
+              <span class="opt-letter">${letters[oi]}</span>
+              <span class="opt-text">${o.t}</span>
+            </div>`).join('')}
+        </div>`;
+      container.appendChild(card);
+    });
+    updateNextBtn(t);
+    setTimeout(() => {
+      document.querySelectorAll('.question-card').forEach((c,i) => {
+        setTimeout(() => c.classList.add('visible'), i * 40);
+      });
+    }, 50);
+    window.scrollTo(0,0);
+  }
+
+  function selectOption(qi, oi, val, el) {
+    const t = TESTS[currentTest];
+    answers[t.id][qi] = oi;
+    el.closest('.options').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    updateProgress(t);
+    updateNextBtn(t);
+  }
+
+  function updateProgress(t) {
+    const done = Object.keys(answers[t.id]||{}).length;
+    const total = t.questions.length;
+    document.getElementById('anat-progress-text').textContent = `${done} / ${total}`;
+    document.getElementById('anat-progress-bar').style.width = `${(done/total)*100}%`;
+    document.getElementById('anat-answer-count').textContent = done < total ? `${total - done} domande rimanenti` : 'Tutte le domande completate';
+  }
+
+  function updateNextBtn(t) {
+    const done = Object.keys(answers[t.id]||{}).length;
+    const btn = document.getElementById('anat-btn-next');
+    btn.classList.toggle('ready', done === t.questions.length);
+  }
+
+  function nextSection() {
+    computeScore(TESTS[currentTest]);
+    if (currentTest < TESTS.length - 1) {
+      const next = TESTS[currentTest + 1];
+      const curr = TESTS[currentTest];
+      document.getElementById('anat-tr-badge').textContent = curr.trBadge;
+      document.getElementById('anat-tr-title').textContent = curr.trTitle;
+      document.getElementById('anat-tr-sub').textContent = curr.trSub;
+      show('anat-transition-screen');
+    } else {
+      buildProfile();
+      show('anat-profile-screen');
+      animateProfile();
+    }
+  }
+
+  function continueTest() {
+    renderTest(currentTest + 1);
+    show('anat-test-screen');
+  }
+
+  function computeScore(t) {
+    const ans = answers[t.id];
+    const dimCount = t.dims.length;
+    const dimTotals = new Array(dimCount).fill(0);
+    const dimMax = new Array(dimCount).fill(0);
+    t.questions.forEach((q, qi) => {
+      const oi = ans[qi] ?? 0;
+      const val = q.opts[oi].v;
+      dimTotals[q.d] += val;
+      dimMax[q.d] += 4;
+    });
+    const dimPct = dimTotals.map((tot, i) => Math.round((tot/dimMax[i])*100));
+    dimScores[t.id] = dimPct;
+    scores[t.id] = Math.round(dimPct.reduce((a,b)=>a+b,0) / dimCount);
+  }
+
+  function buildProfile() {
+    // Set scores
+    const ids = ['ei','logic','ethics','pain'];
+    const els = {ei:'anat-s-ei',logic:'anat-s-logic',ethics:'anat-s-ethics',pain:'anat-s-pain'};
+    const bars = {ei:'anat-b-ei',logic:'anat-b-logic',ethics:'anat-b-ethics',pain:'anat-b-pain'};
+    ids.forEach(id => {
+      document.getElementById(els[id]).textContent = scores[id];
+      document.getElementById(bars[id]).style.width = scores[id]+'%';
+    });
+    // Archetype
+    const a = getArchetype();
+    document.getElementById('anat-archetype-name').textContent = a.name;
+    document.getElementById('anat-archetype-desc').textContent = a.desc;
+    document.getElementById('anat-profile-title').textContent = a.name;
+    // Dimensions
+    buildDimensions();
+    // Narrative
+    buildNarrative();
+    // Radar
+    setTimeout(() => buildRadar(), 200);
+  }
+
+  function getArchetype() {
+    const ei = scores.ei, lo = scores.logic, et = scores.ethics, pa = scores.pain;
+    const avg = (ei+lo+et+pa)/4;
+    if(ei>=75 && lo>=75 && et>=75 && pa>=70) return {
+      name:'Il Testimone Lucido',
+      desc:'Sente profondamente e pensa con precisione. Porta valori solidi e ha attraversato il dolore abbastanza da conoscerlo. Non ha bisogno di scegliere tra cuore e ragione — li tiene entrambi.'
+    };
+    if(ei>=75 && lo<55 && et>=70) return {
+      name:'Il Custode Empatico',
+      desc:'Vive le relazioni con intensità e porta valori autentici. La struttura logica non è il suo punto di forza, ma la sua intelligenza relazionale e morale compensa con generosità.'
+    };
+    if(lo>=80 && ei<55 && pa<55) return {
+      name:'Il Costruttore di Sistemi',
+      desc:'Pensa con precisione e struttura. Il mondo emotivo e il dolore sono territori meno esplorati — non per mancanza di profondità, ma per un\'abitudine alla distanza.'
+    };
+    if(et>=80 && ei>=65 && lo>=65) return {
+      name:'Il Garante Consapevole',
+      desc:'La sua bussola etica è solida e agisce come filtro su ogni scelta. Combina coscienza morale con intelligenza emotiva e capacità analitica. Una rarità.'
+    };
+    if(pa>=80 && ei>=70) return {
+      name:'L\'Alchimista del Dolore',
+      desc:'Ha attraversato abbastanza da sapere cosa trasforma e cosa logora. Usa il dolore come strumento di conoscenza. La sua empatia è nata dall\'esperienza, non dalla teoria.'
+    };
+    if(et>=75 && pa>=75 && lo<60) return {
+      name:'Il Testimone Morale',
+      desc:'Porta una coscienza profonda e sa stare nel dolore. Non sempre struttura il pensiero in modo lineare, ma sa distinguere il bene dal male anche nelle zone grigie.'
+    };
+    if(ei<50 && lo<50 && et<50 && pa<50) return {
+      name:'La Mappa da Disegnare',
+      desc:'Molte aree sono ancora da esplorare. Non è un giudizio — è un punto di partenza. Queste dimensioni si sviluppano con il tempo, le esperienze e la volontà di guardarsi.'
+    };
+    if(avg>=70) return {
+      name:'La Persona Integrata',
+      desc:'Equilibrio è la parola chiave. Nessun picco estremo, ma una solidità distribuita. Sa pensare, sentire, scegliere eticamente e portare il dolore senza esserne definita.'
+    };
+    if(lo>=70 && et>=70 && ei<60) return {
+      name:'Il Giurista dell\'Anima',
+      desc:'Ragiona bene e porta valori solidi. Il mondo emotivo è meno abituale — non assente, ma meno esplorato. La precisione intellettuale e morale è il suo terreno più sicuro.'
+    };
+    return {
+      name:'Il Profilo in Transizione',
+      desc:'Un insieme di qualità che non si è ancora trovato. Alcune aree sono solide, altre in attesa. Il lavoro su di sé è già cominciato — il ritratto si chiarisce nel tempo.'
+    };
+  }
+
+  function buildDimensions() {
+    const container = document.getElementById('anat-dimensions-grid');
+    container.innerHTML = '';
+    const colors = {ei:'#7ec99a',logic:'#7ab8d4',ethics:'#d4a574',pain:'#c07ab8'};
+    TESTS.forEach(t => {
+      t.dims.forEach((dim, di) => {
+        const val = (dimScores[t.id]||[])[di] ?? 0;
+        const row = document.createElement('div');
+        row.className = 'dim-row';
+        row.innerHTML = `
+          <div class="dim-top">
+            <span class="dim-name">${dim} <span style="font-size:0.72rem;opacity:0.45;margin-left:6px">${t.label}</span></span>
+            <span class="dim-score-text">${val}</span>
+          </div>
+          <div class="dim-bar-outer"><div class="dim-bar-inner" style="width:0%;background:${colors[t.id]}"></div></div>`;
+        container.appendChild(row);
+        setTimeout(() => { row.querySelector('.dim-bar-inner').style.width = val+'%'; }, 300);
+      });
+    });
+  }
+
+  function buildNarrative() {
+    const c = document.getElementById('anat-narrative-container');
+    c.innerHTML = '';
+    const blocks = [
+      { color:'#7ec99a', title:'Intelligenza Emotiva', text: narrativeEI() },
+      { color:'#7ab8d4', title:'Logica', text: narrativeLogic() },
+      { color:'#d4a574', title:'Etica', text: narrativeEthics() },
+      { color:'#c07ab8', title:'Rapporto col Dolore', text: narrativePain() },
+      { color:'#c9a84c', title:'Lettura integrata', text: narrativeIntegrated() },
+    ];
+    blocks.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'narrative-block';
+      div.innerHTML = `<h3><span class="ndot" style="background:${b.color}"></span>${b.title}</h3><p>${b.text}</p>`;
+      c.appendChild(div);
+    });
+  }
+
+  function narrativeEI() {
+    const s = scores.ei;
+    const ds = dimScores.ei || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[0].dims;
+    if(s>=80) return `L\'intelligenza emotiva è una delle dimensioni più sviluppate. Sa leggere sé stessa e gli altri con accuratezza, regola le proprie reazioni senza sopprimerle, e costruisce relazioni con consapevolezza. L\'area più da osservare è <em>${dims[weak]}</em> — non un punto debole, ma uno spazio di crescita.`;
+    if(s>=60) return `L\'intelligenza emotiva è presente e funzionale. Ci sono momenti di chiara consapevolezza alternati ad altri in cui l\'emozione prende la mano. L\'area più da coltivare è <em>${dims[weak]}</em>. Il lavoro su questa dimensione è già iniziato — basta continuare.`;
+    if(s>=40) return `L\'intelligenza emotiva è in sviluppo. Alcune aree sono più accessibili di altre. Il riconoscimento di sé e la gestione delle reazioni richiedono ancora attenzione deliberata. Non è mancanza di profondità — è mancanza di abitudine all\'osservazione interna.`;
+    return `L\'intelligenza emotiva è l\'area che richiede più attenzione. Il mondo emotivo è spesso opaco o trattato come irrilevante. Non è necessariamente un limite — può essere una scelta o una difesa. Ma ogni relazione profonda richiede almeno un minimo di accesso a questo territorio.`;
+  }
+
+  function narrativeLogic() {
+    const s = scores.logic;
+    const ds = dimScores.logic || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[1].dims;
+    if(s>=80) return `Il pensiero è preciso, strutturato e capace di astrazione. Sa separare ciò che sa da ciò che presume, aggiorna i modelli quando sbaglia, e tiene aperte più interpretazioni senza perdere la direzione. L\'area da osservare è <em>${dims[weak]}</em>.`;
+    if(s>=60) return `Il pensiero è abbastanza solido. Sa strutturare problemi complessi e prendere decisioni con metodo, anche se non sempre in modo sistematico. L\'area da rafforzare è <em>${dims[weak]}</em>. La lucidità c\'è — va solo applicata con più costanza.`;
+    if(s>=40) return `Il pensiero ha zone solide e zone ancora da esplorare. Tende a fidarsi dell\'istinto più che del metodo, il che funziona in certi contesti ma limita in altri. Sviluppare l\'abitudine all\'analisi deliberata aprirebbe spazi nuovi.`;
+    return `La logica non è il terreno più familiare. Le decisioni vengono prese più per intuizione o pressione emotiva che per analisi. Non è una condanna — ma certi problemi complessi richiedono strumenti che qui andrebbero ancora costruiti.`;
+  }
+
+  function narrativeEthics() {
+    const s = scores.ethics;
+    const ds = dimScores.ethics || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[2].dims;
+    if(s>=80) return `La bussola etica è solida e non negoziabile. Non si tratta di rigidità — i principi vengono messi alla prova e tenuti dopo averli scelti. Sa stare nel grigio senza perdersi, e porta la responsabilità come fatto, non come peso. L\'area da osservare è <em>${dims[weak]}</em>.`;
+    if(s>=60) return `Il senso etico è presente e influente. La coerenza tra valori e azioni non è sempre perfetta, ma l\'intenzione è chiara. A volte la convenienza o il quieto vivere prendono il sopravvento — ma il disagio che segue è già un segnale sano. Da rafforzare: <em>${dims[weak]}</em>.`;
+    if(s>=40) return `L\'etica è presente ma non sempre prioritaria. I valori esistono ma sono spesso attenuti dal contesto, dalle aspettative, dalla fatica di sostenere il costo della coerenza. È un terreno che richiede più esercizio deliberato.`;
+    return `L\'etica non è ancora una bussola stabile. Le scelte seguono più l\'interesse o la pressione esterna che i principi. Non è un giudizio morale — è una osservazione. Costruire una coscienza etica richiede tempo e la volontà di guardarsi anche quando è scomodo.`;
+  }
+
+  function narrativePain() {
+    const s = scores.pain;
+    if(s>=80) return `Il rapporto con il dolore è uno dei più sviluppati. Sa riconoscerlo, attraversarlo senza fuggire, integrarlo e — cosa più rara — trasformarlo in comprensione. Questo non significa che faccia meno male. Significa che il dolore non viene sprecato.`;
+    if(s>=60) return `Il rapporto con il dolore è consapevole ma non sempre fluido. Sa riconoscerlo e in parte elaborarlo, ma a volte la resistenza o la fretta di uscirne interrompono il processo. C\'è abbastanza consapevolezza per andare più in profondità — se lo vuole.`;
+    if(s>=40) return `Il dolore viene attraversato, ma spesso senza essere davvero elaborato. Tende a passare — o a essere fatto passare — più che a essere integrato. Alcune ferite rimangono aperte non perché siano insanabili, ma perché non sono state ancora guardate abbastanza.`;
+    return `Il rapporto con il dolore è ancora poco esplorato. La tendenza è evitarlo, minimizzarlo o sopprimerlo. È comprensibile — il dolore fa male. Ma ciò che non viene elaborato ritorna, spesso in forme travestite. Questo è l\'area che offre il più grande potenziale di cambiamento.`;
+  }
+
+  function narrativeIntegrated() {
+    const ei=scores.ei, lo=scores.logic, et=scores.ethics, pa=scores.pain;
+    const max = Math.max(ei,lo,et,pa);
+    const min = Math.min(ei,lo,et,pa);
+    const maxLabel = ['Intelligenza Emotiva','Logica','Etica','Rapporto col Dolore'][[ei,lo,et,pa].indexOf(max)];
+    const minLabel = ['Intelligenza Emotiva','Logica','Etica','Rapporto col Dolore'][[ei,lo,et,pa].indexOf(min)];
+    const gap = max - min;
+    let text = `Il profilo integrato mostra una persona con <em>${maxLabel}</em> come dimensione più sviluppata. `;
+    if(gap > 35) {
+      text += `Esiste uno squilibrio significativo tra questa e <em>${minLabel}</em> — che è l\'area che richiede più attenzione. Gli squilibri profondi tra dimensioni tendono a creare tensioni nelle situazioni di pressione: il punto forte compensa, ma non indefinitamente. `;
+    } else if(gap > 20) {
+      text += `C\'è una certa variabilità tra le dimensioni — non una debolezza, ma un segnale che alcune aree sono più coltivate di altre. L\'area con più spazio di crescita è <em>${minLabel}</em>. `;
+    } else {
+      text += `Le dimensioni sono abbastanza equilibrate — un profilo raro. L\'equilibrio non significa mediocrità: significa che nessuna area compensa in modo disfunzionale le altre. `;
+    }
+    if(pa < 50 && ei > 65) text += `C\'è un elemento di attenzione: l\'intelligenza emotiva è alta, ma il rapporto col dolore è ancora da sviluppare. Questo può generare una capacità di stare con il dolore degli altri più solida di quella con il proprio.`;
+    if(lo > 75 && ei < 50) text += `La logica è forte, ma l\'intelligenza emotiva è ancora da sviluppare. Questo profilo funziona bene in contesti tecnici e analitici, ma può creare difficoltà nelle relazioni dove l\'accesso al mondo emotivo è necessario.`;
+    if(et > 75 && pa < 50) text += `La bussola etica è solida, ma il rapporto col dolore è meno esplorato. Vale la pena chiedersi se alcuni valori morali siano stati costruiti come struttura difensiva più che come scelta profonda.`;
+    return text;
+  }
+
+  function buildRadar() {
+    const canvas = document.getElementById('anat-radar');
+    const ctx = canvas.getContext('2d');
+    const cx = 210, cy = 210, r = 160;
+    const allDims = [];
+    const allVals = [];
+    const allColors = [];
+    TESTS.forEach(t => {
+      const color = t.color;
+      t.dims.forEach((d,i) => {
+        allDims.push(d);
+        allVals.push((dimScores[t.id]||[])[i]??0);
+        allColors.push(color);
+      });
+    });
+    const n = allDims.length;
+    ctx.clearRect(0,0,420,420);
+    // Grid
+    for(let ring=1;ring<=5;ring++){
+      ctx.beginPath();
+      for(let i=0;i<n;i++){
+        const angle = (i/n)*Math.PI*2 - Math.PI/2;
+        const rr = r*(ring/5);
+        const x = cx + rr*Math.cos(angle), y = cy + rr*Math.sin(angle);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle='rgba(201,168,76,0.1)';ctx.lineWidth=1;ctx.stroke();
+    }
+    // Spokes
+    for(let i=0;i<n;i++){
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+      ctx.strokeStyle='rgba(201,168,76,0.12)';ctx.stroke();
+    }
+    // Data
+    ctx.beginPath();
+    allVals.forEach((v,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r*(v/100);
+      const x=cx+rr*Math.cos(angle),y=cy+rr*Math.sin(angle);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.fillStyle='rgba(201,168,76,0.12)';ctx.fill();
+    ctx.strokeStyle='rgba(201,168,76,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+    // Dots
+    allVals.forEach((v,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r*(v/100);
+      ctx.beginPath();
+      ctx.arc(cx+rr*Math.cos(angle),cy+rr*Math.sin(angle),3.5,0,Math.PI*2);
+      ctx.fillStyle=allColors[i];ctx.fill();
+    });
+    // Labels
+    ctx.font='11px Crimson Pro, Georgia, serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    allDims.forEach((d,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r+22;
+      const x=cx+rr*Math.cos(angle),y=cy+rr*Math.sin(angle);
+      ctx.fillStyle=allColors[i];ctx.globalAlpha=0.75;
+      ctx.fillText(d,x,y);
+    });
+    ctx.globalAlpha=1;
+  }
+
+  function animateProfile() {
+    window.scrollTo(0,0);
+    setTimeout(() => {
+      document.querySelectorAll('.dim-bar-inner').forEach(b => {
+        const w = b.style.width;
+        b.style.width='0%';
+        setTimeout(()=>{ b.style.width=w; },100);
+      });
+    }, 400);
+  }
+
+  function restart() {
+    currentTest=0;answers={};scores={};dimScores={};
+    show('anat-intro');
+  }
+
+
+  function exitToRegister() {
+    document.getElementById('test-anatomia').classList.remove('active');
+  }
+
+  function transferScores() {
+    // Write scores into the registration form
+    document.getElementById('sc-ei').value = scores.ei || 0;
+    document.getElementById('sc-logic').value = scores.logic || 0;
+    document.getElementById('sc-ethics').value = scores.ethics || 0;
+    document.getElementById('sc-pain').value = scores.pain || 0;
+    // Switch to import tab so user sees the filled scores
+    App.switchTab('import');
+    // Close test overlay
+    document.getElementById('test-anatomia').classList.remove('active');
+    // Show toast
+    showToast('Punteggi trasferiti nel profilo ✓');
+  }
+  return { start, selectOption, nextSection, continueTest, restart, exitToRegister, transferScores };
+
+})();
+
+</script>
+
+<!-- ═══════════════ ANATOMIA TEST SCREEN ═══════════════ -->
+<div id="test-anatomia">
+  <div id="nds-test-wrapper">
+    <div class="grain"></div>
+    <button class="test-back-btn" onclick="TestEngine.exitToRegister()">← Torna al profilo</button>
+
+    <!-- INTRO -->
+    <div id="anat-intro" class="screen active">
+      <div class="intro-epigraph">Anatomia di una Persona</div>
+      <h1 class="intro-title">Quattro specchi.<br><em>Un ritratto.</em></h1>
+      <div class="divider"></div>
+      <p class="intro-sub">Non esistono risposte giuste. Esistono risposte vere.<br>Questo strumento non giudica — osserva.</p>
+      <div class="intro-tests">
+        <div class="test-pill" style="border-color:rgba(126,201,154,0.35);color:var(--c-ei)">I · Intelligenza Emotiva</div>
+        <div class="test-pill" style="border-color:rgba(122,184,212,0.35);color:var(--c-logic)">II · Logica</div>
+        <div class="test-pill" style="border-color:rgba(212,165,116,0.35);color:var(--c-ethics)">III · Etica</div>
+        <div class="test-pill" style="border-color:rgba(192,122,184,0.35);color:var(--c-pain)">IV · Rapporto col Dolore</div>
+      </div>
+      <button class="btn-primary" onclick="TestEngine.start()">Cominciare il test</button>
+    </div>
+
+    <!-- TEST -->
+    <div id="anat-test-screen" class="screen">
+      <div class="test-header">
+        <div class="test-title-bar" id="anat-test-title-bar"></div>
+        <div class="progress-area">
+          <div class="progress-text" id="anat-progress-text"></div>
+          <div class="progress-bar-outer"><div class="progress-bar-inner" id="anat-progress-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="test-container" id="anat-question-container"></div>
+      <div class="test-footer">
+        <div class="answer-count" id="anat-answer-count"></div>
+        <button class="btn-next" id="anat-btn-next" onclick="TestEngine.nextSection()">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- TRANSITION -->
+    <div id="anat-transition-screen" class="screen">
+      <div class="transition-badge" id="anat-tr-badge"></div>
+      <h2 class="transition-title" id="anat-tr-title"></h2>
+      <p class="transition-sub" id="anat-tr-sub"></p>
+      <button class="btn-primary" onclick="TestEngine.continueTest()">Continuare →</button>
+    </div>
+
+    <!-- PROFILE RESULT -->
+    <div id="anat-profile-screen" class="screen">
+      <div class="profile-hero">
+        <div class="profile-epigraph">Profilo Integrato</div>
+        <h1 class="profile-title" id="anat-profile-title">Il tuo ritratto</h1>
+      </div>
+      <div class="profile-container">
+        <div style="margin-bottom:40px;">
+          <div class="section-label">Punteggi globali</div>
+          <div class="scores-grid">
+            <div class="score-card ei"><div class="score-label">Int. Emotiva</div><div class="score-number" id="anat-s-ei">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="anat-b-ei" style="width:0%"></div></div></div>
+            <div class="score-card logic"><div class="score-label">Logica</div><div class="score-number" id="anat-s-logic">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="anat-b-logic" style="width:0%"></div></div></div>
+            <div class="score-card ethics"><div class="score-label">Etica</div><div class="score-number" id="anat-s-ethics">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="anat-b-ethics" style="width:0%"></div></div></div>
+            <div class="score-card pain"><div class="score-label">Cons. del Dolore</div><div class="score-number" id="anat-s-pain">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="anat-b-pain" style="width:0%"></div></div></div>
+          </div>
+        </div>
+        <div class="archetype-card">
+          <div class="archetype-label">Archetipo</div>
+          <div class="archetype-name" id="anat-archetype-name">—</div>
+          <div class="archetype-desc" id="anat-archetype-desc">—</div>
+        </div>
+        <div class="chart-section">
+          <div class="section-label">Mappa delle dimensioni</div>
+          <div class="chart-wrapper"><canvas id="anat-radar" width="420" height="420"></canvas></div>
+        </div>
+        <div class="chart-section">
+          <div class="section-label">Dettaglio per area</div>
+          <div class="dimensions-grid" id="anat-dimensions-grid"></div>
+        </div>
+        <div class="narrative-section">
+          <div class="section-label">Lettura del profilo</div>
+          <div id="anat-narrative-container"></div>
+        </div>
+        <button class="btn-use-scores" onclick="TestEngine.transferScores()">
+          Usa questi punteggi nel profilo →
+        </button>
+        <button class="btn-restart" onclick="TestEngine.restart()" style="margin-top:14px;">Ricominciare il test</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

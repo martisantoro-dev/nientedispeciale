@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Niente di speciale — un incontro diverso. Connessioni autentiche basate su chi sei davvero, non su chi vuoi sembrare.">
+<meta property="og:title" content="Niente di speciale">
+<meta property="og:description" content="Non cerchiamo la versione migliore di te. Cerchiamo te.">
+<meta property="og:type" content="website">
+<title>Niente di speciale</title>
+<style>body{visibility:hidden;}</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{document.body.style.visibility='visible';});</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* ── RESET & ROOT ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --paper: #f0e8d8;
+  --paper2: #e8dfc8;
+  --ink: #1a1510;
+  --ink2: #2c2418;
+  --ink-light: #4a3f30;
+  --rust: #7a3018;
+  --gold: #8a6828;
+  --gold2: #b8943a;
+  --rule: rgba(26,21,16,0.18);
+  --rule2: rgba(26,21,16,0.08);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+}
+
+
+/* ── WATERMARK CERCHI ── */
+
+
+/* ── PAGE NUMBERS / RUNNING HEAD ── */
+.running-head {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 48px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.68rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.8;
+}
+.running-head-center {
+  font-style: italic; letter-spacing: 0.08em;
+  text-transform: none; font-size: 0.75rem;
+}
+
+/* ── MAIN WRAPPER ── */
+main {
+  position: relative; z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── SECTION I: FRONTESPIZIO ── */
+.frontespizio {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 2px 1.4fr;
+  gap: 0;
+  padding-top: 80px;
+  align-items: center;
+}
+
+.front-left {
+  padding-right: 56px;
+  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.front-rule-v {
+  width: 1px;
+  background: var(--rule);
+  height: 70%;
+  align-self: center;
+}
+
+.front-right {
+  padding-left: 56px;
+  padding-bottom: 80px;
+}
+
+/* Series label */
+.series-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 32px;
+  opacity: 0.75;
+  animation: fadeIn 1s ease both;
+}
+
+.main-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(3.2rem, 6vw, 5.6rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 28px;
+  animation: fadeIn 1s 0.1s ease both;
+}
+
+.main-title em {
+  font-style: italic;
+  color: var(--ink2);
+}
+
+.title-rule {
+  width: 48px; height: 1px;
+  background: var(--gold);
+  margin-bottom: 28px;
+  animation: expandRule 1.2s 0.3s ease both;
+}
+
+.subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink-light);
+  letter-spacing: 0.04em;
+  margin-bottom: 52px;
+  animation: fadeIn 1s 0.2s ease both;
+}
+
+.cta-primary {
+  display: inline-block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--paper);
+  background: var(--ink);
+  border: none;
+  padding: 14px 44px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: all 0.35s ease;
+  animation: fadeIn 1s 0.35s ease both;
+  position: relative;
+}
+.cta-primary::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; right: 0;
+  height: 1px; background: var(--gold);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.cta-primary:hover { background: var(--ink2); }
+.cta-primary:hover::after { transform: scaleX(1); }
+
+.cta-secondary {
+  display: inline-block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 2px;
+  margin-left: 24px;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+  animation: fadeIn 1s 0.4s ease both;
+}
+.cta-secondary:hover { color: var(--ink); border-color: var(--gold); }
+
+/* Right column — epigraph + pull quote */
+.front-epigraph {
+  font-family: 'IM Fell English', 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.55rem;
+  line-height: 1.65;
+  color: var(--ink2);
+  border-left: 2px solid var(--gold);
+  padding-left: 28px;
+  margin-bottom: 48px;
+  animation: fadeIn 1.2s 0.2s ease both;
+}
+
+.front-epigraph cite {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: normal;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-top: 16px;
+  opacity: 0.6;
+}
+
+.front-note {
+  font-size: 0.88rem;
+  line-height: 1.9;
+  color: var(--ink-light);
+  opacity: 0.8;
+  font-style: italic;
+  animation: fadeIn 1.2s 0.35s ease both;
+}
+
+/* Page indicator */
+.page-indicator {
+  position: absolute;
+  bottom: 40px; right: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  opacity: 0.35;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* ── SECTION II: FULL-WIDTH RULE ── */
+.chapter-break {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 80px 0 72px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease;
+}
+.chapter-break.visible { opacity: 1; transform: translateY(0); }
+
+.chapter-break-line { flex: 1; height: 1px; background: var(--rule); }
+.chapter-break-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.26em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.5; white-space: nowrap;
+}
+.chapter-break-ornament {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; color: var(--gold); opacity: 0.6;
+}
+
+/* ── SECTION III: MANIFESTO ── */
+.manifesto {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 64px;
+  padding-bottom: 100px;
+  opacity: 0; transform: translateY(24px);
+  transition: all 0.9s ease;
+}
+.manifesto.visible { opacity: 1; transform: translateY(0); }
+
+.manifesto-label {
+  padding-top: 6px;
+}
+.manifesto-label span {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.62rem; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--rust);
+  opacity: 0.7; margin-bottom: 16px;
+}
+.manifesto-label .chapter-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: 5rem;
+  line-height: 1; color: var(--ink);
+  opacity: 0.07; letter-spacing: -0.04em;
+  user-select: none;
+}
+
+.manifesto-body {}
+
+.manifesto-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  line-height: 1.35; color: var(--ink);
+  margin-bottom: 36px;
+}
+
+.manifesto-body p {
+  font-size: 1.05rem;
+  line-height: 1.95;
+  color: var(--ink-light);
+  margin-bottom: 20px;
+  max-width: 620px;
+}
+
+.manifesto-body p.drop-cap::first-letter {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 3.8rem;
+  font-weight: 400;
+  line-height: 0.75;
+  float: left;
+  margin-right: 8px;
+  margin-top: 6px;
+  color: var(--ink);
+}
+
+.pull-quote {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 28px 0;
+  margin: 36px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.3rem;
+  line-height: 1.55;
+  color: var(--ink2);
+  max-width: 520px;
+}
+
+/* ── SECTION IV: COME FUNZIONA ── */
+.come-funziona {
+  padding-bottom: 100px;
+  opacity: 0; transform: translateY(24px);
+  transition: all 0.9s ease;
+}
+.come-funziona.visible { opacity: 1; transform: translateY(0); }
+
+.section-header {
+  display: flex; align-items: baseline; gap: 20px;
+  margin-bottom: 60px;
+}
+.section-header-line {
+  flex: 1; height: 1px; background: var(--rule);
+}
+.section-header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.55; white-space: nowrap;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+
+.step {
+  padding: 0 40px 0 0;
+  border-right: 1px solid var(--rule2);
+  padding-right: 40px;
+}
+.step:last-child { border-right: none; padding-right: 0; padding-left: 40px; }
+.step:nth-child(2) { padding-left: 40px; }
+
+.step-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: 3.5rem;
+  line-height: 1; color: var(--ink);
+  opacity: 0.1; letter-spacing: -0.04em;
+  margin-bottom: 16px;
+  user-select: none;
+}
+
+.step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-weight: 400;
+  font-size: 1.3rem; color: var(--ink);
+  margin-bottom: 14px; line-height: 1.3;
+}
+
+.step-rule {
+  width: 24px; height: 1px;
+  background: var(--gold); margin-bottom: 16px;
+}
+
+.step-text {
+  font-size: 0.92rem;
+  line-height: 1.85;
+  color: var(--ink-light);
+  opacity: 0.85;
+}
+
+/* ── SECTION V: CLOSING CTA ── */
+.closing {
+  padding: 80px 0 120px;
+  text-align: center;
+  border-top: 1px solid var(--rule);
+  opacity: 0; transform: translateY(24px);
+  transition: all 0.9s ease;
+}
+.closing.visible { opacity: 1; transform: translateY(0); }
+
+.closing-ornament {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; margin-bottom: 52px;
+}
+.closing-ornament-line { width: 60px; height: 1px; background: var(--rule); }
+.closing-ornament-mark {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem; color: var(--gold); opacity: 0.7;
+}
+
+.closing-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.15; color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.closing-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--ink-light); opacity: 0.65;
+  margin-bottom: 48px; letter-spacing: 0.04em;
+}
+
+.closing-cta-group {
+  display: flex; align-items: center;
+  justify-content: center; gap: 0;
+  flex-wrap: wrap;
+}
+
+/* ── DEVICE SELECTOR ── */
+.device-section {
+  padding-bottom: 100px;
+  opacity: 0; transform: translateY(24px);
+  transition: all 0.9s ease;
+}
+.device-section.visible { opacity: 1; transform: translateY(0); }
+.device-intro {
+  max-width: 480px;
+  font-size: 0.95rem; line-height: 1.95;
+  color: var(--ink-light); opacity: 0.75;
+  font-style: italic; margin-bottom: 48px;
+}
+.device-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 0; margin-bottom: 4px;
+  border: 1px solid var(--rule);
+}
+.device-card {
+  padding: 36px 28px; cursor: pointer;
+  border-right: 1px solid var(--rule);
+  transition: all 0.3s ease; text-align: center;
+  position: relative; background: transparent;
+  border-top: none; border-bottom: none; border-left: none;
+}
+.device-card:last-child { border-right: none; }
+.device-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.device-card:hover { background: rgba(138,104,40,0.04); }
+.device-card:hover::before, .device-card.active::before { opacity: 1; }
+.device-card.active { background: rgba(138,104,40,0.06); }
+.device-icon {
+  font-size: 1.6rem; margin-bottom: 16px;
+  display: block; opacity: 0.4; transition: opacity 0.3s;
+}
+.device-card:hover .device-icon, .device-card.active .device-icon { opacity: 0.85; }
+.device-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--ink); letter-spacing: 0.02em; margin-bottom: 10px;
+}
+.device-desc {
+  font-size: 0.8rem; line-height: 1.75;
+  color: var(--ink-light); opacity: 0.5;
+}
+.device-card.active .device-name { color: var(--gold); }
+.device-card.active .device-desc { opacity: 0.8; }
+.device-auto {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.68rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0; cursor: pointer; transition: opacity 0.4s ease;
+  padding: 14px 0; border: none; background: none; width: 100%;
+}
+.device-auto.visible { opacity: 0.45; }
+.device-auto:hover { opacity: 0.85; }
+.device-auto-line { flex: 1; height: 1px; background: var(--rule); }
+.device-auto-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--gold); opacity: 0.5; flex-shrink: 0;
+  transition: opacity 0.3s;
+}
+.device-auto:hover .device-auto-dot { opacity: 1; }
+.device-preview {
+  border: 1px solid var(--rule); padding: 32px 36px;
+  margin-top: 0; background: rgba(240,232,216,0.3);
+  display: none; animation: fadeIn 0.5s ease both;
+}
+.device-preview.visible { display: block; }
+.device-preview-label {
+  font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--rust);
+  opacity: 0.65; margin-bottom: 14px;
+}
+.device-preview-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.2rem;
+  color: var(--ink); margin-bottom: 16px;
+}
+.device-preview-list { list-style: none; padding: 0; }
+.device-preview-list li {
+  font-size: 0.88rem; line-height: 1.85;
+  color: var(--ink-light); opacity: 0.75;
+  padding: 7px 0; border-bottom: 1px solid var(--rule2);
+  display: flex; align-items: baseline; gap: 10px;
+}
+.device-preview-list li:last-child { border-bottom: none; }
+.device-preview-list li::before {
+  content: '—'; color: var(--gold); opacity: 0.6;
+  font-family: 'Cormorant Garamond', serif; flex-shrink: 0;
+}
+.device-cta { margin-top: 28px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+/* ── COLOPHON ── */
+.colophon {
+  border-top: 1px solid var(--rule);
+  padding: 28px 0 40px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.4;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes expandRule {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); }
+}
+
+/* ── RESPONSIVE ── */
+/* ── DEVICE-SPECIFIC OVERRIDES ── */
+
+/* Mobile */
+[data-device="mobile"] .device-cards { grid-template-columns: 1fr; }
+[data-device="mobile"] .steps { grid-template-columns: 1fr; gap: 36px; }
+[data-device="mobile"] .step { border-right: none; border-bottom: 1px solid var(--rule2); padding: 0 0 36px !important; }
+[data-device="mobile"] .step:last-child { border-bottom: none; }
+[data-device="mobile"] .manifesto { grid-template-columns: 1fr; }
+[data-device="mobile"] .frontespizio { grid-template-columns: 1fr; }
+[data-device="mobile"] .front-rule-v { display: none; }
+[data-device="mobile"] .front-left, [data-device="mobile"] .front-right { padding: 0; }
+[data-device="mobile"] .main-title { font-size: 2.8rem; }
+[data-device="mobile"] main { padding: 90px 20px 60px; }
+[data-device="mobile"] .running-head { padding: 12px 20px; }
+[data-device="mobile"] .running-head-center { display: none; }
+[data-device="mobile"] .cta-secondary { display: block; margin-left: 0; margin-top: 14px; }
+
+/* Tablet */
+[data-device="tablet"] .device-cards { grid-template-columns: 1fr 1fr 1fr; }
+[data-device="tablet"] .frontespizio { grid-template-columns: 1fr; gap: 40px; }
+[data-device="tablet"] .front-rule-v { display: none; }
+[data-device="tablet"] .front-left, [data-device="tablet"] .front-right { padding: 0; }
+[data-device="tablet"] .manifesto { grid-template-columns: 120px 1fr; gap: 0 40px; }
+[data-device="tablet"] .steps { grid-template-columns: 1fr 1fr; gap: 32px; }
+[data-device="tablet"] .step:last-child { border-right: none; }
+[data-device="tablet"] main { padding: 90px 36px 60px; }
+
+/* Desktop */
+[data-device="desktop"] .frontespizio { grid-template-columns: 1fr 2px 1.4fr; }
+[data-device="desktop"] .steps { grid-template-columns: repeat(3,1fr); }
+[data-device="desktop"] main { max-width: 1100px; padding: 100px 48px 80px; }
+
+@media (max-width: 860px) {
+  main { padding: 0 28px; }
+  .running-head { padding: 12px 28px; }
+
+  .frontespizio {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-top: 72px;
+    min-height: auto;
+    padding-bottom: 60px;
+  }
+  .front-rule-v { display: none; }
+  .front-left { padding-right: 0; padding-bottom: 0; }
+  .front-right { padding-left: 0; padding-bottom: 0; }
+  .main-title { font-size: clamp(2.8rem, 9vw, 4rem); }
+
+  .manifesto { grid-template-columns: 1fr; gap: 0; }
+  .manifesto-label { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .manifesto-label .chapter-num { font-size: 3rem; }
+
+  .steps { grid-template-columns: 1fr; gap: 48px; }
+  .step { border-right: none; border-bottom: 1px solid var(--rule2); padding: 0 0 48px 0 !important; }
+  .step:last-child { border-bottom: none; padding-bottom: 0 !important; }
+
+  .colophon { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+@media (max-width: 520px) {
+  .cta-secondary { display: block; margin-left: 0; margin-top: 16px; }
+  .closing-cta-group { flex-direction: column; gap: 16px; }
+}
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<!-- RUNNING HEAD -->
+<header class="running-head">
+  <span style="display:flex;align-items:center;gap:10px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true">
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/>
+      <circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/>
+      <circle cx="50" cy="50" r="9"  fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/>
+      <circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/>
+    </svg>
+    <span style="font-family:'Cormorant Garamond',serif;font-style:italic;">Niente di speciale</span>
+  </span>
+  <span class="running-head-center">Un incontro diverso</span>
+  <span>2026</span>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       I — FRONTESPIZIO
+  ══════════════════════════════════════════ -->
+  <section class="frontespizio" style="position:relative;">
+
+    <div class="front-left">
+      <div class="series-label">Una piattaforma di incontri</div>
+      <h1 class="main-title">Niente<br>di <em>speciale</em></h1>
+      <div class="title-rule"></div>
+      <p class="subtitle">Unicamente sé stessi</p>
+      <div>
+        <a href="login.html" class="cta-primary">Entrare</a>
+        <a href="#manifesto" class="cta-secondary">Leggere prima →</a>
+      </div>
+    </div>
+
+    <div class="front-rule-v"></div>
+
+    <div class="front-right">
+      <blockquote class="front-epigraph">
+        "Non cerchiamo la versione migliore di te.<br>
+        Cerchiamo te — con le tue contraddizioni,<br>
+        la tua profondità, il tuo modo<br>
+        di essere nel mondo."
+        <cite>— Dal manifesto</cite>
+      </blockquote>
+      <p class="front-note">
+        Nessuna foto. Nessun algoritmo di compatibilità.<br>
+        Un ritratto psicologico. Una frase. Un incontro possibile.
+      </p>
+    </div>
+
+    <div class="page-indicator">I — Frontespizio</div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       BREAK
+  ══════════════════════════════════════════ -->
+  <div class="chapter-break scroll-reveal">
+    <div class="chapter-break-line"></div>
+    <span class="chapter-break-ornament">❧</span>
+    <span class="chapter-break-label">Manifesto</span>
+    <span class="chapter-break-ornament">❧</span>
+    <div class="chapter-break-line"></div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       II — MANIFESTO
+  ══════════════════════════════════════════ -->
+  <section class="manifesto scroll-reveal" id="manifesto">
+
+    <div class="manifesto-label">
+      <span>Capitolo I</span>
+      <div class="chapter-num">I</div>
+    </div>
+
+    <div class="manifesto-body">
+      <h2 class="manifesto-intro">
+        Perché il mercato degli incontri<br>
+        ha bisogno di un posto<br>
+        dove non si vende niente.
+      </h2>
+
+      <p class="drop-cap">
+        Ogni piattaforma di incontri ti chiede di costruire una versione
+        presentabile di te stesso. Una foto che ti ritrae bene, una bio che
+        suoni interessante, una lista di interessi che sembri completa
+        ma non troppo. Ti chiede, in sostanza, di fare marketing su te stesso.
+      </p>
+
+      <p>
+        Niente di speciale parte da un'ipotesi diversa: che le persone
+        più difficili da trovare non siano quelle che si mettono in mostra,
+        ma quelle che non lo fanno. Che la vera compatibilità non si misuri
+        sulla superficie — professione, hobby, aspetto — ma in qualcosa
+        di più profondo e meno esibibile.
+      </p>
+
+      <blockquote class="pull-quote">
+        Chi ti troverà, troverà quello che sei davvero.
+        Non una versione curata. Non la facciata.
+        Il resto.
+      </blockquote>
+
+      <p>
+        Per questo il profilo non ha foto. Per questo l'unico modo
+        per capire chi hai di fronte è leggere quattro numeri e una frase.
+        I numeri vengono da un test psicologico serio — intelligenza emotiva,
+        logica, etica, consapevolezza di sé. La frase la scrivi tu,
+        e può essere qualunque cosa purché vera.
+      </p>
+
+      <p>
+        Quando due persone si trovano — quando l'interesse è reciproco —
+        possono scriversi. Solo scriversi. Nessuna notifica istantanea,
+        nessun "online adesso". Uno scambio epistolare nel 2026.
+        Perché alcune cose meritano di essere dette con cura.
+      </p>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       BREAK
+  ══════════════════════════════════════════ -->
+  <div class="chapter-break scroll-reveal">
+    <div class="chapter-break-line"></div>
+    <span class="chapter-break-ornament">❧</span>
+    <span class="chapter-break-label">Come funziona</span>
+    <span class="chapter-break-ornament">❧</span>
+    <div class="chapter-break-line"></div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════
+       III — COME FUNZIONA
+  ══════════════════════════════════════════ -->
+  <section class="come-funziona scroll-reveal">
+
+    <div class="section-header">
+      <div class="section-header-line"></div>
+      <div class="section-header-title">Capitolo II — Il processo</div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Il test.<br>Quattro specchi.</h3>
+        <div class="step-rule"></div>
+        <p class="step-text">
+          Prima di creare il profilo, completi
+          <em>Anatomia di una Persona</em> — 170 domande su
+          intelligenza emotiva, logica, etica e consapevolezza
+          di sé. Non esistono risposte giuste. Esistono risposte vere.
+          Il risultato è un archetipo e quattro punteggi.
+        </p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3 class="step-title">Il profilo.<br>Una sola frase.</h3>
+        <div class="step-rule"></div>
+        <p class="step-text">
+          Il tuo profilo mostra l'archetipo, i punteggi
+          e una frase che hai scritto tu. Nessuna foto,
+          nessun nome completo. Puoi esplorare gli altri
+          profili e — se qualcuno ti colpisce —
+          esprimere interesse in silenzio.
+        </p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3 class="step-title">L'incontro.<br>La lettera.</h3>
+        <div class="step-rule"></div>
+        <p class="step-text">
+          Se l'interesse è reciproco, si apre una
+          corrispondenza. Solo testo. Se parlate lingue
+          diverse, ogni messaggio può essere tradotto
+          in tempo reale — senza perdere il tono
+          originale. Il nome si svela solo a quel punto.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+
+  <!-- ══════════════════════════════════════════
+       III-B — DEVICE SELECTOR
+  ══════════════════════════════════════════ -->
+  <div class="chapter-break scroll-reveal">
+    <div class="chapter-break-line"></div>
+    <span class="chapter-break-ornament">❧</span>
+    <span class="chapter-break-label">Come accedere</span>
+    <span class="chapter-break-ornament">❧</span>
+    <div class="chapter-break-line"></div>
+  </div>
+
+  <section class="device-section scroll-reveal">
+
+    <div class="section-header">
+      <div class="section-header-line"></div>
+      <div class="section-header-title">Capitolo III — Il dispositivo</div>
+    </div>
+
+    <p class="device-intro">
+      L'esperienza è progettata per adattarsi al dispositivo che usi.<br>
+      Seleziona il tuo, oppure lascia che sia la pagina a riconoscerlo.
+    </p>
+
+    <div class="device-cards">
+      <div class="device-card" id="dev-mobile" onclick="Device.select('mobile')">
+        <span class="device-icon">📱</span>
+        <div class="device-name">Cellulare</div>
+        <div class="device-desc">Interfaccia verticale, navigazione a tocco, testo ottimizzato per schermi piccoli.</div>
+      </div>
+      <div class="device-card" id="dev-tablet" onclick="Device.select('tablet')">
+        <span class="device-icon">⬛</span>
+        <div class="device-name">Tablet</div>
+        <div class="device-desc">Layout ibrido, colonne adattive, lettura comoda in orizzontale e verticale.</div>
+      </div>
+      <div class="device-card" id="dev-desktop" onclick="Device.select('desktop')">
+        <span class="device-icon">🖥</span>
+        <div class="device-name">PC</div>
+        <div class="device-desc">Vista a due colonne, navigazione da tastiera, composizione epistolare estesa.</div>
+      </div>
+    </div>
+
+    <button class="device-auto" id="device-auto-btn" onclick="Device.autoDetect()">
+      <div class="device-auto-line"></div>
+      <div class="device-auto-dot"></div>
+      <span>Riconoscimento automatico</span>
+      <div class="device-auto-dot"></div>
+      <div class="device-auto-line"></div>
+    </button>
+
+    <div class="device-preview" id="preview-mobile">
+      <div class="device-preview-label">Cellulare · Ottimizzazioni attive</div>
+      <div class="device-preview-title">Tutto in una mano.</div>
+      <ul class="device-preview-list">
+        <li>Navigazione verticale a schermata intera</li>
+        <li>Bottoni e campi testo dimensionati per il tocco</li>
+        <li>Corrispondenza leggibile senza zoom</li>
+        <li>Font scalati per schermi da 5″ a 7″</li>
+        <li>Caricamento ottimizzato per reti mobili</li>
+      </ul>
+      <div class="device-cta">
+        <a href="login.html?device=mobile" class="cta-primary">Entrare da cellulare</a>
+      </div>
+    </div>
+
+    <div class="device-preview" id="preview-tablet">
+      <div class="device-preview-label">Tablet · Ottimizzazioni attive</div>
+      <div class="device-preview-title">Lo spazio giusto.</div>
+      <ul class="device-preview-list">
+        <li>Layout a colonne adattive in orizzontale</li>
+        <li>Sidebar della corrispondenza sempre visibile</li>
+        <li>Scheda profilo in vista estesa</li>
+        <li>Gesti di navigazione ottimizzati</li>
+        <li>Testo calibrato per distanza di lettura media</li>
+      </ul>
+      <div class="device-cta">
+        <a href="login.html?device=tablet" class="cta-primary">Entrare da tablet</a>
+      </div>
+    </div>
+
+    <div class="device-preview" id="preview-desktop">
+      <div class="device-preview-label">PC · Ottimizzazioni attive</div>
+      <div class="device-preview-title">La versione più estesa.</div>
+      <ul class="device-preview-list">
+        <li>Vista a due colonne: profili e dettaglio affiancati</li>
+        <li>Corrispondenza con sidebar e area di scrittura ampia</li>
+        <li>Navigazione da tastiera (Invio per inviare, Tab per spostarsi)</li>
+        <li>Tipografia editoriale a misura di schermo largo</li>
+        <li>Filtri di esplorazione sempre in vista</li>
+      </ul>
+      <div class="device-cta">
+        <a href="login.html?device=desktop" class="cta-primary">Entrare da PC</a>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       IV — CLOSING CTA
+  ══════════════════════════════════════════ -->
+  <section class="closing scroll-reveal">
+
+    <div class="closing-ornament">
+      <div class="closing-ornament-line"></div>
+      <span class="closing-ornament-mark">✦</span>
+      <div class="closing-ornament-line"></div>
+    </div>
+
+    <h2 class="closing-title">
+      Nessun algoritmo.<br>
+      Solo persone.
+    </h2>
+    <p class="closing-sub">Disponibile in italiano, inglese, francese, tedesco, spagnolo, portoghese, cinese.</p>
+
+    <div class="closing-cta-group">
+      <a href="login.html" class="cta-primary">Cominciare</a>
+    </div>
+
+  </section>
+
+
+  <!-- ══════════════════════════════════════════
+       COLOPHON
+  ══════════════════════════════════════════ -->
+  <footer class="colophon">
+    <span>Niente di speciale</span>
+    <span>Nessun algoritmo · Solo persone</span>
+    <span>MMXXVI</span>
+  </footer>
+
+</main>
+
+
+<script>
+// ── DEVICE SELECTOR ──
+const Device = {
+  current: null,
+
+  select(type) {
+    this.current = type;
+    localStorage.setItem('nds_device', type);
+
+    // Update cards
+    ['mobile','tablet','desktop'].forEach(d => {
+      document.getElementById('dev-'+d).classList.toggle('active', d===type);
+    });
+
+    // Show auto button
+    document.getElementById('device-auto-btn').classList.add('visible');
+
+    // Show correct preview
+    ['mobile','tablet','desktop'].forEach(d => {
+      const el = document.getElementById('preview-'+d);
+      el.classList.toggle('visible', d===type);
+    });
+
+    // Apply device class to <html>
+    document.documentElement.setAttribute('data-device', type);
+
+    // Scroll preview into view
+    const preview = document.getElementById('preview-'+type);
+    setTimeout(() => preview.scrollIntoView({ behavior:'smooth', block:'nearest' }), 100);
+  },
+
+  autoDetect() {
+    const w = window.innerWidth;
+    const touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    let detected;
+    if (w <= 600) {
+      detected = 'mobile';
+    } else if (w <= 1024 && touch) {
+      detected = 'tablet';
+    } else if (w <= 1024) {
+      detected = 'tablet';
+    } else {
+      detected = 'desktop';
+    }
+    this.select(detected);
+
+    // Show feedback
+    const btn = document.getElementById('device-auto-btn');
+    const labels = { mobile:'Cellulare rilevato', tablet:'Tablet rilevato', desktop:'PC rilevato' };
+    const span = btn.querySelector('span');
+    const orig = span.textContent;
+    span.textContent = labels[detected];
+    setTimeout(() => span.textContent = orig, 2200);
+  },
+
+  init() {
+    // Show auto-detect button always
+    document.getElementById('device-auto-btn').classList.add('visible');
+    // Restore saved preference
+    const saved = localStorage.getItem('nds_device');
+    if (saved) this.select(saved);
+  }
+};
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.scroll-reveal');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+reveals.forEach(el => observer.observe(el));
+
+// ── SMOOTH ANCHOR ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+Device.init();
+</script>
+
+</body>
+</html>

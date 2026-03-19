@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Niente di speciale</title>
+<style>body{visibility:hidden;}
+/* ── NDS LOGO ── */
+.nds-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nds-logo svg { flex-shrink:0; }
+.nds-logo-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; color:var(--ink-light); opacity:0.7; letter-spacing:0.04em; }
+
+/* ── WATERMARK nel composer ── */
+.composer-watermark-wrap { position:relative; }
+.composer-watermark-wrap .field-input,
+.composer-watermark-wrap .composer-textarea { position:relative; z-index:1; background:transparent; }
+.nds-watermark {
+  position:absolute; pointer-events:none; z-index:0;
+  opacity:0.07; transition:opacity 0.4s ease;
+}
+.composer-watermark-wrap:focus-within .nds-watermark { opacity:0.035; }
+
+
+/* ── WATERMARK CERCHI ── */
+
+
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{document.body.style.visibility='visible';
+  // Apply device preference
+  const _d=localStorage.getItem('nds_device')||'desktop';
+  document.documentElement.setAttribute('data-device',_d);
+});</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, query, where, getDocs, doc, getDoc, onSnapshot, orderBy }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE", authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale", storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063", appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window.__db = db;
+  window.__fb = { collection, query, where, getDocs, doc, getDoc, onSnapshot, orderBy };
+  window.__firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 8px;
+}
+.dash-card {
+  border: 1px solid var(--rule);
+  padding: 36px 32px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: rgba(240,232,216,0.4);
+}
+.dash-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.dash-card:hover { border-color: rgba(138,104,40,0.45); }
+.dash-card:hover::before { opacity: 1; }
+.dash-card-icon {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; color: var(--gold);
+  opacity: 0.35; margin-bottom: 16px;
+  user-select: none;
+}
+.dash-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-weight: 400;
+  font-size: 1.4rem; color: var(--ink);
+  margin-bottom: 10px; line-height: 1.2;
+}
+.dash-card-desc {
+  font-size: 0.88rem; line-height: 1.8;
+  color: var(--ink-light); opacity: 0.7;
+}
+.dash-card-badge {
+  position: absolute; top: 20px; right: 20px;
+  background: var(--rust); color: var(--paper);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; padding: 3px 10px;
+  letter-spacing: 0.08em; display: none;
+}
+.dash-card-badge.visible { display: block; }
+
+.user-welcome {
+  display: flex; align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  flex-wrap: wrap; gap: 12px;
+}
+.user-welcome-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--ink-light); opacity: 0.6;
+}
+.logout-btn {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.78rem;
+  color: var(--ink-light); opacity: 0.4;
+  background: none; border: none; cursor: pointer;
+  letter-spacing: 0.08em; transition: opacity 0.2s;
+}
+.logout-btn:hover { opacity: 0.9; }
+
+.scheda-status {
+  margin-bottom: 40px;
+  padding: 20px 24px;
+  border-left: 2px solid var(--gold);
+  background: rgba(138,104,40,0.04);
+  font-size: 0.88rem; line-height: 1.75;
+  color: var(--ink-light);
+  animation: fadeIn 0.6s ease both;
+}
+.scheda-status strong {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400; font-style: italic;
+  color: var(--ink); font-size: 0.95rem;
+}
+
+@media(max-width:640px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<header class="running-head">
+  <a href="index.html" class="nds-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/><circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/><circle cx="50" cy="50" r="9" fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/><circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/></svg><span class="nds-logo-text">Niente di speciale</span></a>
+  <span class="running-head-center" id="rh-welcome">—</span>
+  <div class="lang-switcher" id="lang-switcher"></div>
+</header>
+
+<main>
+  <div class="user-welcome">
+    <div>
+      <div class="page-epigraph" data-t="epigraph">Area personale</div>
+      <h1 class="page-title" id="welcome-title">—</h1>
+      <div class="page-rule"></div>
+    </div>
+    <button class="logout-btn" onclick="logout()" data-t="logout">Uscire</button>
+  </div>
+
+  <div class="scheda-status" id="scheda-status" style="display:none;"></div>
+
+  <div class="dashboard-grid">
+
+    <a href="scheda.html" class="dash-card fade-in" style="animation-delay:0.05s">
+      <div class="dash-card-icon">✦</div>
+      <div class="dash-card-title" data-t="card_scheda_title">La mia scheda</div>
+      <div class="dash-card-desc" data-t="card_scheda_desc">Crea, modifica o consulta il tuo profilo. Nome, età, nazione, lingue, archetipo psicologico e molto altro.</div>
+    </a>
+
+    <a href="posta.html" class="dash-card fade-in" style="animation-delay:0.12s">
+      <div class="dash-card-badge" id="posta-badge" data-t="badge_new">Nuovi</div>
+      <div class="dash-card-icon">✉</div>
+      <div class="dash-card-title" data-t="card_posta_title">Corrispondenza</div>
+      <div class="dash-card-desc" data-t="card_posta_desc">Le tue lettere con chi hai incontrato. Traduzione simultanea disponibile in ogni conversazione.</div>
+    </a>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const T = {
+  it: { epigraph:'Area personale', welcome:'Buongiorno,', logout:'Uscire', card_scheda_title:'La mia scheda', card_scheda_desc:'Crea, modifica o consulta il tuo profilo. Nazione, lingue, archetipo psicologico e stile di vita.', card_posta_title:'Corrispondenza', card_posta_desc:'Le tue lettere con chi hai incontrato. Traduzione simultanea disponibile in ogni conversazione.', badge_new:'Nuovi messaggi', no_scheda:'Nessuna scheda ancora. Creane una per comparire tra i profili.', has_scheda:'La tua scheda è attiva — archetipo: ', rh:'Area personale' },
+  en: { epigraph:'Personal area', welcome:'Welcome,', logout:'Sign out', card_scheda_title:'My profile card', card_scheda_desc:'Create, edit or view your profile. Country, languages, psychological archetype and lifestyle.', card_posta_title:'Correspondence', card_posta_desc:'Your letters with people you have matched with. Simultaneous translation available.', badge_new:'New messages', no_scheda:'No profile card yet. Create one to appear among profiles.', has_scheda:'Your card is active — archetype: ', rh:'Personal area' },
+  fr: { epigraph:'Espace personnel', welcome:'Bonjour,', logout:'Se déconnecter', card_scheda_title:'Ma fiche', card_scheda_desc:'Créez, modifiez ou consultez votre profil. Pays, langues, archétype psychologique et mode de vie.', card_posta_title:'Correspondance', card_posta_desc:'Vos lettres avec vos rencontres. Traduction simultanée disponible.', badge_new:'Nouveaux messages', no_scheda:'Pas encore de fiche. Créez-en une pour apparaître parmi les profils.', has_scheda:'Votre fiche est active — archétype : ', rh:'Espace personnel' },
+  de: { epigraph:'Persönlicher Bereich', welcome:'Guten Tag,', logout:'Abmelden', card_scheda_title:'Mein Profil', card_scheda_desc:'Erstelle, bearbeite oder sieh dir dein Profil an. Land, Sprachen, psychologischer Archetypus und Lebensstil.', card_posta_title:'Korrespondenz', card_posta_desc:'Deine Briefe mit deinen Begegnungen. Simultanübersetzung verfügbar.', badge_new:'Neue Nachrichten', no_scheda:'Noch kein Profil. Erstelle eines, um unter den Profilen zu erscheinen.', has_scheda:'Dein Profil ist aktiv — Archetypus: ', rh:'Persönlicher Bereich' },
+  es: { epigraph:'Área personal', welcome:'Bienvenido,', logout:'Salir', card_scheda_title:'Mi ficha', card_scheda_desc:'Crea, edita o consulta tu perfil. País, idiomas, arquetipo psicológico y estilo de vida.', card_posta_title:'Correspondencia', card_posta_desc:'Tus cartas con las personas que has conocido. Traducción simultánea disponible.', badge_new:'Nuevos mensajes', no_scheda:'Ninguna ficha aún. Crea una para aparecer entre los perfiles.', has_scheda:'Tu ficha está activa — arquetipo: ', rh:'Área personal' },
+  pt: { epigraph:'Área pessoal', welcome:'Bem-vindo,', logout:'Sair', card_scheda_title:'Minha ficha', card_scheda_desc:'Crie, edite ou consulte seu perfil. País, idiomas, arquétipo psicológico e estilo de vida.', card_posta_title:'Correspondência', card_posta_desc:'Suas cartas com as pessoas que conheceu. Tradução simultânea disponível.', badge_new:'Novas mensagens', no_scheda:'Nenhuma ficha ainda. Crie uma para aparecer entre os perfis.', has_scheda:'Sua ficha está ativa — arquétipo: ', rh:'Área pessoal' },
+  zh: { epigraph:'个人区域', welcome:'你好，', logout:'退出', card_scheda_title:'我的档案', card_scheda_desc:'创建、编辑或查看您的档案。国家、语言、心理原型和生活方式。', card_posta_title:'通信', card_posta_desc:'您与匹配者的信件。提供实时翻译。', badge_new:'新消息', no_scheda:'尚无档案。创建一个以出现在档案列表中。', has_scheda:'您的档案已激活 — 原型：', rh:'个人区域' }
+};
+
+const LANGS = ['it','en','fr','de','es','pt','zh'];
+const LANG_LABELS = { it:'IT', en:'EN', fr:'FR', de:'DE', es:'ES', pt:'PT', zh:'中' };
+let currentLang = localStorage.getItem('nds_lang') || 'it';
+
+function tr(key) { return (T[currentLang]||T.it)[key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = tr(el.getAttribute('data-t'));
+    if(v) el.textContent = v;
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang===currentLang));
+}
+
+function buildLangSwitcher() {
+  const sw = document.getElementById('lang-switcher');
+  LANGS.forEach(l => {
+    const btn = document.createElement('button');
+    btn.className='lang-btn'; btn.dataset.lang=l; btn.textContent=LANG_LABELS[l];
+    btn.onclick=()=>{ currentLang=l; localStorage.setItem('nds_lang',l); applyLang(); };
+    sw.appendChild(btn);
+  });
+}
+
+function logout() {
+  sessionStorage.removeItem('nds_session');
+  window.location.href = 'login.html';
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent=msg; el.classList.add('visible');
+  setTimeout(()=>el.classList.remove('visible'), 2800);
+}
+
+// ── ARCHETYPES (same logic as app) ──
+function getArchetypeKey(ei,lo,et,pa) {
+  const avg=(ei+lo+et+pa)/4;
+  if(ei>=75&&lo>=75&&et>=75&&pa>=70) return 'lucido';
+  if(ei>=75&&lo<55&&et>=70) return 'custode';
+  if(lo>=80&&ei<55&&pa<55) return 'costruttore';
+  if(et>=80&&ei>=65&&lo>=65) return 'garante';
+  if(pa>=80&&ei>=70) return 'alchimista';
+  if(et>=75&&pa>=75&&lo<60) return 'morale';
+  if(ei>=70&&pa>=70&&lo>=60) return 'integrata';
+  if(lo>=70&&et>=70&&ei<60) return 'giurista';
+  if(avg>=70) return 'persona';
+  if(avg>=55) return 'transizione';
+  return 'mappa';
+}
+const ARCH_NAMES = { it:{ lucido:'Il Testimone Lucido', custode:'Il Custode Empatico', costruttore:'Il Costruttore di Sistemi', garante:'Il Garante Consapevole', alchimista:"Il Cercatore di Profondità", morale:'Il Testimone Morale', integrata:'La Presenza Integrata', giurista:"Il Giurista dell'Anima", persona:'La Persona Integrata', transizione:'Il Profilo in Transizione', mappa:'La Mappa da Disegnare' }, en:{ lucido:'The Lucid Witness', custode:'The Empathic Guardian', costruttore:'The System Builder', garante:'The Conscious Guarantor', alchimista:'The Depth Seeker', morale:'The Moral Witness', integrata:'The Integrated Presence', giurista:'The Soul Jurist', persona:'The Integrated Person', transizione:'The Transitional Profile', mappa:'The Map Yet to Be Drawn' }, fr:{ lucido:'Le Témoin Lucide', custode:'Le Gardien Empathique', costruttore:'Le Constructeur de Systèmes', garante:'Le Garant Conscient', alchimista:"Le Chercheur de Profondeur", morale:'Le Témoin Moral', integrata:'La Présence Intégrée', giurista:"Le Juriste de l'Âme", persona:'La Personne Intégrée', transizione:'Le Profil en Transition', mappa:'La Carte à Dessiner' }, de:{ lucido:'Der Luzide Zeuge', custode:'Der Empathische Hüter', costruttore:'Der Systemerbauer', garante:'Der Bewusste Garant', alchimista:'Der Tiefenforscher', morale:'Der Moralische Zeuge', integrata:'Die Integrierte Präsenz', giurista:'Der Seelen-Jurist', persona:'Die Integrierte Person', transizione:'Das Übergangsprofil', mappa:'Die noch zu zeichnende Karte' }, es:{ lucido:'El Testigo Lúcido', custode:'El Guardián Empático', costruttore:'El Constructor de Sistemas', garante:'El Garante Consciente', alchimista:'El Buscador de Profundidad', morale:'El Testigo Moral', integrata:'La Presencia Integrada', giurista:'El Jurista del Alma', persona:'La Persona Integrada', transizione:'El Perfil en Transición', mappa:'El Mapa por Dibujar' }, pt:{ lucido:'A Testemunha Lúcida', custode:'O Guardião Empático', costruttore:'O Construtor de Sistemas', garante:'O Garante Consciente', alchimista:'O Buscador de Profundidade', morale:'A Testemunha Moral', integrata:'A Presença Integrada', giurista:'O Jurista da Alma', persona:'A Pessoa Integrada', transizione:'O Perfil em Transição', mappa:'O Mapa por Desenhar' }, zh:{ lucido:'清醒的见证者', custode:'共情守护者', costruttore:'系统构建者', garante:'自觉保障者', alchimista:'深度探索者', morale:'道德见证者', integrata:'整合的存在', giurista:'灵魂法官', persona:'整合的人', transizione:'过渡期档案', mappa:'待描绘的地图' } };
+
+function getArchetypeName(ei,lo,et,pa) {
+  const key = getArchetypeKey(ei,lo,et,pa);
+  return (ARCH_NAMES[currentLang]||ARCH_NAMES.it)[key] || ARCH_NAMES.it[key];
+}
+
+// ── INIT ──
+async function init() {
+  const session = sessionStorage.getItem('nds_session');
+  if(!session) { window.location.href='login.html'; return; }
+  const { username } = JSON.parse(session);
+
+  buildLangSwitcher();
+  applyLang();
+
+  document.getElementById('rh-welcome').textContent = username;
+  document.getElementById('welcome-title').textContent = tr('welcome') + ' ' + username;
+
+  // Load scheda status
+  await loadSchedaStatus(username);
+  // Check unread messages
+  await checkUnread(JSON.parse(session).id || username);
+}
+
+async function loadSchedaStatus(username) {
+  const box = document.getElementById('scheda-status');
+  try {
+    let scheda = null;
+    if(window.__db) {
+      const { collection, query, where, getDocs } = window.__fb;
+      const q = query(collection(window.__db,'schede'), where('username','==',username));
+      const snap = await getDocs(q);
+      if(!snap.empty) scheda = snap.docs[0].data();
+    } else {
+      const all = JSON.parse(localStorage.getItem('nds_schede')||'[]');
+      scheda = all.find(s=>s.username===username)||null;
+    }
+
+    box.style.display = 'block';
+    if(!scheda) {
+      box.innerHTML = tr('no_scheda');
+    } else {
+      const arch = getArchetypeName(scheda.ei||50, scheda.logic||50, scheda.ethics||50, scheda.pain||50);
+      box.innerHTML = tr('has_scheda') + `<strong>${arch}</strong>`;
+    }
+  } catch(e) { box.style.display='none'; }
+}
+
+async function checkUnread(userId) {
+  // Simple check: any messages where recipient = userId and unread = true
+  try {
+    if(window.__db) {
+      const { collection, query, where, getDocs } = window.__fb;
+      const q = query(collection(window.__db,'messages'), where('toId','==',userId), where('read','==',false));
+      const snap = await getDocs(q);
+      if(!snap.empty) document.getElementById('posta-badge').classList.add('visible');
+    }
+  } catch(e) {}
+}
+
+document.addEventListener('firebaseReady', init);
+setTimeout(init, 3000); // fallback
+
+// ── NDS WATERMARK ──
+function ndsWatermark(containerId) {
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.classList.add('composer-watermark-wrap');
+  const positions = [
+    {top:'8px',  left:'12px',  size:28},
+    {top:'50%',  right:'14px', size:24, transform:'translateY(-50%)'},
+    {bottom:'8px',left:'50%',  size:22, transform:'translateX(-50%)'},
+    {top:'8px',  right:'16px', size:26},
+    {bottom:'10px',right:'12px',size:20},
+  ];
+  const pick = positions[Math.floor(Math.random()*positions.length)];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.setAttribute('width', pick.size);
+  svg.setAttribute('height', pick.size);
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('nds-watermark');
+  Object.entries(pick).forEach(([k,v])=>{ if(k!=='size') svg.style[k]=v; });
+  svg.innerHTML = '<circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/><circle cx="50" cy="50" r="24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="1"/><circle cx="50" cy="50" r="9" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.6"/><circle cx="50" cy="50" r="3" fill="currentColor" opacity="1"/>';
+  wrap.style.position='relative';
+  wrap.insertBefore(svg, wrap.firstChild);
+}
+
+</script>
+</body>
+</html>

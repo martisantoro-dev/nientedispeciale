@@ -1,0 +1,91 @@
+// ════════════════════════════════════════════════════
+// Sito: https://martisantoro-dev.github.io/nientedispeciale
+// NIENTE DI SPECIALE — Regole Firestore (produzione)
+// Copia queste regole in:
+// Firebase Console → Firestore → Regole → Pubblica
+// ════════════════════════════════════════════════════
+// Sito: https://martisantoro-dev.github.io/nientedispeciale
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── UTENTI ──────────────────────────────────────
+    // Salvati con ID = uid Firebase Auth
+    match /users/{uid} {
+
+      // Leggere il proprio profilo: solo tu
+      allow get: if request.auth != null && request.auth.uid == uid;
+
+      // Lettura lista (per cercare username): autenticati
+      allow list: if request.auth != null;
+
+      // Creare il proprio documento: solo al momento della registrazione
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.keys().hasAll(['uid','username','email','createdAt'])
+                    && request.resource.data.uid == request.auth.uid;
+
+      // Modificare il proprio documento
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    // Non si può cambiare uid ed email
+                    && request.resource.data.uid == resource.data.uid
+                    && request.resource.data.email == resource.data.email;
+
+      // Nessuno può cancellare utenti dal browser
+      allow delete: if false;
+    }
+
+    // ── SCHEDE PROFILO ───────────────────────────────
+    // Visibili a tutti gli autenticati, modificabili solo dal proprietario
+    match /schede/{schedaId} {
+
+      // Leggere tutte le schede: qualsiasi utente autenticato
+      // (serve per esplorare i profili)
+      allow read: if request.auth != null;
+
+      // Creare la propria scheda
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasAll(['uid','username','age','country']);
+
+      // Modificare la propria scheda
+      allow update: if request.auth != null
+                    && resource.data.uid == request.auth.uid
+                    // uid non si può cambiare
+                    && request.resource.data.uid == resource.data.uid;
+
+      // Cancellare la propria scheda
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+
+    // ── MESSAGGI ─────────────────────────────────────
+    // Leggibili solo dai partecipanti, immutabili dopo l'invio
+    match /messages/{msgId} {
+
+      // Leggere: solo se sei fromId o toId
+      allow read: if request.auth != null
+                  && (resource.data.fromId == request.auth.uid
+                   || resource.data.toId   == request.auth.uid);
+
+      // Inviare: devi essere il mittente, testo non vuoto e < 5000 char
+      allow create: if request.auth != null
+                    && request.resource.data.fromId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['chatId','fromId','toId','text','ts'])
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() < 5000;
+
+      // Nessuno può modificare o cancellare messaggi inviati
+      allow update, delete: if false;
+    }
+
+    // ── TUTTO IL RESTO: negato ───────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

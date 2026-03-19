@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profilo attivato — Niente di speciale</title>
+<style>body{visibility:hidden;}</style>
+<script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.body.style.visibility='visible';
+    const _d=localStorage.getItem('nds_device')||'desktop';
+    document.documentElement.setAttribute('data-device',_d);
+  });
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase Auth — necessario per verificare il link -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, applyActionCode, onAuthStateChanged, signOut }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, doc, updateDoc }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE",
+    authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale",
+    storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063",
+    appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // Legge il parametro ?oobCode= dall'URL (Firebase lo aggiunge automaticamente)
+  const params  = new URLSearchParams(window.location.search);
+  const mode    = params.get('mode');
+  const oobCode = params.get('oobCode');
+
+  async function handleAction() {
+    if (mode === 'verifyEmail' && oobCode) {
+      try {
+        await applyActionCode(auth, oobCode);
+        // Segna emailVerified su Firestore se l'utente è loggato
+        onAuthStateChanged(auth, async user => {
+          if (user) {
+            try {
+              await updateDoc(doc(db, 'users', user.uid), { emailVerified: true });
+            } catch(e) {}
+          }
+        });
+        showState('verified');
+      } catch(e) {
+        if (e.code === 'auth/invalid-action-code') {
+          showState('expired');
+        } else if (e.code === 'auth/email-already-verified') {
+          showState('already');
+        } else {
+          showState('error');
+        }
+      }
+    } else if (mode === 'resetPassword' && oobCode) {
+      // Redirect alla pagina login con il codice, Firebase gestisce il resto
+      window.location.href = 'login.html?mode=resetPassword&oobCode=' + oobCode;
+    } else {
+      showState('invalid');
+    }
+  }
+
+  window.__handleAction = handleAction;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+
+
+.confirm-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 140px 48px 80px;
+  text-align: center;
+  position: relative; z-index: 2;
+}
+
+.confirm-ornament {
+  width: 1px; height: 56px;
+  background: linear-gradient(transparent, var(--gold), transparent);
+  margin: 0 auto 48px;
+}
+
+/* Logo cerchi grande — elemento centrale */
+.confirm-logo {
+  margin: 0 auto 40px;
+  display: block;
+}
+
+.state-panel { display: none; animation: fadeIn 0.7s ease both; }
+.state-panel.active { display: block; }
+
+.confirm-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--rust);
+  opacity: 0.7; margin-bottom: 20px;
+}
+
+.confirm-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300; font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.15; color: var(--ink);
+  margin-bottom: 14px;
+}
+.confirm-title em { font-style: italic; }
+
+.confirm-rule {
+  width: 40px; height: 1px;
+  background: var(--gold);
+  margin: 0 auto 28px;
+}
+
+.confirm-body {
+  font-size: 1rem; line-height: 1.9;
+  color: var(--ink-light); opacity: 0.72;
+  font-style: italic; margin-bottom: 44px;
+  max-width: 360px; margin-left: auto; margin-right: auto;
+}
+
+.confirm-actions {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+}
+
+/* Loading spinner testuale */
+.loading-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1rem;
+  color: var(--ink-light); opacity: 0.4;
+  letter-spacing: 0.06em;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+@media(max-width:600px) {
+  .confirm-wrap { padding: 100px 28px 60px; }
+}
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<header class="running-head">
+  <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true">
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/>
+      <circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/>
+      <circle cx="50" cy="50" r="9"  fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/>
+      <circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/>
+    </svg>
+    <span style="font-family:'Cormorant Garamond',serif;font-style:italic;">Niente di speciale</span>
+  </a>
+  <span class="running-head-center">Attivazione</span>
+  <span></span>
+</header>
+
+<div class="confirm-wrap">
+
+  <!-- Logo cerchi — protagonista della pagina -->
+  <svg class="confirm-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="90" height="90" aria-hidden="true">
+    <circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.18"/>
+    <circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.62"/>
+    <circle cx="50" cy="50" r="9"  fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.35"/>
+    <circle cx="50" cy="50" r="3.2" fill="#8a6828" opacity="0.85"/>
+  </svg>
+
+  <!-- LOADING -->
+  <div class="state-panel active" id="state-loading">
+    <p class="loading-text">Verifica in corso…</p>
+  </div>
+
+  <!-- VERIFICATO ✓ -->
+  <div class="state-panel" id="state-verified">
+    <div class="confirm-label">Profilo attivato</div>
+    <h1 class="confirm-title">Un incontro<br><em>è possibile.</em></h1>
+    <div class="confirm-rule"></div>
+    <p class="confirm-body">
+      Il tuo profilo è attivo.<br>
+      Adesso puoi accedere e cominciare a esplorare.
+    </p>
+    <div class="confirm-actions">
+      <a href="login.html" class="btn-primary" style="padding:14px 52px;">Accedere</a>
+      <a href="index.html" class="btn-ghost" style="padding:10px 32px;font-size:0.88rem;">← Home</a>
+    </div>
+  </div>
+
+  <!-- GIÀ VERIFICATO -->
+  <div class="state-panel" id="state-already">
+    <div class="confirm-label">Già attivo</div>
+    <h1 class="confirm-title">Il profilo<br><em>è già attivo.</em></h1>
+    <div class="confirm-rule"></div>
+    <p class="confirm-body">
+      Questo link è già stato usato.<br>
+      Puoi accedere direttamente.
+    </p>
+    <div class="confirm-actions">
+      <a href="login.html" class="btn-primary" style="padding:14px 52px;">Accedere</a>
+    </div>
+  </div>
+
+  <!-- LINK SCADUTO -->
+  <div class="state-panel" id="state-expired">
+    <div class="confirm-label">Link scaduto</div>
+    <h1 class="confirm-title">Il link<br><em>non è più valido.</em></h1>
+    <div class="confirm-rule"></div>
+    <p class="confirm-body">
+      Il link di attivazione è scaduto o è già stato usato.<br>
+      Accedi e richiedi un nuovo link di verifica.
+    </p>
+    <div class="confirm-actions">
+      <a href="login.html" class="btn-primary" style="padding:14px 52px;">Accedere</a>
+      <a href="index.html" class="btn-ghost" style="padding:10px 32px;font-size:0.88rem;">← Home</a>
+    </div>
+  </div>
+
+  <!-- ERRORE GENERICO -->
+  <div class="state-panel" id="state-error">
+    <div class="confirm-label">Qualcosa non va</div>
+    <h1 class="confirm-title">Non è<br><em>andato a buon fine.</em></h1>
+    <div class="confirm-rule"></div>
+    <p class="confirm-body">
+      Qualcosa è andato storto durante la verifica.<br>
+      Riprova o contattaci se il problema persiste.
+    </p>
+    <div class="confirm-actions">
+      <a href="login.html" class="btn-primary" style="padding:14px 52px;">Accedere</a>
+      <a href="index.html" class="btn-ghost" style="padding:10px 32px;font-size:0.88rem;">← Home</a>
+    </div>
+  </div>
+
+  <!-- LINK NON VALIDO -->
+  <div class="state-panel" id="state-invalid">
+    <div class="confirm-label">Pagina non trovata</div>
+    <h1 class="confirm-title">Questo link<br><em>non è valido.</em></h1>
+    <div class="confirm-rule"></div>
+    <p class="confirm-body">
+      Sembra che tu sia arrivato qui per errore.<br>
+      Torna alla home o accedi al tuo profilo.
+    </p>
+    <div class="confirm-actions">
+      <a href="index.html" class="btn-primary" style="padding:14px 52px;">← Home</a>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function showState(name) {
+  document.querySelectorAll('.state-panel').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('state-' + name);
+  if(el) el.classList.add('active');
+}
+
+// Avvia la verifica quando Firebase è pronto
+document.addEventListener('firebaseReady', () => {
+  window.__handleAction && window.__handleAction();
+});
+
+// Fallback se firebaseReady non scatta
+setTimeout(() => {
+  if(document.getElementById('state-loading').classList.contains('active')) {
+    window.__handleAction && window.__handleAction();
+  }
+}, 3000);
+</script>
+</body>
+</html>

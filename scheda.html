@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheda — Niente di speciale</title>
+<style>body{visibility:hidden;}
+/* ── NDS LOGO ── */
+.nds-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nds-logo svg { flex-shrink:0; }
+.nds-logo-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; color:var(--ink-light); opacity:0.7; letter-spacing:0.04em; }
+
+/* ── WATERMARK nel composer ── */
+.composer-watermark-wrap { position:relative; }
+.composer-watermark-wrap .field-input,
+.composer-watermark-wrap .composer-textarea { position:relative; z-index:1; background:transparent; }
+.nds-watermark {
+  position:absolute; pointer-events:none; z-index:0;
+  opacity:0.07; transition:opacity 0.4s ease;
+}
+.composer-watermark-wrap:focus-within .nds-watermark { opacity:0.035; }
+
+
+/* ── WATERMARK CERCHI ── */
+
+
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{document.body.style.visibility='visible';
+  // Apply device preference
+  const _d=localStorage.getItem('nds_device')||'desktop';
+  document.documentElement.setAttribute('data-device',_d);
+});</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, query, where, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE", authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale", storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063", appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window.__db = db;
+  window.__fb = { collection, query, where, getDocs, addDoc, doc, updateDoc, deleteDoc, serverTimestamp };
+  window.__firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+/* ── ACTION TABS ── */
+.action-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 44px;
+}
+.action-tab {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.9rem;
+  color: var(--ink-light); opacity: 0.45;
+  cursor: pointer; padding: 10px 28px 10px 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.25s ease;
+  background: none; border-left: none; border-right: none; border-top: none;
+}
+.action-tab:hover { opacity: 0.8; }
+.action-tab.active { opacity: 1; color: var(--ink); border-bottom: 2px solid var(--gold); }
+
+/* ── FORM LAYOUT ── */
+.scheda-form { max-width: 640px; animation: fadeIn 0.5s ease both; }
+.form-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--gold); margin-bottom: 20px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule2);
+  opacity: 0.85;
+}
+
+/* Score inputs */
+.score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.score-item { display: flex; flex-direction: column; gap: 6px; }
+.score-item label {
+  font-size: 0.65rem; letter-spacing: 0.14em;
+  text-transform: uppercase; opacity: 0.5;
+}
+.score-num {
+  background: rgba(26,21,16,0.03);
+  border: none; border-bottom: 1px solid var(--rule);
+  color: var(--ink); font-family: 'Crimson Pro', serif;
+  font-size: 1.1rem; padding: 8px 0; outline: none;
+  width: 100%; transition: border-color 0.3s;
+}
+.score-num:focus { border-color: var(--gold); }
+
+/* VIEW mode */
+.scheda-view { animation: fadeIn 0.5s ease both; }
+.view-section { margin-bottom: 40px; }
+.view-section-label {
+  font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--rust);
+  opacity: 0.65; margin-bottom: 16px;
+}
+.view-row {
+  display: flex; justify-content: space-between;
+  align-items: baseline; padding: 10px 0;
+  border-bottom: 1px solid var(--rule2);
+  font-size: 0.95rem;
+}
+.view-row:last-child { border-bottom: none; }
+.view-key {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; color: var(--ink-light);
+  opacity: 0.6; font-size: 0.9rem;
+  min-width: 160px;
+}
+.view-val { color: var(--ink); text-align: right; font-size: 0.95rem; }
+.archetype-display {
+  border: 1px solid var(--gold);
+  padding: 28px 32px; margin-bottom: 32px;
+  text-align: center;
+  background: rgba(138,104,40,0.03);
+}
+.archetype-display-label {
+  font-size: 0.62rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--gold);
+  opacity: 0.6; margin-bottom: 10px;
+}
+.archetype-display-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.8rem;
+  color: var(--ink); line-height: 1.2;
+}
+
+/* Delete confirmation */
+.delete-confirm {
+  display: none; margin-top: 24px;
+  padding: 20px; border: 1px solid rgba(138,42,26,0.25);
+  background: rgba(138,42,26,0.03);
+  animation: fadeIn 0.3s ease both;
+}
+.delete-confirm.visible { display: block; }
+.delete-confirm p {
+  font-size: 0.9rem; line-height: 1.8;
+  color: var(--ink-light); margin-bottom: 20px;
+  font-style: italic;
+}
+.delete-confirm-btns { display: flex; gap: 12px; }
+
+/* Languages multi-select */
+.lang-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.lang-tag {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.82rem;
+  border: 1px solid var(--rule); padding: 5px 14px;
+  cursor: pointer; color: var(--ink-light);
+  transition: all 0.2s; opacity: 0.65;
+}
+.lang-tag:hover { opacity: 1; }
+.lang-tag.sel { border-color: var(--gold); color: var(--gold); opacity: 1; }
+
+/* Country search */
+.country-input-wrap { position: relative; }
+.country-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--paper); border: 1px solid var(--rule);
+  max-height: 180px; overflow-y: auto;
+  z-index: 200; display: none;
+}
+.country-dropdown.visible { display: block; }
+.country-option {
+  padding: 8px 12px; font-size: 0.9rem;
+  cursor: pointer; color: var(--ink-light);
+  transition: background 0.15s;
+}
+.country-option:hover { background: rgba(138,104,40,0.06); color: var(--ink); }
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<header class="running-head">
+  <a href="dashboard.html" class="nds-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/><circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/><circle cx="50" cy="50" r="9" fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/><circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/></svg><span class="nds-logo-text">← Dashboard</span></a>
+  <span class="running-head-center" data-t="running">La mia scheda</span>
+  <div class="lang-switcher" id="lang-switcher"></div>
+</header>
+
+<main>
+  <div class="page-epigraph" data-t="epigraph">Profilo personale</div>
+  <h1 class="page-title" data-t="page_title">La mia <em>scheda</em></h1>
+  <div class="page-rule"></div>
+  <p class="page-sub" data-t="page_sub">Il ritratto che gli altri vedono di te.</p>
+
+  <div class="action-tabs">
+    <button class="action-tab active" id="tab-vedi" onclick="Tab.show('vedi')" data-t="tab_view">Vedi la scheda</button>
+    <button class="action-tab" id="tab-modifica" onclick="Tab.show('modifica')" data-t="tab_edit">Modifica / Nuova</button>
+    <button class="action-tab" id="tab-elimina" onclick="Tab.show('elimina')" data-t="tab_delete">Elimina</button>
+  </div>
+
+  <!-- ── VIEW ── -->
+  <div id="panel-vedi">
+    <div id="view-loading" style="font-style:italic;color:var(--ink-light);opacity:0.5;" data-t="loading">Caricamento…</div>
+    <div id="view-empty" style="display:none;">
+      <p style="font-style:italic;color:var(--ink-light);opacity:0.6;line-height:1.9;" data-t="no_scheda_msg">Non hai ancora una scheda. Creane una dalla sezione «Modifica / Nuova».</p>
+    </div>
+    <div class="scheda-view" id="view-content" style="display:none;"></div>
+  </div>
+
+  <!-- ── EDIT / CREATE ── -->
+  <div id="panel-modifica" style="display:none;">
+    <div class="scheda-form">
+
+      <div class="section-break">
+        <div class="section-break-line"></div>
+        <div class="section-break-label" data-t="section_personal">Dati personali</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" data-t="label_age">Età</label>
+          <input class="field-input" id="f-age" type="number" min="18" max="99" placeholder="38">
+        </div>
+        <div class="field-group">
+          <label class="field-label" data-t="label_gender">Genere</label>
+          <div class="radio-group" id="rg-gender">
+            <div class="radio-option" data-val="uomo" data-t="opt_man">Uomo</div>
+            <div class="radio-option" data-val="donna" data-t="opt_woman">Donna</div>
+            <div class="radio-option" data-val="altro" data-t="opt_other">Altro</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_country">Nazione</label>
+        <div class="country-input-wrap">
+          <input class="field-input" id="f-country" type="text" data-t-ph="ph_country" placeholder="Cerca nazione…" autocomplete="off" oninput="Country.filter(this.value)">
+          <div class="country-dropdown" id="country-dropdown"></div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_email">Email di recupero</label>
+        <input class="field-input" id="f-email" type="email" data-t-ph="ph_email" placeholder="La tua email" autocomplete="email">
+        <p class="field-hint" data-t="hint_email">Non viene mostrata agli altri. Usata solo per recuperare le credenziali.</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_lang_spoken">Lingue parlate</label>
+        <div class="lang-list" id="ll-spoken"></div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_lang_written">Lingue scritte</label>
+        <div class="lang-list" id="ll-written"></div>
+      </div>
+
+      <div class="section-break">
+        <div class="section-break-line"></div>
+        <div class="section-break-label" data-t="section_seeking">Cosa cerco</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_lookingfor">Cerco</label>
+        <div class="radio-group" id="rg-lookingfor">
+          <div class="radio-option" data-val="uomo" data-t="opt_man">Uomo</div>
+          <div class="radio-option" data-val="donna" data-t="opt_woman">Donna</div>
+          <div class="radio-option" data-val="indistinto" data-t="opt_any">Indistinto</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_seeking">Sto cercando</label>
+        <div class="radio-group" id="rg-seeking">
+          <div class="radio-option" data-val="romantico" data-t="opt_romantic">Connessione romantica</div>
+          <div class="radio-option" data-val="amicizia" data-t="opt_friend">Amicizia profonda</div>
+          <div class="radio-option" data-val="entrambi" data-t="opt_both">Entrambi</div>
+        </div>
+      </div>
+
+      <div class="section-break">
+        <div class="section-break-line"></div>
+        <div class="section-break-label" data-t="section_lifestyle">Stile di vita</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_smoke">Fumo</label>
+        <div class="radio-group" id="rg-smoke">
+          <div class="radio-option" data-val="mai" data-t="opt_never">Mai</div>
+          <div class="radio-option" data-val="avolte" data-t="opt_sometimes">A volte</div>
+          <div class="radio-option" data-val="si" data-t="opt_yes">Sì</div>
+          <div class="radio-option" data-val="conta" data-t="opt_depends">Conta la persona</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_alcohol">Alcool</label>
+        <div class="radio-group" id="rg-alcohol">
+          <div class="radio-option" data-val="mai" data-t="opt_never">Mai</div>
+          <div class="radio-option" data-val="occasionalmente" data-t="opt_occasionally">Occasionalmente</div>
+          <div class="radio-option" data-val="si" data-t="opt_yes">Sì</div>
+          <div class="radio-option" data-val="conta" data-t="opt_depends">Conta la persona</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_children">Figli</label>
+        <div class="radio-group" id="rg-children">
+          <div class="radio-option" data-val="ho" data-t="opt_have_kids">Ho figli</div>
+          <div class="radio-option" data-val="no" data-t="opt_no_kids">Non ho figli</div>
+          <div class="radio-option" data-val="vorrei" data-t="opt_want_kids">Vorrei</div>
+          <div class="radio-option" data-val="nonvorrei" data-t="opt_no_want_kids">Non vorrei</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_pets">Animali</label>
+        <div class="radio-group" id="rg-pets">
+          <div class="radio-option" data-val="si" data-t="opt_have_pets">Ho animali</div>
+          <div class="radio-option" data-val="no" data-t="opt_no_pets">Non ho animali</div>
+          <div class="radio-option" data-val="conta" data-t="opt_depends">Conta la persona</div>
+        </div>
+      </div>
+
+      <div class="section-break">
+        <div class="section-break-line"></div>
+        <div class="section-break-label" data-t="section_psych">Profilo psicologico</div>
+      </div>
+
+      <p style="font-size:0.85rem;color:var(--ink-light);opacity:0.6;font-style:italic;margin-bottom:20px;" data-t="score_hint">
+        Punteggi da <em>Anatomia di una Persona</em> (0–100). Se non hai fatto il test, lascia i valori a 50.
+      </p>
+
+      <div class="score-grid">
+        <div class="score-item">
+          <label style="color:#4a8a62" data-t="sc_ei">Int. Emotiva</label>
+          <input class="score-num" id="f-ei" type="number" min="0" max="100" placeholder="50">
+        </div>
+        <div class="score-item">
+          <label style="color:#3a6882" data-t="sc_logic">Logica</label>
+          <input class="score-num" id="f-logic" type="number" min="0" max="100" placeholder="50">
+        </div>
+        <div class="score-item">
+          <label style="color:#8a5a28" data-t="sc_ethics">Etica</label>
+          <input class="score-num" id="f-ethics" type="number" min="0" max="100" placeholder="50">
+        </div>
+        <div class="score-item">
+          <label style="color:#6a3a72" data-t="sc_pain">Consapevolezza</label>
+          <input class="score-num" id="f-pain" type="number" min="0" max="100" placeholder="50">
+        </div>
+      </div>
+
+      <div class="section-break">
+        <div class="section-break-line"></div>
+        <div class="section-break-label" data-t="section_phrase">La tua frase</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" data-t="label_phrase">Una frase che ti descrive</label>
+        <div id="f-phrase-wrap" style="position:relative"><textarea class="field-input" id="f-phrase" rows="3" maxlength="220" data-t-ph="ph_phrase" placeholder="Non una presentazione. Qualcosa di vero." oninput="document.getElementById('phrase-count').textContent=this.value.length+'/220'"></textarea></div>
+        <div class="field-hint" id="phrase-count">0/220</div>
+      </div>
+
+      <p class="msg-error" id="form-error" data-t="err_fill">Compila i campi obbligatori.</p>
+      <p class="msg-success" id="form-success" data-t="success_save">Scheda salvata.</p>
+
+      <div style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="Scheda.save()" data-t="btn_save">Salvare la scheda</button>
+        <a href="dashboard.html" class="btn-ghost" data-t="btn_cancel">Annulla</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE ── -->
+  <div id="panel-elimina" style="display:none;">
+    <div id="delete-no-scheda" style="font-style:italic;color:var(--ink-light);opacity:0.6;display:none;" data-t="no_scheda_delete">Non hai una scheda da eliminare.</div>
+    <div id="delete-has-scheda" style="display:none;">
+      <p style="font-size:0.95rem;line-height:1.9;color:var(--ink-light);max-width:500px;" data-t="delete_warning">
+        Eliminare la scheda significa uscire da tutti i profili visibili agli altri utenti. Le corrispondenze attive resteranno accessibili.
+      </p>
+      <div class="delete-confirm visible" style="margin-top:28px;">
+        <p data-t="delete_confirm_text">Sei sicuro di voler eliminare la tua scheda? Questa azione è irreversibile.</p>
+        <div class="delete-confirm-btns">
+          <button class="btn-danger" onclick="Scheda.delete()" data-t="btn_delete_confirm">Sì, eliminare</button>
+          <a href="dashboard.html" class="btn-ghost" style="padding:10px 24px;" data-t="btn_cancel">Annulla</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── TRANSLATIONS ──
+const T = {
+  it:{ running:'La mia scheda', epigraph:'Profilo personale', page_title:'La mia scheda', page_sub:'Il ritratto che gli altri vedono di te.', tab_view:'Vedi la scheda', tab_edit:'Modifica / Nuova', tab_delete:'Elimina', section_personal:'Dati personali', section_seeking:'Cosa cerco', section_lifestyle:'Stile di vita', section_psych:'Profilo psicologico', section_phrase:'La tua frase', label_age:'Età', label_gender:'Genere', label_country:'Nazione', label_email:'Email di recupero', ph_email:'La tua email', hint_email:'Non viene mostrata agli altri. Usata solo per recuperare le credenziali.', label_lang_spoken:'Lingue parlate', label_lang_written:'Lingue scritte', label_lookingfor:'Cerco', label_seeking:'Sto cercando', label_smoke:'Fumo', label_alcohol:'Alcool', label_children:'Figli', label_pets:'Animali', sc_ei:'Int. Emotiva', sc_logic:'Logica', sc_ethics:'Etica', sc_pain:'Consapevolezza', label_phrase:'Una frase che ti descrive', ph_country:'Cerca nazione…', ph_phrase:'Non una presentazione. Qualcosa di vero.', score_hint:'Punteggi da Anatomia di una Persona (0–100). Se non hai fatto il test, lascia a 50.', opt_man:'Uomo', opt_woman:'Donna', opt_other:'Altro', opt_any:'Indistinto', opt_romantic:'Connessione romantica', opt_friend:'Amicizia profonda', opt_both:'Entrambi', opt_never:'Mai', opt_sometimes:'A volte', opt_yes:'Sì', opt_depends:'Conta la persona', opt_occasionally:'Occasionalmente', opt_have_kids:'Ho figli', opt_no_kids:'Non ho figli', opt_want_kids:'Vorrei', opt_no_want_kids:'Non vorrei', opt_have_pets:'Ho animali', opt_no_pets:'Non ho animali', btn_save:'Salvare la scheda', btn_cancel:'Annulla', btn_delete_confirm:'Sì, eliminare', loading:'Caricamento…', no_scheda_msg:'Non hai ancora una scheda. Creane una dalla sezione «Modifica / Nuova».', no_scheda_delete:'Non hai una scheda da eliminare.', delete_warning:'Eliminare la scheda significa uscire da tutti i profili visibili. Le corrispondenze resteranno accessibili.', delete_confirm_text:'Sei sicuro di voler eliminare la tua scheda? Questa azione è irreversibile.', err_fill:'Compila i campi obbligatori.', success_save:'Scheda salvata con successo.', success_delete:'Scheda eliminata.' },
+  en:{ running:'My profile card', epigraph:'Personal profile', page_title:'My profile card', page_sub:'The portrait others see of you.', tab_view:'View card', tab_edit:'Edit / New', tab_delete:'Delete', section_personal:'Personal data', section_seeking:'What I seek', section_lifestyle:'Lifestyle', section_psych:'Psychological profile', section_phrase:'Your phrase', label_age:'Age', label_gender:'Gender', label_country:'Country', label_email:'Recovery email', ph_email:'Your email', hint_email:'Not shown to others. Used only to recover your credentials.', label_lang_spoken:'Spoken languages', label_lang_written:'Written languages', label_lookingfor:'Looking for', label_seeking:'Seeking', label_smoke:'Smoking', label_alcohol:'Alcohol', label_children:'Children', label_pets:'Pets', sc_ei:'Emotional Int.', sc_logic:'Logic', sc_ethics:'Ethics', sc_pain:'Self-awareness', label_phrase:'A phrase that describes you', ph_country:'Search country…', ph_phrase:'Not a presentation. Something true.', score_hint:'Scores from Anatomy of a Person (0–100). If you have not taken the test, leave at 50.', opt_man:'Man', opt_woman:'Woman', opt_other:'Other', opt_any:'Indistinct', opt_romantic:'Romantic connection', opt_friend:'Deep friendship', opt_both:'Both', opt_never:'Never', opt_sometimes:'Sometimes', opt_yes:'Yes', opt_depends:'Person matters', opt_occasionally:'Occasionally', opt_have_kids:'I have children', opt_no_kids:'No children', opt_want_kids:'Would like', opt_no_want_kids:'Would not', opt_have_pets:'I have pets', opt_no_pets:'No pets', btn_save:'Save profile card', btn_cancel:'Cancel', btn_delete_confirm:'Yes, delete', loading:'Loading…', no_scheda_msg:'You have no profile card yet. Create one from Edit / New.', no_scheda_delete:'You have no profile card to delete.', delete_warning:'Deleting your card means disappearing from all visible profiles. Active correspondence will remain accessible.', delete_confirm_text:'Are you sure you want to delete your profile card? This action cannot be undone.', err_fill:'Please fill in the required fields.', success_save:'Profile card saved.', success_delete:'Profile card deleted.' },
+  fr:{ running:'Ma fiche', epigraph:'Profil personnel', page_title:'Ma fiche', page_sub:'Le portrait que les autres voient de vous.', tab_view:'Voir la fiche', tab_edit:'Modifier / Nouvelle', tab_delete:'Supprimer', section_personal:'Données personnelles', section_seeking:'Ce que je cherche', section_lifestyle:'Mode de vie', section_psych:'Profil psychologique', section_phrase:'Votre phrase', label_age:'Âge', label_gender:'Genre', label_country:'Pays', label_email:'Email de récupération', ph_email:'Votre email', hint_email:'Non visible aux autres. Utilisée uniquement pour récupérer vos identifiants.', label_lang_spoken:'Langues parlées', label_lang_written:'Langues écrites', label_lookingfor:'Je cherche', label_seeking:'Je recherche', label_smoke:'Tabac', label_alcohol:'Alcool', label_children:'Enfants', label_pets:'Animaux', sc_ei:'Int. Émotionnelle', sc_logic:'Logique', sc_ethics:'Éthique', sc_pain:'Conscience de soi', label_phrase:'Une phrase qui vous décrit', ph_country:'Rechercher pays…', ph_phrase:'Pas une présentation. Quelque chose de vrai.', score_hint:'Scores d\'Anatomie d\'une Personne (0–100).', opt_man:'Homme', opt_woman:'Femme', opt_other:'Autre', opt_any:'Indistinct', opt_romantic:'Connexion romantique', opt_friend:'Amitié profonde', opt_both:'Les deux', opt_never:'Jamais', opt_sometimes:'Parfois', opt_yes:'Oui', opt_depends:'Ça dépend', opt_occasionally:'Occasionnellement', opt_have_kids:'J\'ai des enfants', opt_no_kids:'Sans enfants', opt_want_kids:'Je voudrais', opt_no_want_kids:'Je ne veux pas', opt_have_pets:'J\'ai des animaux', opt_no_pets:'Sans animaux', btn_save:'Sauvegarder', btn_cancel:'Annuler', btn_delete_confirm:'Oui, supprimer', loading:'Chargement…', no_scheda_msg:'Vous n\'avez pas encore de fiche.', no_scheda_delete:'Vous n\'avez pas de fiche à supprimer.', delete_warning:'Supprimer votre fiche vous rendra invisible aux autres utilisateurs.', delete_confirm_text:'Êtes-vous sûr de vouloir supprimer votre fiche ?', err_fill:'Remplissez les champs obligatoires.', success_save:'Fiche sauvegardée.', success_delete:'Fiche supprimée.' },
+  de:{ running:'Mein Profil', epigraph:'Persönliches Profil', page_title:'Mein Profil', page_sub:'Das Porträt, das andere von dir sehen.', tab_view:'Profil ansehen', tab_edit:'Bearbeiten / Neu', tab_delete:'Löschen', section_personal:'Persönliche Daten', section_seeking:'Was ich suche', section_lifestyle:'Lebensstil', section_psych:'Psychologisches Profil', section_phrase:'Dein Satz', label_age:'Alter', label_gender:'Geschlecht', label_country:'Land', label_email:'Wiederherstellungs-E-Mail', ph_email:'Deine E-Mail', hint_email:'Nicht für andere sichtbar. Nur zur Wiederherstellung deiner Zugangsdaten.', label_lang_spoken:'Gesprochene Sprachen', label_lang_written:'Geschriebene Sprachen', label_lookingfor:'Ich suche', label_seeking:'Ich suche nach', label_smoke:'Rauchen', label_alcohol:'Alkohol', label_children:'Kinder', label_pets:'Haustiere', sc_ei:'Emot. Intelligenz', sc_logic:'Logik', sc_ethics:'Ethik', sc_pain:'Selbstbewusstsein', label_phrase:'Ein Satz der dich beschreibt', ph_country:'Land suchen…', ph_phrase:'Keine Vorstellung. Etwas Wahres.', score_hint:'Punkte aus Anatomie einer Person (0–100).', opt_man:'Mann', opt_woman:'Frau', opt_other:'Andere', opt_any:'Offen', opt_romantic:'Romantische Verbindung', opt_friend:'Tiefe Freundschaft', opt_both:'Beides', opt_never:'Nie', opt_sometimes:'Manchmal', opt_yes:'Ja', opt_depends:'Kommt drauf an', opt_occasionally:'Gelegentlich', opt_have_kids:'Ich habe Kinder', opt_no_kids:'Keine Kinder', opt_want_kids:'Ich möchte', opt_no_want_kids:'Ich möchte nicht', opt_have_pets:'Ich habe Haustiere', opt_no_pets:'Keine Haustiere', btn_save:'Profil speichern', btn_cancel:'Abbrechen', btn_delete_confirm:'Ja, löschen', loading:'Lädt…', no_scheda_msg:'Noch kein Profil.', no_scheda_delete:'Kein Profil zum Löschen.', delete_warning:'Das Löschen deines Profils macht dich für andere unsichtbar.', delete_confirm_text:'Möchtest du dein Profil wirklich löschen?', err_fill:'Bitte alle Pflichtfelder ausfüllen.', success_save:'Profil gespeichert.', success_delete:'Profil gelöscht.' },
+  es:{ running:'Mi ficha', epigraph:'Perfil personal', page_title:'Mi ficha', page_sub:'El retrato que los demás ven de ti.', tab_view:'Ver ficha', tab_edit:'Editar / Nueva', tab_delete:'Eliminar', section_personal:'Datos personales', section_seeking:'Qué busco', section_lifestyle:'Estilo de vida', section_psych:'Perfil psicológico', section_phrase:'Tu frase', label_age:'Edad', label_gender:'Género', label_country:'País', label_email:'Email de recuperación', ph_email:'Tu email', hint_email:'No visible para otros. Solo para recuperar tus credenciales.', label_lang_spoken:'Idiomas hablados', label_lang_written:'Idiomas escritos', label_lookingfor:'Busco', label_seeking:'Estoy buscando', label_smoke:'Tabaco', label_alcohol:'Alcohol', label_children:'Hijos', label_pets:'Mascotas', sc_ei:'Int. Emocional', sc_logic:'Lógica', sc_ethics:'Ética', sc_pain:'Autoconciencia', label_phrase:'Una frase que te describe', ph_country:'Buscar país…', ph_phrase:'No una presentación. Algo verdadero.', score_hint:'Puntuaciones de Anatomía de una Persona (0–100).', opt_man:'Hombre', opt_woman:'Mujer', opt_other:'Otro', opt_any:'Indistinto', opt_romantic:'Conexión romántica', opt_friend:'Amistad profunda', opt_both:'Ambos', opt_never:'Nunca', opt_sometimes:'A veces', opt_yes:'Sí', opt_depends:'Depende de la persona', opt_occasionally:'Ocasionalmente', opt_have_kids:'Tengo hijos', opt_no_kids:'Sin hijos', opt_want_kids:'Quisiera', opt_no_want_kids:'No quisiera', opt_have_pets:'Tengo mascotas', opt_no_pets:'Sin mascotas', btn_save:'Guardar ficha', btn_cancel:'Cancelar', btn_delete_confirm:'Sí, eliminar', loading:'Cargando…', no_scheda_msg:'Aún no tienes ficha.', no_scheda_delete:'No tienes ficha que eliminar.', delete_warning:'Eliminar tu ficha te hará invisible a otros usuarios.', delete_confirm_text:'¿Estás seguro de que quieres eliminar tu ficha?', err_fill:'Completa los campos obligatorios.', success_save:'Ficha guardada.', success_delete:'Ficha eliminada.' },
+  pt:{ running:'Minha ficha', epigraph:'Perfil pessoal', page_title:'Minha ficha', page_sub:'O retrato que os outros veem de você.', tab_view:'Ver ficha', tab_edit:'Editar / Nova', tab_delete:'Excluir', section_personal:'Dados pessoais', section_seeking:'O que procuro', section_lifestyle:'Estilo de vida', section_psych:'Perfil psicológico', section_phrase:'Sua frase', label_age:'Idade', label_gender:'Gênero', label_country:'País', label_email:'Email de recuperação', ph_email:'Seu email', hint_email:'Não visível para outros. Usado apenas para recuperar suas credenciais.', label_lang_spoken:'Idiomas falados', label_lang_written:'Idiomas escritos', label_lookingfor:'Procuro', label_seeking:'Estou procurando', label_smoke:'Fumo', label_alcohol:'Álcool', label_children:'Filhos', label_pets:'Animais', sc_ei:'Int. Emocional', sc_logic:'Lógica', sc_ethics:'Ética', sc_pain:'Autoconsciência', label_phrase:'Uma frase que te descreve', ph_country:'Buscar país…', ph_phrase:'Não uma apresentação. Algo verdadeiro.', score_hint:'Pontuações de Anatomia de uma Pessoa (0–100).', opt_man:'Homem', opt_woman:'Mulher', opt_other:'Outro', opt_any:'Indistinto', opt_romantic:'Conexão romântica', opt_friend:'Amizade profunda', opt_both:'Ambos', opt_never:'Nunca', opt_sometimes:'Às vezes', opt_yes:'Sim', opt_depends:'Depende da pessoa', opt_occasionally:'Ocasionalmente', opt_have_kids:'Tenho filhos', opt_no_kids:'Sem filhos', opt_want_kids:'Gostaria', opt_no_want_kids:'Não gostaria', opt_have_pets:'Tenho animais', opt_no_pets:'Sem animais', btn_save:'Salvar ficha', btn_cancel:'Cancelar', btn_delete_confirm:'Sim, excluir', loading:'Carregando…', no_scheda_msg:'Você ainda não tem uma ficha.', no_scheda_delete:'Você não tem ficha para excluir.', delete_warning:'Excluir sua ficha tornará você invisível para outros usuários.', delete_confirm_text:'Tem certeza que deseja excluir sua ficha?', err_fill:'Preencha os campos obrigatórios.', success_save:'Ficha salva.', success_delete:'Ficha excluída.' },
+  zh:{ running:'我的档案', epigraph:'个人档案', page_title:'我的档案', page_sub:'其他人看到的你的画像。', tab_view:'查看档案', tab_edit:'编辑 / 新建', tab_delete:'删除', section_personal:'个人信息', section_seeking:'我在寻求', section_lifestyle:'生活方式', section_psych:'心理档案', section_phrase:'你的一句话', label_age:'年龄', label_gender:'性别', label_country:'国家', label_email:'恢复邮箱', ph_email:'您的邮箱', hint_email:'不对他人显示。仅用于找回登录凭据。', label_lang_spoken:'口语语言', label_lang_written:'书写语言', label_lookingfor:'寻找', label_seeking:'我在寻求', label_smoke:'吸烟', label_alcohol:'饮酒', label_children:'子女', label_pets:'宠物', sc_ei:'情商', sc_logic:'逻辑', sc_ethics:'伦理', sc_pain:'自我意识', label_phrase:'一句描述你的话', ph_country:'搜索国家…', ph_phrase:'不是介绍。是真实的东西。', score_hint:'来自《一个人的解剖》的分数（0–100）。', opt_man:'男', opt_woman:'女', opt_other:'其他', opt_any:'不限', opt_romantic:'浪漫连接', opt_friend:'深度友谊', opt_both:'两者皆可', opt_never:'从不', opt_sometimes:'有时', opt_yes:'是', opt_depends:'因人而异', opt_occasionally:'偶尔', opt_have_kids:'有子女', opt_no_kids:'没有子女', opt_want_kids:'想要', opt_no_want_kids:'不想要', opt_have_pets:'有宠物', opt_no_pets:'没有宠物', btn_save:'保存档案', btn_cancel:'取消', btn_delete_confirm:'是，删除', loading:'加载中…', no_scheda_msg:'您还没有档案。', no_scheda_delete:'没有档案可删除。', delete_warning:'删除您的档案将使您对其他用户不可见。', delete_confirm_text:'您确定要删除您的档案吗？', err_fill:'请填写必填字段。', success_save:'档案已保存。', success_delete:'档案已删除。' }
+};
+const LANGS = ['it','en','fr','de','es','pt','zh'];
+const LANG_LABELS = { it:'IT', en:'EN', fr:'FR', de:'DE', es:'ES', pt:'PT', zh:'中' };
+let currentLang = localStorage.getItem('nds_lang') || 'it';
+function tr(k){ return (T[currentLang]||T.it)[k]||k; }
+
+function applyLang() {
+  document.querySelectorAll('[data-t]').forEach(el=>{ const v=tr(el.getAttribute('data-t')); if(v) el.textContent=v; });
+  document.querySelectorAll('[data-t-ph]').forEach(el=>{ const v=tr(el.getAttribute('data-t-ph')); if(v) el.placeholder=v; });
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+  // Re-render radio options
+  document.querySelectorAll('.radio-option[data-t], .radio-option[data-t]').forEach(el=>{
+    const v=tr(el.getAttribute('data-t')); if(v) el.textContent=v;
+  });
+}
+function buildLangSwitcher() {
+  const sw=document.getElementById('lang-switcher');
+  LANGS.forEach(l=>{ const b=document.createElement('button'); b.className='lang-btn'; b.dataset.lang=l; b.textContent=LANG_LABELS[l]; b.onclick=()=>{ currentLang=l; localStorage.setItem('nds_lang',l); applyLang(); }; sw.appendChild(b); });
+}
+function showToast(msg){ const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('visible'); setTimeout(()=>e.classList.remove('visible'),2800); }
+
+// ── COUNTRIES ──
+const COUNTRIES = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Bolivia','Brazil','Bulgaria','Cambodia','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Ecuador','Egypt','Estonia','Ethiopia','Finland','France','Germany','Ghana','Greece','Guatemala','Hungary','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kazakhstan','Kenya','Latvia','Lebanon','Libya','Lithuania','Luxembourg','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Romania','Russia','Saudi Arabia','Serbia','Singapore','Slovakia','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Syria','Taiwan','Thailand','Turkey','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Venezuela','Vietnam'];
+
+const Country = {
+  filter(val) {
+    const dd = document.getElementById('country-dropdown');
+    if(!val || val.length < 2) { dd.classList.remove('visible'); return; }
+    const matches = COUNTRIES.filter(c => c.toLowerCase().includes(val.toLowerCase())).slice(0,8);
+    dd.innerHTML = matches.map(c=>`<div class="country-option" onclick="Country.select('${c}')">${c}</div>`).join('');
+    dd.classList.toggle('visible', matches.length>0);
+  },
+  select(name) {
+    document.getElementById('f-country').value = name;
+    document.getElementById('country-dropdown').classList.remove('visible');
+  }
+};
+document.addEventListener('click', e=>{ if(!e.target.closest('.country-input-wrap')) document.getElementById('country-dropdown').classList.remove('visible'); });
+
+// ── LANGUAGES LIST ──
+const ALL_LANGS = ['Italiano','English','Français','Deutsch','Español','Português','中文','Arabic / عربي','Russian / Русский','Japanese / 日本語','Korean / 한국어','Hindi / हिन्दी','Turkish / Türkçe','Dutch / Nederlands','Polish / Polski','Swedish / Svenska','Danish / Dansk','Finnish / Suomi','Romanian / Română','Greek / Ελληνικά','Czech / Čeština','Hungarian / Magyar','Hebrew / עברית'];
+
+let spokenSel = [];
+let writtenSel = [];
+
+function buildLangLists() {
+  const spoken  = document.getElementById('ll-spoken');
+  const written = document.getElementById('ll-written');
+  spoken.innerHTML = '';
+  written.innerHTML = '';
+  ALL_LANGS.forEach(l => {
+    const ts = document.createElement('div');
+    ts.className = 'lang-tag' + (spokenSel.includes(l)?' sel':'');
+    ts.textContent = l;
+    ts.onclick = () => { spokenSel.includes(l) ? (spokenSel=spokenSel.filter(x=>x!==l)) : spokenSel.push(l); ts.classList.toggle('sel'); };
+    spoken.appendChild(ts);
+
+    const tw = document.createElement('div');
+    tw.className = 'lang-tag' + (writtenSel.includes(l)?' sel':'');
+    tw.textContent = l;
+    tw.onclick = () => { writtenSel.includes(l) ? (writtenSel=writtenSel.filter(x=>x!==l)) : writtenSel.push(l); tw.classList.toggle('sel'); };
+    written.appendChild(tw);
+  });
+}
+
+// ── RADIO GROUPS ──
+const radioState = {};
+function initRadioGroups() {
+  document.querySelectorAll('.radio-group').forEach(group => {
+    const id = group.id;
+    group.querySelectorAll('.radio-option').forEach(opt => {
+      opt.onclick = () => {
+        group.querySelectorAll('.radio-option').forEach(o=>o.classList.remove('selected'));
+        opt.classList.add('selected');
+        radioState[id] = opt.dataset.val;
+      };
+    });
+  });
+}
+function setRadio(groupId, val) {
+  const group = document.getElementById(groupId);
+  if(!group) return;
+  group.querySelectorAll('.radio-option').forEach(o=>{
+    o.classList.toggle('selected', o.dataset.val===val);
+  });
+  radioState[groupId] = val;
+}
+
+// ── TABS ──
+const Tab = {
+  show(name) {
+    ['vedi','modifica','elimina'].forEach(n=>{
+      document.getElementById('panel-'+n).style.display = n===name?'block':'none';
+      document.getElementById('tab-'+n).classList.toggle('active', n===name);
+    });
+    if(name==='elimina') Scheda.checkForDelete();
+  }
+};
+
+// ── ARCHETYPES ──
+function getArchetypeKey(ei,lo,et,pa){ const avg=(ei+lo+et+pa)/4; if(ei>=75&&lo>=75&&et>=75&&pa>=70)return'lucido'; if(ei>=75&&lo<55&&et>=70)return'custode'; if(lo>=80&&ei<55&&pa<55)return'costruttore'; if(et>=80&&ei>=65&&lo>=65)return'garante'; if(pa>=80&&ei>=70)return'alchimista'; if(et>=75&&pa>=75&&lo<60)return'morale'; if(ei>=70&&pa>=70&&lo>=60)return'integrata'; if(lo>=70&&et>=70&&ei<60)return'giurista'; if(avg>=70)return'persona'; if(avg>=55)return'transizione'; return'mappa'; }
+const ARCH={ it:{lucido:'Il Testimone Lucido',custode:'Il Custode Empatico',costruttore:'Il Costruttore di Sistemi',garante:'Il Garante Consapevole',alchimista:"Il Cercatore di Profondità",morale:'Il Testimone Morale',integrata:'La Presenza Integrata',giurista:"Il Giurista dell'Anima",persona:'La Persona Integrata',transizione:'Il Profilo in Transizione',mappa:'La Mappa da Disegnare'}, en:{lucido:'The Lucid Witness',custode:'The Empathic Guardian',costruttore:'The System Builder',garante:'The Conscious Guarantor',alchimista:'The Depth Seeker',morale:'The Moral Witness',integrata:'The Integrated Presence',giurista:'The Soul Jurist',persona:'The Integrated Person',transizione:'The Transitional Profile',mappa:'The Map Yet to Be Drawn'}, fr:{lucido:'Le Témoin Lucide',custode:'Le Gardien Empathique',costruttore:'Le Constructeur de Systèmes',garante:'Le Garant Conscient',alchimista:"Le Chercheur de Profondeur",morale:'Le Témoin Moral',integrata:'La Présence Intégrée',giurista:"Le Juriste de l'Âme",persona:'La Personne Intégrée',transizione:'Le Profil en Transition',mappa:'La Carte à Dessiner'}, de:{lucido:'Der Luzide Zeuge',custode:'Der Empathische Hüter',costruttore:'Der Systemerbauer',garante:'Der Bewusste Garant',alchimista:'Der Tiefenforscher',morale:'Der Moralische Zeuge',integrata:'Die Integrierte Präsenz',giurista:'Der Seelen-Jurist',persona:'Die Integrierte Person',transizione:'Das Übergangsprofil',mappa:'Die noch zu zeichnende Karte'}, es:{lucido:'El Testigo Lúcido',custode:'El Guardián Empático',costruttore:'El Constructor de Sistemas',garante:'El Garante Consciente',alchimista:'El Buscador de Profundidad',morale:'El Testigo Moral',integrata:'La Presencia Integrada',giurista:'El Jurista del Alma',persona:'La Persona Integrada',transizione:'El Perfil en Transición',mappa:'El Mapa por Dibujar'}, pt:{lucido:'A Testemunha Lúcida',custode:'O Guardião Empático',costruttore:'O Construtor de Sistemas',garante:'O Garante Consciente',alchimista:'O Buscador de Profundidade',morale:'A Testemunha Moral',integrata:'A Presença Integrada',giurista:'O Jurista da Alma',persona:'A Pessoa Integrada',transizione:'O Perfil em Transição',mappa:'O Mapa por Desenhar'}, zh:{lucido:'清醒的见证者',custode:'共情守护者',costruttore:'系统构建者',garante:'自觉保障者',alchimista:'深度探索者',morale:'道德见证者',integrata:'整合的存在',giurista:'灵魂法官',persona:'整合的人',transizione:'过渡期档案',mappa:'待描绘的地图'} };
+function archName(ei,lo,et,pa){ return (ARCH[currentLang]||ARCH.it)[getArchetypeKey(ei,lo,et,pa)]; }
+
+// ── SCHEDA CRUD ──
+let currentSchedaId = null;
+
+const Scheda = {
+  async load() {
+    const session = JSON.parse(sessionStorage.getItem('nds_session')||'{}');
+    const username = session.username;
+    if(!username) return null;
+
+    if(window.__db) {
+      const { collection, query, where, getDocs } = window.__fb;
+      const q = query(collection(window.__db,'schede'), where('username','==',username));
+      const snap = await getDocs(q);
+      if(!snap.empty) {
+        currentSchedaId = snap.docs[0].id;
+        return snap.docs[0].data();
+      }
+    } else {
+      const all = JSON.parse(localStorage.getItem('nds_schede')||'[]');
+      const found = all.find(s=>s.username===username);
+      if(found) { currentSchedaId = found.id; return found; }
+    }
+    return null;
+  },
+
+  async renderView() {
+    const loading = document.getElementById('view-loading');
+    const empty   = document.getElementById('view-empty');
+    const content = document.getElementById('view-content');
+    loading.style.display='block'; empty.style.display='none'; content.style.display='none';
+
+    const s = await this.load();
+    loading.style.display='none';
+
+    if(!s) { empty.style.display='block'; return; }
+
+    const arch = archName(s.ei||50, s.logic||50, s.ethics||50, s.pain||50);
+    content.style.display='block';
+    content.innerHTML = `
+      <div class="archetype-display">
+        <div class="archetype-display-label" style="font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.6;margin-bottom:10px;">Archetipo</div>
+        <div class="archetype-display-name">${arch}</div>
+      </div>
+      <div class="view-section">
+        <div class="view-section-label">Dati personali</div>
+        <div class="view-row"><span class="view-key">Età</span><span class="view-val">${s.age||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Genere</span><span class="view-val">${s.gender||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Nazione</span><span class="view-val">${s.country||'—'}</span></div>
+        <div class="view-row"><span class="view-key" style="font-style:italic;opacity:0.5;">Email di recupero</span><span class="view-val" style="opacity:0.4;font-size:0.82rem;">${s.email ? '••••••' + s.email.slice(s.email.indexOf('@')) : '—'}</span></div>
+        <div class="view-row"><span class="view-key">Lingue parlate</span><span class="view-val">${(s.spokenLangs||[]).join(', ')||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Lingue scritte</span><span class="view-val">${(s.writtenLangs||[]).join(', ')||'—'}</span></div>
+      </div>
+      <div class="view-section">
+        <div class="view-section-label">Cosa cerco</div>
+        <div class="view-row"><span class="view-key">Cerco</span><span class="view-val">${s.lookingfor||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Tipo connessione</span><span class="view-val">${s.seeking||'—'}</span></div>
+      </div>
+      <div class="view-section">
+        <div class="view-section-label">Stile di vita</div>
+        <div class="view-row"><span class="view-key">Fumo</span><span class="view-val">${s.smoke||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Alcool</span><span class="view-val">${s.alcohol||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Figli</span><span class="view-val">${s.children||'—'}</span></div>
+        <div class="view-row"><span class="view-key">Animali</span><span class="view-val">${s.pets||'—'}</span></div>
+      </div>
+      <div class="view-section">
+        <div class="view-section-label">Profilo psicologico</div>
+        <div class="view-row"><span class="view-key">Int. Emotiva</span><span class="view-val" style="color:#4a8a62">${s.ei||50}</span></div>
+        <div class="view-row"><span class="view-key">Logica</span><span class="view-val" style="color:#3a6882">${s.logic||50}</span></div>
+        <div class="view-row"><span class="view-key">Etica</span><span class="view-val" style="color:#8a5a28">${s.ethics||50}</span></div>
+        <div class="view-row"><span class="view-key">Consapevolezza</span><span class="view-val" style="color:#6a3a72">${s.pain||50}</span></div>
+      </div>
+      <div class="view-section">
+        <div class="view-section-label">La tua frase</div>
+        <blockquote style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;line-height:1.75;color:var(--ink2);border-left:2px solid var(--gold);padding-left:20px;margin-top:8px;">${s.phrase||'—'}</blockquote>
+      </div>
+    `;
+  },
+
+  async fillForm() {
+    const s = await this.load();
+    if(!s) return;
+    document.getElementById('f-age').value = s.age||'';
+    document.getElementById('f-country').value = s.country||'';
+    document.getElementById('f-email').value = s.email||'';
+    document.getElementById('f-ei').value = s.ei||'';
+    document.getElementById('f-logic').value = s.logic||'';
+    document.getElementById('f-ethics').value = s.ethics||'';
+    document.getElementById('f-pain').value = s.pain||'';
+    document.getElementById('f-phrase').value = s.phrase||'';
+    document.getElementById('phrase-count').textContent = (s.phrase||'').length+'/220';
+    setRadio('rg-gender', s.gender);
+    setRadio('rg-lookingfor', s.lookingfor);
+    setRadio('rg-seeking', s.seeking);
+    setRadio('rg-smoke', s.smoke);
+    setRadio('rg-alcohol', s.alcohol);
+    setRadio('rg-children', s.children);
+    setRadio('rg-pets', s.pets);
+    spokenSel = s.spokenLangs||[];
+    writtenSel = s.writtenLangs||[];
+    buildLangLists();
+  },
+
+  async save() {
+    const session = JSON.parse(sessionStorage.getItem('nds_session')||'{}');
+    const username = session.username;
+    const err = document.getElementById('form-error');
+    const suc = document.getElementById('form-success');
+    err.classList.remove('visible'); suc.classList.remove('visible');
+
+    const age     = parseInt(document.getElementById('f-age').value);
+    const country = document.getElementById('f-country').value.trim();
+    const email   = document.getElementById('f-email').value.trim();
+    const phrase  = document.getElementById('f-phrase').value.trim();
+    if(!age || !country || !phrase) { err.classList.add('visible'); return; }
+
+    const btn = document.querySelector('#panel-modifica .btn-primary');
+    btn.disabled = true;
+
+    const data = {
+      username, age, country, email, phrase,
+      gender:     radioState['rg-gender']||'',
+      lookingfor: radioState['rg-lookingfor']||'indistinto',
+      seeking:    radioState['rg-seeking']||'entrambi',
+      smoke:      radioState['rg-smoke']||'conta',
+      alcohol:    radioState['rg-alcohol']||'conta',
+      children:   radioState['rg-children']||'conta',
+      pets:       radioState['rg-pets']||'conta',
+      spokenLangs:  spokenSel,
+      writtenLangs: writtenSel,
+      ei:     parseInt(document.getElementById('f-ei').value)||50,
+      logic:  parseInt(document.getElementById('f-logic').value)||50,
+      ethics: parseInt(document.getElementById('f-ethics').value)||50,
+      pain:   parseInt(document.getElementById('f-pain').value)||50,
+      updatedAt: Date.now()
+    };
+
+    try {
+      if(window.__db) {
+        const { collection, query, where, getDocs, addDoc, doc, updateDoc } = window.__fb;
+        if(currentSchedaId) {
+          await updateDoc(doc(window.__db,'schede',currentSchedaId), data);
+        } else {
+          await addDoc(collection(window.__db,'schede'), data);
+        }
+      } else {
+        const all = JSON.parse(localStorage.getItem('nds_schede')||'[]');
+        const idx = all.findIndex(s=>s.username===username);
+        if(idx>=0) all[idx]={...all[idx],...data};
+        else all.push({...data, id:'s_'+Date.now()});
+        localStorage.setItem('nds_schede', JSON.stringify(all));
+      }
+      suc.textContent = tr('success_save');
+      suc.classList.add('visible');
+      showToast(tr('success_save'));
+    } catch(e) {
+      err.textContent = tr('err_fill'); err.classList.add('visible');
+    }
+    btn.disabled = false;
+  },
+
+  async checkForDelete() {
+    const s = await this.load();
+    document.getElementById('delete-no-scheda').style.display  = s ? 'none' : 'block';
+    document.getElementById('delete-has-scheda').style.display = s ? 'block' : 'none';
+  },
+
+  async delete() {
+    const session = JSON.parse(sessionStorage.getItem('nds_session')||'{}');
+    const username = session.username;
+    try {
+      if(window.__db && currentSchedaId) {
+        const { doc, deleteDoc } = window.__fb;
+        await deleteDoc(doc(window.__db,'schede',currentSchedaId));
+      } else {
+        const all = JSON.parse(localStorage.getItem('nds_schede')||'[]').filter(s=>s.username!==username);
+        localStorage.setItem('nds_schede', JSON.stringify(all));
+      }
+      showToast(tr('success_delete'));
+      setTimeout(()=>window.location.href='dashboard.html', 1500);
+    } catch(e) { showToast('Errore durante l\'eliminazione.'); }
+  }
+};
+
+// ── INIT ──
+async function init() {
+  const session = sessionStorage.getItem('nds_session');
+  if(!session) { window.location.href='login.html'; return; }
+
+  buildLangSwitcher();
+  buildLangLists();
+  initRadioGroups();
+  applyLang();
+
+  await Scheda.renderView();
+  await Scheda.fillForm();
+}
+
+document.addEventListener('firebaseReady', init);
+ndsWatermark('f-phrase-wrap');
+setTimeout(init, 3000);
+
+// ── NDS WATERMARK ──
+function ndsWatermark(containerId) {
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.classList.add('composer-watermark-wrap');
+  const positions = [
+    {top:'8px',  left:'12px',  size:28},
+    {top:'50%',  right:'14px', size:24, transform:'translateY(-50%)'},
+    {bottom:'8px',left:'50%',  size:22, transform:'translateX(-50%)'},
+    {top:'8px',  right:'16px', size:26},
+    {bottom:'10px',right:'12px',size:20},
+  ];
+  const pick = positions[Math.floor(Math.random()*positions.length)];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.setAttribute('width', pick.size);
+  svg.setAttribute('height', pick.size);
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('nds-watermark');
+  Object.entries(pick).forEach(([k,v])=>{ if(k!=='size') svg.style[k]=v; });
+  svg.innerHTML = '<circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/><circle cx="50" cy="50" r="24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="1"/><circle cx="50" cy="50" r="9" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.6"/><circle cx="50" cy="50" r="3" fill="currentColor" opacity="1"/>';
+  wrap.style.position='relative';
+  wrap.insertBefore(svg, wrap.firstChild);
+}
+
+</script>
+</body>
+</html>

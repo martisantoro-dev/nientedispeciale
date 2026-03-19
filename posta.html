@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corrispondenza — Niente di speciale</title>
+<style>body{visibility:hidden;}
+/* ── NDS LOGO ── */
+.nds-logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nds-logo svg { flex-shrink:0; }
+.nds-logo-text { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; color:var(--ink-light); opacity:0.7; letter-spacing:0.04em; }
+
+/* ── WATERMARK nel composer ── */
+.composer-watermark-wrap { position:relative; }
+.composer-watermark-wrap .field-input,
+.composer-watermark-wrap .composer-textarea { position:relative; z-index:1; background:transparent; }
+.nds-watermark {
+  position:absolute; pointer-events:none; z-index:0;
+  opacity:0.07; transition:opacity 0.4s ease;
+}
+.composer-watermark-wrap:focus-within .nds-watermark { opacity:0.035; }
+
+
+/* ── WATERMARK CERCHI ── */
+
+
+</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{document.body.style.visibility='visible';
+  // Apply device preference
+  const _d=localStorage.getItem('nds_device')||'desktop';
+  document.documentElement.setAttribute('data-device',_d);
+});</script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, updateDoc, doc, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const firebaseConfig = {
+    apiKey: "AIzaSyA_i1f30ne63Pse8OYivZozTR5dId5aVEE", authDomain: "niente-di-speciale.firebaseapp.com",
+    projectId: "niente-di-speciale", storageBucket: "niente-di-speciale.firebasestorage.app",
+    messagingSenderId: "105246468063", appId: "1:105246468063:web:8e00a5359dc872b11a866a"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  window.__db = db;
+  window.__fb = { collection, query, where, getDocs, addDoc, onSnapshot, orderBy, updateDoc, doc, serverTimestamp };
+  window.__firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+/* ── LAYOUT: two-column ── */
+.posta-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  min-height: calc(100vh - 80px);
+  margin-top: -40px;
+}
+
+/* ── SIDEBAR: conversation list ── */
+.conv-sidebar {
+  border-right: 1px solid var(--rule);
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
+  position: sticky; top: 80px;
+}
+.conv-sidebar-head {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--rule2);
+}
+.conv-sidebar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.95rem;
+  color: var(--ink); letter-spacing: 0.02em;
+}
+.conv-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule2);
+  cursor: pointer; transition: background 0.2s;
+}
+.conv-item:hover { background: rgba(138,104,40,0.04); }
+.conv-item.active { background: rgba(138,104,40,0.07); border-left: 2px solid var(--gold); padding-left: 18px; }
+.conv-item-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.95rem; color: var(--ink);
+  margin-bottom: 4px;
+}
+.conv-item-preview {
+  font-size: 0.75rem; color: var(--ink-light);
+  opacity: 0.5; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.conv-item-time {
+  font-size: 0.62rem; color: var(--ink-light);
+  opacity: 0.35; letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+.conv-empty-msg {
+  padding: 32px 20px;
+  font-style: italic; font-size: 0.85rem;
+  color: var(--ink-light); opacity: 0.45;
+  line-height: 1.8;
+}
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 80px);
+}
+.chat-panel-empty {
+  flex: 1; display: flex; align-items: center;
+  justify-content: center; text-align: center;
+  padding: 60px 40px;
+}
+.chat-panel-empty p {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.05rem;
+  color: var(--ink-light); opacity: 0.4;
+  line-height: 1.85; max-width: 280px;
+}
+
+/* Chat header */
+.chat-head {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--rule2);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.chat-head-info {}
+.chat-head-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 1.15rem; color: var(--ink);
+}
+.chat-head-arch {
+  font-size: 0.7rem; color: var(--gold);
+  opacity: 0.65; letter-spacing: 0.08em; margin-top: 2px;
+}
+
+/* Translate toggle */
+.translate-toggle {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.5; cursor: pointer; user-select: none;
+  transition: opacity 0.2s;
+}
+.translate-toggle:hover { opacity: 0.9; }
+.translate-toggle input { display: none; }
+.toggle-pill {
+  width: 34px; height: 18px;
+  background: var(--rule);
+  border-radius: 9px; position: relative;
+  transition: background 0.3s;
+}
+.toggle-pill::after {
+  content:''; position: absolute;
+  top:3px; left:3px; width:12px; height:12px;
+  background: var(--ink-light); border-radius:50%;
+  transition: all 0.3s;
+}
+.translate-toggle input:checked + .toggle-pill { background: var(--gold); }
+.translate-toggle input:checked + .toggle-pill::after { left:19px; background:var(--ink); }
+
+/* Messages */
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 32px 40px;
+  display: flex; flex-direction: column; gap: 32px;
+}
+.msg-block { display: flex; flex-direction: column; }
+.msg-block.sent { align-items: flex-end; }
+.msg-block.received { align-items: flex-start; }
+
+.msg-meta {
+  font-size: 0.62rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-light);
+  opacity: 0.35; margin-bottom: 8px;
+}
+.msg-letter {
+  max-width: 78%;
+  border: 1px solid var(--rule);
+  padding: 22px 26px;
+  position: relative;
+}
+.msg-block.sent   .msg-letter { border-color: rgba(138,104,40,0.3); background: rgba(138,104,40,0.04); }
+.msg-block.received .msg-letter { background: rgba(26,21,16,0.02); }
+
+.msg-text {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic; font-size: 1rem;
+  line-height: 1.9; color: var(--ink2);
+  white-space: pre-wrap;
+}
+.msg-original {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--rule2);
+  font-size: 0.75rem; color: var(--ink-light);
+  opacity: 0.45; line-height: 1.6;
+  font-style: normal;
+}
+.msg-original-label {
+  font-size: 0.6rem; letter-spacing: 0.12em;
+  text-transform: uppercase; opacity: 0.6;
+  margin-bottom: 4px;
+}
+.msg-translating {
+  font-size: 0.72rem; color: var(--gold);
+  opacity: 0.55; font-style: italic;
+  margin-top: 8px; letter-spacing: 0.04em;
+}
+
+/* Composer */
+.chat-composer {
+  border-top: 1px solid var(--rule);
+  padding: 20px 40px 28px;
+  background: var(--paper);
+}
+.composer-inner { display: flex; gap: 12px; align-items: flex-end; }
+.composer-textarea {
+  flex: 1;
+  background: transparent;
+  border: none; border-bottom: 1px solid var(--rule);
+  color: var(--ink); font-family: 'Crimson Pro', serif;
+  font-style: italic; font-size: 1rem; font-weight: 300;
+  padding: 10px 0; outline: none; resize: none;
+  min-height: 44px; max-height: 160px;
+  line-height: 1.75; transition: border-color 0.3s;
+}
+.composer-textarea:focus { border-color: var(--gold); }
+.composer-textarea::placeholder { color: var(--ink-light); opacity: 0.3; }
+.composer-send {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 0.9rem;
+  color: var(--paper); background: var(--ink);
+  border: none; padding: 12px 28px;
+  cursor: pointer; letter-spacing: 0.04em;
+  transition: all 0.3s; white-space: nowrap;
+  align-self: flex-end;
+}
+.composer-send:hover { background: var(--ink2); }
+.composer-send:disabled { opacity: 0.35; cursor: not-allowed; }
+.composer-hint {
+  font-size: 0.65rem; color: var(--ink-light);
+  opacity: 0.3; margin-top: 8px;
+  letter-spacing: 0.06em;
+}
+
+@media(max-width:700px){
+  .posta-layout { grid-template-columns: 1fr; }
+  .conv-sidebar { max-height: 200px; position: static; border-right: none; border-bottom: 1px solid var(--rule); }
+  .chat-messages { padding: 20px; }
+  .chat-composer { padding: 16px 20px 24px; }
+  .msg-letter { max-width: 95%; }
+}
+</style>
+<script src="watermark.js"></script>
+</head>
+<body>
+
+<header class="running-head">
+  <a href="dashboard.html" class="nds-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#8a6828" stroke-width="0.9" opacity="0.22"/><circle cx="50" cy="50" r="24" fill="none" stroke="#8a6828" stroke-width="1.1" opacity="0.68"/><circle cx="50" cy="50" r="9" fill="none" stroke="#8a6828" stroke-width="0.7" opacity="0.38"/><circle cx="50" cy="50" r="2.8" fill="#8a6828" opacity="0.88"/></svg><span class="nds-logo-text">← Dashboard</span></a>
+  <span class="running-head-center" data-t="running">Corrispondenza</span>
+  <div class="lang-switcher" id="lang-switcher"></div>
+</header>
+
+<main style="padding:80px 0 0; max-width:100%;">
+  <div class="posta-layout">
+
+    <!-- SIDEBAR -->
+    <div class="conv-sidebar">
+      <div class="conv-sidebar-head">
+        <div class="conv-sidebar-title" data-t="sidebar_title">Lettere</div>
+      </div>
+      <div id="conv-list">
+        <div class="conv-empty-msg" data-t="conv_empty">Nessuna corrispondenza ancora.<br>Quando avverrà un incontro reciproco, potrete scrivervi qui.</div>
+      </div>
+    </div>
+
+    <!-- CHAT PANEL -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-panel-empty" id="chat-empty">
+        <p data-t="select_conv">Seleziona una corrispondenza<br>dalla lista per cominciare a leggere.</p>
+      </div>
+
+      <!-- Active chat (hidden until selected) -->
+      <div id="chat-active" style="display:none; flex-direction:column; flex:1;">
+        <div class="chat-head">
+          <div class="chat-head-info">
+            <div class="chat-head-name" id="chat-partner-name">—</div>
+            <div class="chat-head-arch" id="chat-partner-arch"></div>
+          </div>
+          <label class="translate-toggle">
+            <input type="checkbox" id="translate-chk" onchange="Translate.toggle(this.checked)">
+            <div class="toggle-pill"></div>
+            <span data-t="toggle_translate">Traduci</span>
+          </label>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-composer">
+          <div class="composer-inner" id="composer-input-wrap" style="position:relative">
+            <textarea class="composer-textarea" id="composer-input"
+              data-t-ph="ph_compose" placeholder="Scrivi la tua lettera…" rows="2"
+              oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Chat.send();}">
+            </textarea>
+            <button class="composer-send" onclick="Chat.send()" data-t="btn_send">Inviare</button>
+          </div>
+          <div class="composer-hint" data-t="composer_hint">Invio per inviare · Shift+Invio per andare a capo</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const T = {
+  it:{ running:'Corrispondenza', sidebar_title:'Lettere', conv_empty:'Nessuna corrispondenza ancora.\nQuando avverrà un incontro reciproco, potrete scrivervi qui.', select_conv:'Seleziona una corrispondenza\ndalla lista per cominciare.', toggle_translate:'Traduci', ph_compose:'Scrivi la tua lettera…', btn_send:'Inviare', composer_hint:'Invio per inviare · Shift+Invio per andare a capo', translating:'traduzione in corso…', original:'originale', loading:'Caricamento…', no_match:'Nessun incontro ancora. Esplora i profili nell\'app.' },
+  en:{ running:'Correspondence', sidebar_title:'Letters', conv_empty:'No correspondence yet.\nWhen a mutual encounter happens, you will be able to write here.', select_conv:'Select a correspondence\nfrom the list to start reading.', toggle_translate:'Translate', ph_compose:'Write your letter…', btn_send:'Send', composer_hint:'Enter to send · Shift+Enter for new line', translating:'translating…', original:'original', loading:'Loading…', no_match:'No matches yet. Explore profiles in the app.' },
+  fr:{ running:'Correspondance', sidebar_title:'Lettres', conv_empty:'Pas encore de correspondance.\nQuand une rencontre mutuelle se produira, vous pourrez vous écrire ici.', select_conv:'Sélectionnez une correspondance\npour commencer à lire.', toggle_translate:'Traduire', ph_compose:'Écrivez votre lettre…', btn_send:'Envoyer', composer_hint:'Entrée pour envoyer · Maj+Entrée nouvelle ligne', translating:'traduction en cours…', original:'original', loading:'Chargement…', no_match:'Pas encore de rencontre. Explorez les profils.' },
+  de:{ running:'Korrespondenz', sidebar_title:'Briefe', conv_empty:'Noch keine Korrespondenz.\nWenn eine gegenseitige Begegnung stattfindet, könnt ihr euch hier schreiben.', select_conv:'Wähle eine Korrespondenz\naus der Liste zum Lesen.', toggle_translate:'Übersetzen', ph_compose:'Schreib deinen Brief…', btn_send:'Senden', composer_hint:'Enter zum Senden · Shift+Enter neue Zeile', translating:'Übersetzung läuft…', original:'Original', loading:'Lädt…', no_match:'Noch keine Begegnungen. Erkunde Profile in der App.' },
+  es:{ running:'Correspondencia', sidebar_title:'Cartas', conv_empty:'Ninguna correspondencia aún.\nCuando se produzca un encuentro mutuo, podréis escribiros aquí.', select_conv:'Selecciona una correspondencia\nde la lista para comenzar.', toggle_translate:'Traducir', ph_compose:'Escribe tu carta…', btn_send:'Enviar', composer_hint:'Enter para enviar · Shift+Enter nueva línea', translating:'traduciendo…', original:'original', loading:'Cargando…', no_match:'Ningún encuentro aún. Explora perfiles en la app.' },
+  pt:{ running:'Correspondência', sidebar_title:'Cartas', conv_empty:'Nenhuma correspondência ainda.\nQuando houver um encontro mútuo, poderão escrever-se aqui.', select_conv:'Selecione uma correspondência\nda lista para começar.', toggle_translate:'Traduzir', ph_compose:'Escreva sua carta…', btn_send:'Enviar', composer_hint:'Enter para enviar · Shift+Enter nova linha', translating:'traduzindo…', original:'original', loading:'Carregando…', no_match:'Nenhum encontro ainda. Explore perfis no app.' },
+  zh:{ running:'通信', sidebar_title:'信件', conv_empty:'暂无通信。\n当发生相互匹配时，你们可以在这里互相写信。', select_conv:'从列表中选择一封信\n开始阅读。', toggle_translate:'翻译', ph_compose:'写下你的信…', btn_send:'发送', composer_hint:'Enter 发送 · Shift+Enter 换行', translating:'翻译中…', original:'原文', loading:'加载中…', no_match:'暂无匹配。在应用中浏览档案。' }
+};
+const LANGS=['it','en','fr','de','es','pt','zh'];
+const LANG_LABELS={it:'IT',en:'EN',fr:'FR',de:'DE',es:'ES',pt:'PT',zh:'中'};
+let currentLang = localStorage.getItem('nds_lang')||'it';
+function tr(k){ return (T[currentLang]||T.it)[k]||k; }
+function applyLang(){
+  document.querySelectorAll('[data-t]').forEach(el=>{ const v=tr(el.getAttribute('data-t')); if(v) el.innerHTML=v.replace(/\n/g,'<br>'); });
+  document.querySelectorAll('[data-t-ph]').forEach(el=>{ const v=tr(el.getAttribute('data-t-ph')); if(v) el.placeholder=v; });
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===currentLang));
+}
+function buildLangSwitcher(){
+  const sw=document.getElementById('lang-switcher');
+  LANGS.forEach(l=>{ const b=document.createElement('button'); b.className='lang-btn'; b.dataset.lang=l; b.textContent=LANG_LABELS[l]; b.onclick=()=>{ currentLang=l; localStorage.setItem('nds_lang',l); applyLang(); }; sw.appendChild(b); });
+}
+function showToast(msg){ const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('visible'); setTimeout(()=>e.classList.remove('visible'),2800); }
+
+// ── ARCHETYPES ──
+function getArchKey(ei,lo,et,pa){const avg=(ei+lo+et+pa)/4;if(ei>=75&&lo>=75&&et>=75&&pa>=70)return'lucido';if(ei>=75&&lo<55&&et>=70)return'custode';if(lo>=80&&ei<55&&pa<55)return'costruttore';if(et>=80&&ei>=65&&lo>=65)return'garante';if(pa>=80&&ei>=70)return'alchimista';if(et>=75&&pa>=75&&lo<60)return'morale';if(ei>=70&&pa>=70&&lo>=60)return'integrata';if(lo>=70&&et>=70&&ei<60)return'giurista';if(avg>=70)return'persona';if(avg>=55)return'transizione';return'mappa';}
+const ARCH={it:{lucido:'Il Testimone Lucido',custode:'Il Custode Empatico',costruttore:'Il Costruttore di Sistemi',garante:'Il Garante Consapevole',alchimista:"Il Cercatore di Profondità",morale:'Il Testimone Morale',integrata:'La Presenza Integrata',giurista:"Il Giurista dell'Anima",persona:'La Persona Integrata',transizione:'Il Profilo in Transizione',mappa:'La Mappa da Disegnare'},en:{lucido:'The Lucid Witness',custode:'The Empathic Guardian',costruttore:'The System Builder',garante:'The Conscious Guarantor',alchimista:'The Depth Seeker',morale:'The Moral Witness',integrata:'The Integrated Presence',giurista:'The Soul Jurist',persona:'The Integrated Person',transizione:'The Transitional Profile',mappa:'The Map Yet to Be Drawn'},fr:{lucido:'Le Témoin Lucide',custode:'Le Gardien Empathique',costruttore:'Le Constructeur de Systèmes',garante:'Le Garant Conscient',alchimista:"Le Chercheur de Profondeur",morale:'Le Témoin Moral',integrata:'La Présence Intégrée',giurista:"Le Juriste de l'Âme",persona:'La Personne Intégrée',transizione:'Le Profil en Transition',mappa:'La Carte à Dessiner'},de:{lucido:'Der Luzide Zeuge',custode:'Der Empathische Hüter',costruttore:'Der Systemerbauer',garante:'Der Bewusste Garant',alchimista:'Der Tiefenforscher',morale:'Der Moralische Zeuge',integrata:'Die Integrierte Präsenz',giurista:'Der Seelen-Jurist',persona:'Die Integrierte Person',transizione:'Das Übergangsprofil',mappa:'Die noch zu zeichnende Karte'},es:{lucido:'El Testigo Lúcido',custode:'El Guardián Empático',costruttore:'El Constructor de Sistemas',garante:'El Garante Consciente',alchimista:'El Buscador de Profundidad',morale:'El Testigo Moral',integrata:'La Presencia Integrada',giurista:'El Jurista del Alma',persona:'La Persona Integrada',transizione:'El Perfil en Transición',mappa:'El Mapa por Dibujar'},pt:{lucido:'A Testemunha Lúcida',custode:'O Guardião Empático',costruttore:'O Construtor de Sistemas',garante:'O Garante Consciente',alchimista:'O Buscador de Profundidade',morale:'A Testemunha Moral',integrata:'A Presença Integrada',giurista:'O Jurista da Alma',persona:'A Pessoa Integrada',transizione:'O Perfil em Transição',mappa:'O Mapa por Desenhar'},zh:{lucido:'清醒的见证者',custode:'共情守护者',costruttore:'系统构建者',garante:'自觉保障者',alchimista:'深度探索者',morale:'道德见证者',integrata:'整合的存在',giurista:'灵魂法官',persona:'整合的人',transizione:'过渡期档案',mappa:'待描绘的地图'}};
+function archName(s){ return s?(ARCH[currentLang]||ARCH.it)[getArchKey(s.ei||50,s.logic||50,s.ethics||50,s.pain||50)]:'—'; }
+
+// ── TRANSLATION (Claude API) ──
+const LANG_NAMES={it:'Italian',en:'English',fr:'French',de:'German',es:'Spanish',pt:'Portuguese',zh:'Chinese'};
+const translateCache={};
+const Translate={
+  enabled: false,
+  toggle(v){ this.enabled=v; Chat.rerender(); },
+  async translate(text, fromLang, toLang){
+    if(!text||fromLang===toLang) return null;
+    const key=`${fromLang}_${toLang}_${text}`;
+    if(translateCache[key]) return translateCache[key];
+    try{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:`You are a precise literary translator. Translate from ${LANG_NAMES[fromLang]||fromLang} to ${LANG_NAMES[toLang]||toLang}. Preserve emotional tone, register and style. Return ONLY the translated text.`,
+          messages:[{role:'user',content:text}]
+        })
+      });
+      const d=await r.json();
+      const translated=d.content?.[0]?.text?.trim();
+      if(translated){ translateCache[key]=translated; return translated; }
+    }catch(e){}
+    return null;
+  }
+};
+
+// ── SESSION & STATE ──
+let session={};
+let currentMessages=[];
+let currentPartner=null;
+let chatUnsub=null;
+
+// ── TIME FORMAT ──
+function fmtTime(ts){
+  if(!ts) return '';
+  const d=typeof ts==='number'?new Date(ts):(ts.toDate?ts.toDate():new Date(ts));
+  const now=new Date();
+  if(now-d<86400000&&d.getDate()===now.getDate()) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString([],{day:'numeric',month:'short'});
+}
+function escH(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// ── CONV SIDEBAR ──
+async function loadConversations(){
+  const list=document.getElementById('conv-list');
+  list.innerHTML=`<div class="conv-empty-msg">${tr('loading')}</div>`;
+
+  // Get matched users from schede
+  let matched=[];
+  try{
+    if(window.__db){
+      const {collection,query,where,getDocs}=window.__fb;
+      // Get my scheda to find matches
+      const sq=query(collection(window.__db,'schede'),where('username','==',session.username));
+      const ssnap=await getDocs(sq);
+      if(!ssnap.empty){ matched=ssnap.docs[0].data().matched||[]; }
+      // Also check messages for any conversations
+      const mq=query(collection(window.__db,'messages'),where('fromId','==',session.username));
+      const msnap=await getDocs(mq);
+      msnap.docs.forEach(d=>{ const toId=d.data().toId; if(toId&&!matched.includes(toId)) matched.push(toId); });
+      const rq=query(collection(window.__db,'messages'),where('toId','==',session.username));
+      const rsnap=await getDocs(rq);
+      rsnap.docs.forEach(d=>{ const fromId=d.data().fromId; if(fromId&&!matched.includes(fromId)) matched.push(fromId); });
+    } else {
+      const msgs=JSON.parse(localStorage.getItem('nds_messages')||'[]');
+      msgs.forEach(m=>{
+        if(m.fromId===session.username&&!matched.includes(m.toId)) matched.push(m.toId);
+        if(m.toId===session.username&&!matched.includes(m.fromId)) matched.push(m.fromId);
+      });
+    }
+  }catch(e){}
+
+  if(matched.length===0){
+    list.innerHTML=`<div class="conv-empty-msg">${tr('conv_empty').replace(/\n/g,'<br>')}</div>`;
+    return;
+  }
+
+  list.innerHTML='';
+  for(const partnerId of matched){
+    // Get partner scheda
+    let partnerScheda=null;
+    try{
+      if(window.__db){
+        const {collection,query,where,getDocs}=window.__fb;
+        const pq=query(collection(window.__db,'schede'),where('username','==',partnerId));
+        const psnap=await getDocs(pq);
+        if(!psnap.empty) partnerScheda=psnap.docs[0].data();
+      }else{
+        const all=JSON.parse(localStorage.getItem('nds_schede')||'[]');
+        partnerScheda=all.find(s=>s.username===partnerId)||null;
+      }
+    }catch(e){}
+
+    // Get last message
+    let lastMsg=null;
+    try{
+      const msgs=await getMessages(session.username, partnerId);
+      lastMsg=msgs[msgs.length-1]||null;
+    }catch(e){}
+
+    const item=document.createElement('div');
+    item.className='conv-item';
+    item.innerHTML=`
+      <div class="conv-item-name">${partnerId}</div>
+      <div class="conv-item-preview">${lastMsg?lastMsg.text.slice(0,40)+'…':'—'}</div>
+      <div class="conv-item-time">${lastMsg?fmtTime(lastMsg.ts):''}</div>
+    `;
+    item.onclick=()=>openChat(partnerId, partnerScheda, item);
+    list.appendChild(item);
+  }
+}
+
+async function getMessages(userA, userB){
+  const chatId=[userA,userB].sort().join('__');
+  if(window.__db){
+    const {collection,query,where,orderBy,getDocs}=window.__fb;
+    try{
+      const q=query(collection(window.__db,'messages'),where('chatId','==',chatId),orderBy('ts','asc'));
+      const snap=await getDocs(q);
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){
+      // Fallback without orderBy if index missing
+      const q2=query(collection(window.__db,'messages'),where('chatId','==',chatId));
+      const snap2=await getDocs(q2);
+      return snap2.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    }
+  }
+  const all=JSON.parse(localStorage.getItem('nds_messages')||'[]');
+  return all.filter(m=>m.chatId===chatId).sort((a,b)=>a.ts-b.ts);
+}
+
+// ── OPEN CHAT ──
+async function openChat(partnerId, partnerScheda, itemEl){
+  document.querySelectorAll('.conv-item').forEach(i=>i.classList.remove('active'));
+  if(itemEl) itemEl.classList.add('active');
+
+  currentPartner={id:partnerId, scheda:partnerScheda};
+  document.getElementById('chat-partner-name').textContent=partnerId;
+  document.getElementById('chat-partner-arch').textContent=partnerScheda?archName(partnerScheda):'';
+
+  document.getElementById('chat-empty').style.display='none';
+  const activeEl=document.getElementById('chat-active');
+  activeEl.style.display='flex';
+
+  if(chatUnsub){ chatUnsub(); chatUnsub=null; }
+  await Chat.load();
+
+  // Real-time listener
+  if(window.__db){
+    const {collection,query,where,orderBy,onSnapshot}=window.__fb;
+    const chatId=[session.username,partnerId].sort().join('__');
+    try{
+      const q=query(collection(window.__db,'messages'),where('chatId','==',chatId),orderBy('ts','asc'));
+      chatUnsub=onSnapshot(q,snap=>{
+        currentMessages=snap.docs.map(d=>({id:d.id,...d.data()}));
+        Chat.render();
+      });
+    }catch(e){
+      // No real-time fallback
+    }
+  }
+}
+
+// ── CHAT ──
+const Chat={
+  async load(){
+    if(!currentPartner) return;
+    currentMessages=await getMessages(session.username, currentPartner.id);
+    this.render();
+  },
+
+  render(){
+    const container=document.getElementById('chat-messages');
+    const wasAtBottom=container.scrollHeight-container.clientHeight<=container.scrollTop+80;
+    container.innerHTML='';
+
+    if(currentMessages.length===0){
+      container.innerHTML=`<div style="text-align:center;padding:60px 0;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--ink-light);opacity:0.35;">${currentPartner?.id||''}</div>`;
+      return;
+    }
+
+    currentMessages.forEach(msg=>{
+      const isMine=msg.fromId===session.username;
+      const block=document.createElement('div');
+      block.className=`msg-block ${isMine?'sent':'received'}`;
+      block.dataset.msgid=msg.id||'';
+
+      const needsTranslation=!isMine && Translate.enabled && msg.fromLang && msg.fromLang!==currentLang;
+
+      block.innerHTML=`
+        <div class="msg-meta">${isMine?(session.username||''):currentPartner.id} · ${fmtTime(msg.ts)}</div>
+        <div class="msg-letter">
+          <div class="msg-text">${escH(msg.text)}</div>
+          ${needsTranslation?`<div class="msg-translating">${tr('translating')}</div>`:''}
+        </div>
+      `;
+      container.appendChild(block);
+
+      if(needsTranslation){
+        this.translateBubble(block, msg.text, msg.fromLang, currentLang);
+      }
+    });
+
+    if(wasAtBottom) container.scrollTop=container.scrollHeight;
+  },
+
+  async translateBubble(block, text, fromLang, toLang){
+    const hint=block.querySelector('.msg-translating');
+    if(!hint) return;
+    const translated=await Translate.translate(text, fromLang, toLang);
+    if(translated){
+      const msgText=block.querySelector('.msg-text');
+      msgText.innerHTML=escH(translated);
+      hint.outerHTML=`<div class="msg-original"><div class="msg-original-label">${tr('original')}</div>${escH(text)}</div>`;
+    } else { hint.remove(); }
+  },
+
+  rerender(){ this.render(); },
+
+  async send(){
+    if(!currentPartner||!session.username) return;
+    const input=document.getElementById('composer-input');
+    const text=input.value.trim();
+    if(!text) return;
+
+    const btn=document.querySelector('.composer-send');
+    btn.disabled=true;
+    input.value=''; input.style.height='auto';
+
+    const chatId=[session.username,currentPartner.id].sort().join('__');
+    const msg={
+      chatId, text,
+      fromId:session.username,
+      toId:currentPartner.id,
+      fromLang:currentLang,
+      ts:Date.now(), read:false
+    };
+
+    try{
+      if(window.__db){
+        const {collection,addDoc,serverTimestamp}=window.__fb;
+        await addDoc(collection(window.__db,'messages'),{...msg,ts:serverTimestamp()});
+      }else{
+        const all=JSON.parse(localStorage.getItem('nds_messages')||'[]');
+        all.push({...msg,id:'m_'+Date.now()});
+        localStorage.setItem('nds_messages',JSON.stringify(all));
+        currentMessages=await getMessages(session.username,currentPartner.id);
+        this.render();
+      }
+    }catch(e){ showToast('Errore nell\'invio.'); }
+
+    btn.disabled=false;
+    input.focus();
+  }
+};
+
+// ── INIT ──
+async function init(){
+  const s=sessionStorage.getItem('nds_session');
+  if(!s){ window.location.href='login.html'; return; }
+  session=JSON.parse(s);
+
+  buildLangSwitcher();
+  applyLang();
+  await loadConversations();
+}
+
+document.addEventListener('firebaseReady', init);
+ndsWatermark('composer-input-wrap');
+setTimeout(init, 3000);
+
+// ── NDS WATERMARK ──
+function ndsWatermark(containerId) {
+  const wrap = document.getElementById(containerId);
+  if(!wrap) return;
+  wrap.classList.add('composer-watermark-wrap');
+  const positions = [
+    {top:'8px',  left:'12px',  size:28},
+    {top:'50%',  right:'14px', size:24, transform:'translateY(-50%)'},
+    {bottom:'8px',left:'50%',  size:22, transform:'translateX(-50%)'},
+    {top:'8px',  right:'16px', size:26},
+    {bottom:'10px',right:'12px',size:20},
+  ];
+  const pick = positions[Math.floor(Math.random()*positions.length)];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 100 100');
+  svg.setAttribute('width', pick.size);
+  svg.setAttribute('height', pick.size);
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('nds-watermark');
+  Object.entries(pick).forEach(([k,v])=>{ if(k!=='size') svg.style[k]=v; });
+  svg.innerHTML = '<circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/><circle cx="50" cy="50" r="24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="1"/><circle cx="50" cy="50" r="9" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.6"/><circle cx="50" cy="50" r="3" fill="currentColor" opacity="1"/>';
+  wrap.style.position='relative';
+  wrap.insertBefore(svg, wrap.firstChild);
+}
+
+</script>
+</body>
+</html>

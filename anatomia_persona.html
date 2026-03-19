@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomia di una Persona</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;1,200;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1714; --parchment:#f5f0e8; --gold:#c9a84c;
+  --mist:#e8e2d4; --deep:#0f0d0b; --panel:#201c18;
+  --border:rgba(201,168,76,0.2);
+  --c-ei:#7ec99a; --c-logic:#7ab8d4; --c-ethics:#d4a574; --c-pain:#c07ab8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--parchment);font-family:'Crimson Pro',Georgia,serif;font-weight:200;min-height:100vh;}
+.grain{position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.35;}
+
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* INTRO */
+#intro{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 40px;}
+#intro.active{display:flex;}
+.intro-epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.8rem;color:var(--gold);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:28px;opacity:0.8;animation:fadeUp 1s ease both;}
+.intro-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:3rem;line-height:1.1;margin-bottom:20px;animation:fadeUp 1s 0.15s ease both;}
+.divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px auto;animation:fadeUp 1s 0.25s ease both;}
+.intro-sub{font-size:1.05rem;color:var(--mist);opacity:0.65;font-style:italic;max-width:480px;line-height:1.8;margin-bottom:44px;animation:fadeUp 1s 0.35s ease both;}
+.intro-tests{display:flex;gap:16px;margin-bottom:48px;animation:fadeUp 1s 0.45s ease both;flex-wrap:wrap;justify-content:center;}
+.test-pill{padding:9px 20px;border:1px solid var(--border);font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);opacity:0.7;}
+.btn-primary{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:15px 48px;cursor:pointer;letter-spacing:0.05em;transition:all 0.3s ease;animation:fadeUp 1s 0.55s ease both;}
+.btn-primary:hover{background:var(--parchment);}
+
+/* TEST */
+#test-screen.active{display:block;}
+.test-header{position:sticky;top:0;z-index:100;background:var(--deep);border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.test-title-bar{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;color:var(--gold);}
+.progress-area{display:flex;align-items:center;gap:16px;}
+.progress-text{font-size:0.78rem;color:var(--mist);opacity:0.55;letter-spacing:0.05em;}
+.progress-bar-outer{width:160px;height:2px;background:rgba(255,255,255,0.08);}
+.progress-bar-inner{height:100%;background:var(--gold);transition:width 0.4s ease;}
+.test-container{max-width:760px;margin:0 auto;padding:56px 40px 130px;}
+.question-card{margin-bottom:52px;border-left:1px solid var(--border);padding-left:26px;position:relative;opacity:0;transform:translateY(14px);transition:opacity 0.5s ease,transform 0.5s ease;}
+.question-card.visible{opacity:1;transform:translateY(0);}
+.q-number{position:absolute;left:-13px;top:2px;width:24px;height:24px;background:var(--ink);border:1px solid var(--gold);border-radius:50%;font-family:'Cormorant Garamond',serif;font-size:0.7rem;color:var(--gold);display:flex;align-items:center;justify-content:center;}
+.q-note{font-size:0.76rem;color:var(--gold);font-style:italic;opacity:0.65;letter-spacing:0.03em;margin-bottom:9px;}
+.q-text{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.22rem;line-height:1.5;margin-bottom:16px;color:var(--parchment);}
+.options{display:flex;flex-direction:column;gap:8px;}
+.option{display:flex;align-items:flex-start;gap:12px;padding:11px 15px;border:1px solid rgba(245,240,232,0.08);cursor:pointer;transition:all 0.25s ease;background:rgba(255,255,255,0.012);}
+.option:hover{border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.04);}
+.option.selected{border-color:var(--gold);background:rgba(201,168,76,0.07);}
+.opt-letter{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold);font-size:0.85rem;min-width:17px;opacity:0.7;margin-top:1px;}
+.opt-text{font-size:0.91rem;line-height:1.55;color:var(--mist);opacity:0.82;}
+.test-footer{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(transparent,var(--deep) 40%);padding:28px 40px 28px;display:flex;justify-content:space-between;align-items:center;}
+.answer-count{font-size:0.78rem;color:var(--mist);opacity:0.45;font-style:italic;}
+.btn-next{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:12px 40px;cursor:pointer;letter-spacing:0.04em;transition:all 0.3s ease;opacity:0.35;pointer-events:none;}
+.btn-next.ready{opacity:1;pointer-events:all;}
+.btn-next:hover{background:var(--parchment);}
+
+/* TRANSITION */
+#transition-screen{align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:60px 40px;}
+#transition-screen.active{display:flex;}
+.transition-badge{width:64px;height:64px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--gold);margin-bottom:28px;}
+.transition-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2rem;margin-bottom:14px;font-style:italic;}
+.transition-sub{font-size:0.95rem;color:var(--mist);opacity:0.6;max-width:420px;line-height:1.8;margin-bottom:40px;font-style:italic;}
+
+/* PROFILE */
+#profile-screen.active{display:block;}
+.profile-hero{text-align:center;padding:80px 40px 56px;border-bottom:1px solid var(--border);}
+.profile-epigraph{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--gold);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:18px;opacity:0.7;}
+.profile-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.6rem;line-height:1.15;margin-bottom:8px;}
+.profile-container{max-width:820px;margin:0 auto;padding:56px 40px 100px;}
+.section-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.25rem;color:var(--gold);margin-bottom:26px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+
+/* SCORES */
+.scores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:56px;}
+.score-card{padding:24px 16px;text-align:center;border:1px solid var(--border);background:var(--panel);}
+.score-label{font-size:0.68rem;letter-spacing:0.13em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:14px;}
+.score-number{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:300;line-height:1;margin-bottom:6px;}
+.score-sub{font-size:0.72rem;opacity:0.45;}
+.score-bar-outer{width:100%;height:2px;background:rgba(255,255,255,0.08);margin-top:14px;}
+.score-bar-inner{height:100%;transition:width 1.8s cubic-bezier(0.22,1,0.36,1);}
+.score-card.ei .score-number{color:var(--c-ei);} .score-card.ei .score-bar-inner{background:var(--c-ei);}
+.score-card.logic .score-number{color:var(--c-logic);} .score-card.logic .score-bar-inner{background:var(--c-logic);}
+.score-card.ethics .score-number{color:var(--c-ethics);} .score-card.ethics .score-bar-inner{background:var(--c-ethics);}
+.score-card.pain .score-number{color:var(--c-pain);} .score-card.pain .score-bar-inner{background:var(--c-pain);}
+
+/* ARCHETYPE */
+.archetype-card{padding:40px;border:1px solid var(--gold);text-align:center;margin-bottom:56px;background:rgba(201,168,76,0.03);}
+.archetype-label{font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);opacity:0.6;margin-bottom:14px;}
+.archetype-name{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:2.1rem;font-style:italic;margin-bottom:14px;}
+.archetype-desc{font-size:0.94rem;line-height:1.82;color:var(--mist);opacity:0.72;max-width:520px;margin:0 auto;font-style:italic;}
+
+/* CHART */
+.chart-section{margin-bottom:56px;}
+.chart-wrapper{display:flex;justify-content:center;padding:16px 0;}
+
+/* DIMS */
+.dimensions-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:56px;}
+.dim-row{display:flex;flex-direction:column;gap:5px;}
+.dim-top{display:flex;justify-content:space-between;align-items:baseline;}
+.dim-name{font-size:0.83rem;color:var(--mist);opacity:0.72;}
+.dim-score-text{font-family:'Cormorant Garamond',serif;font-size:0.88rem;color:var(--gold);opacity:0.8;}
+.dim-bar-outer{width:100%;height:2px;background:rgba(255,255,255,0.06);}
+.dim-bar-inner{height:100%;transition:width 1.8s cubic-bezier(0.22,1,0.36,1);}
+
+/* NARRATIVE */
+.narrative-section{margin-bottom:56px;}
+.narrative-block{padding:28px;border:1px solid var(--border);background:var(--panel);margin-bottom:18px;}
+.narrative-block h3{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:1.1rem;margin-bottom:13px;display:flex;align-items:center;gap:11px;}
+.ndot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.narrative-block p{font-size:0.93rem;line-height:1.87;color:var(--mist);opacity:0.74;}
+
+.btn-restart{display:block;width:fit-content;margin:0 auto;font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--ink);background:var(--gold);border:none;padding:13px 42px;cursor:pointer;transition:all 0.3s ease;}
+.btn-restart:hover{background:var(--parchment);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:620px){
+  .intro-title{font-size:2.1rem;}
+  .scores-grid{grid-template-columns:repeat(2,1fr);}
+  .test-header{padding:14px 18px;}
+  .test-container{padding:36px 18px 120px;}
+  .profile-container{padding:36px 18px 80px;}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- INTRO -->
+<div id="intro" class="screen active">
+  <div class="intro-epigraph">Anatomia di una Persona</div>
+  <h1 class="intro-title">Quattro specchi.<br><em>Un ritratto.</em></h1>
+  <div class="divider"></div>
+  <p class="intro-sub">Non esistono risposte giuste. Esistono risposte vere.<br>Questo strumento non giudica — osserva.</p>
+  <div class="intro-tests">
+    <div class="test-pill" style="border-color:rgba(126,201,154,0.35);color:var(--c-ei)">I · Intelligenza Emotiva</div>
+    <div class="test-pill" style="border-color:rgba(122,184,212,0.35);color:var(--c-logic)">II · Logica</div>
+    <div class="test-pill" style="border-color:rgba(212,165,116,0.35);color:var(--c-ethics)">III · Etica</div>
+    <div class="test-pill" style="border-color:rgba(192,122,184,0.35);color:var(--c-pain)">IV · Rapporto col Dolore</div>
+  </div>
+  <button class="btn-primary" onclick="App.start()">Cominciare</button>
+</div>
+
+<!-- TEST -->
+<div id="test-screen" class="screen">
+  <div class="test-header">
+    <div class="test-title-bar" id="test-title-bar"></div>
+    <div class="progress-area">
+      <div class="progress-text" id="progress-text"></div>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="test-container" id="question-container"></div>
+  <div class="test-footer">
+    <div class="answer-count" id="answer-count"></div>
+    <button class="btn-next" id="btn-next" onclick="App.nextSection()">Avanti →</button>
+  </div>
+</div>
+
+<!-- TRANSITION -->
+<div id="transition-screen" class="screen">
+  <div class="transition-badge" id="tr-badge"></div>
+  <h2 class="transition-title" id="tr-title"></h2>
+  <p class="transition-sub" id="tr-sub"></p>
+  <button class="btn-primary" onclick="App.continueTest()">Continuare →</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profile-screen" class="screen">
+  <div class="profile-hero">
+    <div class="profile-epigraph">Profilo Integrato</div>
+    <h1 class="profile-title" id="profile-title">Il tuo ritratto</h1>
+  </div>
+  <div class="profile-container">
+    <div style="margin-bottom:40px;">
+      <div class="section-label">Punteggi globali</div>
+      <div class="scores-grid">
+        <div class="score-card ei"><div class="score-label">Int. Emotiva</div><div class="score-number" id="s-ei">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="b-ei" style="width:0%"></div></div></div>
+        <div class="score-card logic"><div class="score-label">Logica</div><div class="score-number" id="s-logic">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="b-logic" style="width:0%"></div></div></div>
+        <div class="score-card ethics"><div class="score-label">Etica</div><div class="score-number" id="s-ethics">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="b-ethics" style="width:0%"></div></div></div>
+        <div class="score-card pain"><div class="score-label">Cons. del Dolore</div><div class="score-number" id="s-pain">0</div><div class="score-sub">/100</div><div class="score-bar-outer"><div class="score-bar-inner" id="b-pain" style="width:0%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="archetype-card">
+      <div class="archetype-label">Archetipo</div>
+      <div class="archetype-name" id="archetype-name">—</div>
+      <div class="archetype-desc" id="archetype-desc">—</div>
+    </div>
+
+    <div class="chart-section">
+      <div class="section-label">Mappa delle dimensioni</div>
+      <div class="chart-wrapper"><canvas id="radar" width="420" height="420"></canvas></div>
+    </div>
+
+    <div class="chart-section">
+      <div class="section-label">Dettaglio per area</div>
+      <div class="dimensions-grid" id="dimensions-grid"></div>
+    </div>
+
+    <div class="narrative-section">
+      <div class="section-label">Lettura del profilo</div>
+      <div id="narrative-container"></div>
+    </div>
+
+    <button class="btn-restart" onclick="App.restart()">Ricominciare</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// QUESTIONS DATA
+// ─────────────────────────────────────────────
+const TESTS = [
+{
+  id:'ei', label:'Intelligenza Emotiva', icon:'I',
+  color:'#7ec99a',
+  title:'I — Intelligenza Emotiva',
+  trTitle:'Primo specchio completato.',
+  trSub:'Adesso il secondo. La logica non è opposta all\'emozione — è il modo in cui la mente ordina ciò che il cuore sente.',
+  trBadge:'II',
+  dims:['Autoconoscenza','Autoregolazione','Empatia','Relazione','Motivazione'],
+  questions:[
+    // Autoconoscenza 1-10
+    {d:0,note:'— autoconoscenza',text:'Senti un malessere diffuso senza causa apparente. Cosa fai?',opts:[{t:'Lo ignoro e aspetto che passi.',v:1},{t:'Cerco di capire da dove viene, anche se ci vuole tempo.',v:4},{t:'Lo sfogo con qualcuno.',v:2},{t:'Lo nomino tra me e me, anche senza risolverlo.',v:3}]},
+    {d:0,note:'— autoconoscenza',text:'Quale affermazione ti descrive meglio?',opts:[{t:'So quasi sempre cosa provo e perché.',v:4},{t:'Lo capisco solo guardandomi indietro.',v:3},{t:'Le mie emozioni mi sorprendono spesso.',v:2},{t:'Non ci penso molto. Sento e basta.',v:1}]},
+    {d:0,note:'— autoconoscenza',text:'Ricevi una critica inattesa. Cosa succede dentro di te prima di rispondere?',opts:[{t:'Un muro. Mi chiudo.',v:1},{t:'Una fitta, poi cerco se è fondata.',v:4},{t:'Dipende da chi la dice.',v:2},{t:'Mi difendo, poi ci rifletto.',v:3}]},
+    {d:0,note:'— autoconoscenza',text:'Ti comporti diversamente a seconda di chi hai di fronte?',opts:[{t:'Sì, mi adatto completamente.',v:1},{t:'Cambio tono, ma resto me stesso.',v:4},{t:'Cerco di essere sempre uguale, non sempre ci riesco.',v:3},{t:'Non me ne accorgo.',v:2}]},
+    {d:0,note:'— autoconoscenza',text:'Sai distinguere tra essere arrabbiato e essere deluso?',opts:[{t:'No, per me è la stessa cosa.',v:1},{t:'A volte, non sempre.',v:2},{t:'Sì, e quella distinzione cambia come rispondo.',v:4},{t:'Ci arrivo solo dopo.',v:3}]},
+    {d:0,note:'— autoconoscenza',text:'Cosa ti dice quando stai per prendere una decisione sbagliata?',opts:[{t:'Niente. Lo scopro dopo.',v:1},{t:'Un\'inquietudine che fatico a nominare.',v:2},{t:'Una sensazione fisica precisa.',v:3},{t:'Una voce interna che riconosco e ascolto.',v:4}]},
+    {d:0,note:'— autoconoscenza',text:'Hai un difetto che riconosci ma non riesci ancora a correggere?',opts:[{t:'No, lavoro su me stesso e miglioro.',v:2},{t:'Sì, e ci convivo con onestà.',v:4},{t:'Probabilmente sì, ma non so bene quale.',v:3},{t:'Non ci penso.',v:1}]},
+    {d:0,note:'— autoconoscenza',text:'Come ti senti dopo aver fatto qualcosa contro i tuoi valori?',opts:[{t:'I miei valori sono flessibili. Accade poco.',v:1},{t:'Un disagio che passa presto.',v:2},{t:'Un peso che porto un po\'.',v:3},{t:'Un conflitto preciso che devo elaborare.',v:4}]},
+    {d:0,note:'— autoconoscenza',text:'Le persone che ti conoscono bene ti descriverebbero come ti descrivi tu?',opts:[{t:'Probabilmente sì.',v:3},{t:'No, mi vedono diversamente.',v:2},{t:'Non lo so. Non l\'ho mai chiesto.',v:1},{t:'In parte. C\'è sempre una distanza.',v:4}]},
+    {d:0,note:'— autoconoscenza',text:'Quando agisci per paura, lo sai?',opts:[{t:'Raramente mi riconosco nella paura.',v:1},{t:'Solo guardandomi indietro.',v:2},{t:'Di solito sì, mentre succede.',v:4},{t:'Dipende dal tipo di paura.',v:3}]},
+    // Autoregolazione 11-20
+    {d:1,note:'— autoregolazione',text:'Sei in coda da mezz\'ora per un errore altrui. Come stai?',opts:[{t:'Furioso, e non lo nascondo.',v:1},{t:'Frustrato, ma lo gestisco internamente.',v:4},{t:'Cerco qualcuno da incolpare.',v:1},{t:'Mi do qualcosa da fare per non pensarci.',v:3}]},
+    {d:1,note:'— autoregolazione',text:'Sotto pressione, la tua qualità di giudizio…',opts:[{t:'Peggiora molto. Reagisco d\'istinto.',v:1},{t:'Peggiora un po\', ma mi recupero.',v:3},{t:'Rimane stabile.',v:4},{t:'Migliora. Funziono meglio in emergenza.',v:3}]},
+    {d:1,note:'— autoregolazione',text:'Hai detto qualcosa di cui ti sei pentito subito. Come lo gestisci?',opts:[{t:'Mi scuso subito, senza giustificazioni.',v:4},{t:'Cerco di minimizzare.',v:1},{t:'Ci penso ma non torno sull\'argomento.',v:2},{t:'Mi scuso e spiego anche perché è successo.',v:3}]},
+    {d:1,note:'— autoregolazione',text:'Qualcuno ti provoca deliberatamente. Come rispondi?',opts:[{t:'Sulla stessa lunghezza d\'onda.',v:1},{t:'Mi ritiro. Non vale il mio tempo.',v:3},{t:'Rimango calmo e rispondo con precisione.',v:4},{t:'Aspetto che passi, poi ci penso.',v:2}]},
+    {d:1,note:'— autoregolazione',text:'Una notizia ti ha destabilizzato. Quanto ci vuole per tornare funzionale?',opts:[{t:'Ore. Mi rialzo presto.',v:4},{t:'Giorni, in modo produttivo.',v:3},{t:'Settimane. Il peso rimane a lungo.',v:1},{t:'Non mi destabilizzo facilmente.',v:2}]},
+    {d:1,note:'— autoregolazione',text:'Sai smettere di fare qualcosa che ti fa male, anche quando la vuoi ancora?',opts:[{t:'Sì, quasi sempre.',v:4},{t:'A volte sì, a volte no.',v:3},{t:'Difficilmente. Il desiderio prevale.',v:1},{t:'Sì, ma mi costa molto.',v:3}]},
+    {d:1,note:'— autoregolazione',text:'Come tratti l\'incertezza prolungata?',opts:[{t:'Mi logora. Ho bisogno di sapere.',v:1},{t:'La sopporto meglio se ho qualcosa su cui agire.',v:3},{t:'La abito. Non ha senso combatterla.',v:4},{t:'La evito. Preferisco la chiarezza anche dolorosa.',v:2}]},
+    {d:1,note:'— autoregolazione',text:'Riesci a essere produttivo anche quando non sei dell\'umore giusto?',opts:[{t:'No. Ho bisogno di stare bene per funzionare.',v:1},{t:'In parte. Alcune cose riesco a farle.',v:2},{t:'Sì, la disciplina prevale sull\'umore.',v:4},{t:'Sì, e l\'attività spesso migliora l\'umore.',v:4}]},
+    {d:1,note:'— autoregolazione',text:'Hai mai rimandato una conversazione difficile per settimane?',opts:[{t:'Spesso. Le evito finché posso.',v:1},{t:'A volte, ma poi la faccio.',v:3},{t:'Raramente. Preferisco il disagio breve.',v:4},{t:'No. Le cerco attivamente.',v:4}]},
+    {d:1,note:'— autoregolazione',text:'Riesci a tacere quando parlare farebbe danni?',opts:[{t:'Non sempre. Dico quello che penso.',v:1},{t:'Di solito sì, con fatica.',v:3},{t:'Sì. So scegliere il momento.',v:4},{t:'Sì, ma poi mi pento del silenzio.',v:2}]},
+    // Empatia 21-30
+    {d:2,note:'— empatia',text:'Qualcuno ti racconta un problema che per te è banale. Come stai?',opts:[{t:'Impaziente. Vorrei dirgli come risolverlo.',v:1},{t:'Lo ascolto senza esprimere giudizi.',v:4},{t:'Cerco di capire perché per lui non è banale.',v:4},{t:'Lo ascolto ma penso ad altro.',v:2}]},
+    {d:2,note:'— empatia',text:'Entri in una stanza e percepisci tensione. Cosa noti per primo?',opts:[{t:'I corpi: postura, sguardi, distanza.',v:4},{t:'Il silenzio o il tono delle voci.',v:3},{t:'Niente. Ho bisogno di più contesto.',v:1},{t:'L\'atmosfera generale, senza dettagli.',v:2}]},
+    {d:2,note:'— empatia',text:'Una persona che stimi fa una scelta che non capisci. Come la vivi?',opts:[{t:'Con giudizio, almeno interiormente.',v:1},{t:'Con curiosità. Ha ragioni che non vedo.',v:4},{t:'Con dispiacere. Mi disilludo.',v:2},{t:'Cerco di capire prima di concludere.',v:4}]},
+    {d:2,note:'— empatia',text:'Quanto spazio occupi in una conversazione?',opts:[{t:'Poco. Ascolto più che parlo.',v:3},{t:'Abbastanza. Partecipo attivamente.',v:3},{t:'Molto. Mi piace condurre.',v:1},{t:'Dipende dall\'interlocutore.',v:4}]},
+    {d:2,note:'— empatia',text:'Ti è mai capitato di capire cosa provava qualcuno prima che lo dicesse?',opts:[{t:'Spesso. È quasi automatico.',v:4},{t:'A volte, con persone che conosco bene.',v:3},{t:'Raramente. Aspetto che lo dicano.',v:1},{t:'Sì, ma preferisco non presumerlo.',v:4}]},
+    {d:2,note:'— empatia',text:'Come ti comporti con chi ha un\'opinione che trovi sbagliata?',opts:[{t:'La correggo. È rispettoso.',v:2},{t:'Cerco di capire da dove viene.',v:4},{t:'La ignoro.',v:1},{t:'La ascolto fino in fondo prima di rispondere.',v:4}]},
+    {d:2,note:'— empatia',text:'Riesci a essere presente per qualcuno anche quando stai male tu?',opts:[{t:'Sì, metto da parte il mio stato.',v:3},{t:'Dipende da quanto sto male.',v:3},{t:'No. Devo stare bene io prima.',v:1},{t:'Sì, ma poi ho bisogno di recuperare da solo.',v:4}]},
+    {d:2,note:'— empatia',text:'Qualcuno piange davanti a te. Qual è il tuo primo impulso?',opts:[{t:'Abbracciarlo.',v:3},{t:'Chiedere cosa è successo.',v:2},{t:'Stare in silenzio vicino a lui.',v:4},{t:'Trovare una soluzione al problema.',v:1}]},
+    {d:2,note:'— empatia',text:'Hai mai cambiato idea su qualcuno dopo averlo capito meglio?',opts:[{t:'Raramente. La prima impressione è quasi sempre giusta.',v:1},{t:'Sì, spesso. Le persone si rivelano nel tempo.',v:4},{t:'A volte, in meglio e in peggio.',v:3},{t:'Sì. Cerco di non giudicare troppo presto.',v:4}]},
+    {d:2,note:'— empatia',text:'Ti ritrovi ad adattare il tuo stile comunicativo in base all\'interlocutore?',opts:[{t:'No. Sono diretto con tutti allo stesso modo.',v:1},{t:'Sì, istintivamente.',v:4},{t:'Ci provo, non sempre ci riesco.',v:3},{t:'Solo con persone molto diverse da me.',v:2}]},
+    // Relazione 31-40
+    {d:3,note:'— relazione',text:'In un conflitto con qualcuno che ami, qual è il tuo obiettivo principale?',opts:[{t:'Avere ragione.',v:1},{t:'Che si capisca come mi sono sentito.',v:3},{t:'Capire come si è sentito lui.',v:3},{t:'Uscirne entrambi con qualcosa di più chiaro.',v:4}]},
+    {d:3,note:'— relazione',text:'Come ti comporti con persone che non ti piacciono ma con cui devi stare?',opts:[{t:'Le evito il più possibile.',v:1},{t:'Sono formale. Non do né più né meno.',v:3},{t:'Cerco qualcosa di buono anche in loro.',v:4},{t:'Sono educato ma trasparente.',v:3}]},
+    {d:3,note:'— relazione',text:'Sai chiedere aiuto?',opts:[{t:'No. Preferisco arrangiarmi.',v:1},{t:'Sì, ma con difficoltà.',v:2},{t:'Sì, quando serve e a chi me lo può dare.',v:4},{t:'Sì. Non vedo perché no.',v:3}]},
+    {d:3,note:'— relazione',text:'Quanto tempo ci vuole prima che qualcuno guadagni la tua fiducia?',opts:[{t:'La do subito. Poi mi regolo.',v:2},{t:'La costruisco lentamente.',v:3},{t:'Non la do mai completamente.',v:1},{t:'Dipende dalla persona e dal contesto.',v:4}]},
+    {d:3,note:'— relazione',text:'Come reagisci quando qualcuno ti delude profondamente?',opts:[{t:'Chiudo. È finita.',v:1},{t:'Me ne vado, ma resto aperto al dialogo.',v:3},{t:'Elaboro, poi decido.',v:4},{t:'Perdono facilmente.',v:2}]},
+    {d:3,note:'— relazione',text:'Riesci a restare in una relazione difficile per scelta, non per abitudine?',opts:[{t:'Non sempre. A volte resto per inerzia.',v:2},{t:'Sì, se vedo che vale.',v:4},{t:'No. Le cose difficili le lascio.',v:1},{t:'Sì, ma ho imparato a distinguere.',v:4}]},
+    {d:3,note:'— relazione',text:'Le tue relazioni più importanti ti hanno cambiato?',opts:[{t:'No. Sono rimasto fondamentalmente me stesso.',v:1},{t:'Sì. Porto qualcosa di ognuna.',v:4},{t:'In parte. Alcune più di altre.',v:3},{t:'Sì, anche in modi imprevisti.',v:4}]},
+    {d:3,note:'— relazione',text:'Riesci a stare in disaccordo senza che la relazione ne risenta?',opts:[{t:'No. Il disaccordo crea sempre distanza.',v:1},{t:'Dipende dall\'argomento.',v:2},{t:'Sì. Il disaccordo mi interessa.',v:4},{t:'Sì, ma ho bisogno che anche l\'altro lo regga.',v:3}]},
+    {d:3,note:'— relazione',text:'Sai quando è il momento di lasciare andare qualcuno?',opts:[{t:'No. Tendo a restare troppo a lungo.',v:1},{t:'A volte sì, a volte lo realizzo dopo.',v:2},{t:'Sì, anche se fa male.',v:4},{t:'Sì. Ho imparato a farlo con rispetto.',v:4}]},
+    {d:3,note:'— relazione',text:'Dai più di quanto ricevi nelle relazioni?',opts:[{t:'Spesso sì. Fatico a chiedere.',v:2},{t:'Cerco l\'equilibrio, non sempre ci riesco.',v:3},{t:'No. Do quanto ricevo.',v:3},{t:'Osservo e mi regolo. Non ho un pattern fisso.',v:4}]},
+    // Motivazione 41-50
+    {d:4,note:'— motivazione',text:'Cosa ti fa alzare dal letto anche nei giorni difficili?',opts:[{t:'L\'obbligo. Gli altri dipendono da me.',v:2},{t:'Qualcosa che sento mio, non imposto.',v:4},{t:'L\'abitudine. Il corpo si muove da solo.',v:1},{t:'La curiosità per quello che può succedere.',v:4}]},
+    {d:4,note:'— motivazione',text:'Come vivi i fallimenti?',opts:[{t:'Come catastrofi che rimangono.',v:1},{t:'Come informazioni. Aggiusto.',v:4},{t:'Con vergogna, ma poi mi rialzo.',v:2},{t:'Con frustrazione, ma senza dramma.',v:3}]},
+    {d:4,note:'— motivazione',text:'Hai un progetto a lungo termine che senti tuo?',opts:[{t:'No. Vivo nel presente.',v:1},{t:'Sì. Mi orienta anche quando non ci lavoro.',v:4},{t:'Ho tante idee ma difficoltà a portarle avanti.',v:2},{t:'Sì. E so esattamente perché mi importa.',v:4}]},
+    {d:4,note:'— motivazione',text:'Come ti senti quando raggiungi un obiettivo importante?',opts:[{t:'Soddisfatto per poco, poi cerco il prossimo.',v:2},{t:'Grato. Mi fermo un momento.',v:4},{t:'Sollevato più che felice.',v:2},{t:'Pieno. E poi curioso di cosa viene dopo.',v:4}]},
+    {d:4,note:'— motivazione',text:'Cerchi l\'approvazione degli altri quando fai qualcosa di importante?',opts:[{t:'Sì. Mi importa cosa pensano.',v:1},{t:'Un po\', ma non è determinante.',v:3},{t:'No. Il mio giudizio mi basta.',v:4},{t:'Dipende dalla relazione.',v:3}]},
+    {d:4,note:'— motivazione',text:'Hai mai fatto qualcosa di difficile solo perché era giusto farlo?',opts:[{t:'No. Scelgo in base a costi e benefici.',v:1},{t:'Sì, qualche volta.',v:3},{t:'Sì. È una delle cose di cui vado più fiero.',v:4},{t:'Spesso. È quasi un riflesso.',v:4}]},
+    {d:4,note:'— motivazione',text:'Come stai quando fai qualcosa senza senso per te, anche se utile agli altri?',opts:[{t:'Bene. L\'utilità mi basta.',v:2},{t:'Male. Ho bisogno di sentire il senso.',v:4},{t:'Abbastanza bene. Trovo il senso nell\'utilità.',v:3},{t:'Dipende dalla durata.',v:3}]},
+    {d:4,note:'— motivazione',text:'Il tuo impegno cala quando non c\'è riconoscimento esterno?',opts:[{t:'Sì, significativamente.',v:1},{t:'Un po\'.',v:2},{t:'Poco. L\'impegno è mio.',v:4},{t:'No. Trovo il riconoscimento in me stesso.',v:4}]},
+    {d:4,note:'— motivazione',text:'Riesci a restare motivato in un progetto lungo senza risultati visibili?',opts:[{t:'No. Ho bisogno di feedback rapidi.',v:1},{t:'Un po\'.',v:2},{t:'Sì, se credo nel progetto.',v:4},{t:'Sì. So che il lungo periodo funziona così.',v:4}]},
+    {d:4,note:'— motivazione',text:'Completa: "La cosa che mi muove di più è…"',opts:[{t:'…quello che gli altri si aspettano da me.',v:1},{t:'…la paura di non farcela.',v:1},{t:'…qualcosa dentro, difficile da spiegare.',v:4},{t:'…la possibilità di fare qualcosa che vale.',v:4}]},
+  ]
+},
+{
+  id:'logic', label:'Logica', icon:'II',
+  color:'#7ab8d4',
+  title:'II — Logica',
+  trTitle:'Secondo specchio completato.',
+  trSub:'Il terzo. L\'etica non è un codice di regole — è il modo in cui la coscienza si posiziona davanti alle scelte difficili.',
+  trBadge:'III',
+  dims:['Struttura','Analisi','Decisione','Astrazione','Adattabilità'],
+  questions:[
+    // Struttura 1-10
+    {d:0,note:'— struttura del pensiero',text:'Come prepari qualcosa di importante?',opts:[{t:'Improvviso. Mi muovo mentre faccio.',v:1},{t:'Ho una struttura mentale, non scritta.',v:3},{t:'Pianifico ogni passaggio in anticipo.',v:4},{t:'Definisco l\'obiettivo, poi trovo la strada.',v:4}]},
+    {d:0,note:'— struttura del pensiero',text:'Quando parli di qualcosa di complesso, come lo organizzi?',opts:[{t:'Parto dall\'inizio e vado avanti.',v:2},{t:'Parto dalla conclusione e spiego perché.',v:4},{t:'Salto tra idee, poi le collego.',v:2},{t:'Costruisco un filo, pezzo per pezzo.',v:3}]},
+    {d:0,note:'— struttura del pensiero',text:'Riesci a tenere in testa più variabili contemporaneamente?',opts:[{t:'No. Devo scrivere per non perdere il filo.',v:2},{t:'Sì, fino a un certo punto.',v:3},{t:'Sì, abbastanza bene.',v:4},{t:'Sì, è quasi automatico.',v:4}]},
+    {d:0,note:'— struttura del pensiero',text:'Quando una discussione diventa caotica, cosa fai?',opts:[{t:'Mi perdo nel caos.',v:1},{t:'Cerco il punto centrale.',v:4},{t:'Mi disconnetto.',v:1},{t:'Rallento e riordino.',v:3}]},
+    {d:0,note:'— struttura del pensiero',text:'Come individui le priorità in una lista di cose da fare?',opts:[{t:'Faccio quelle più facili prima.',v:1},{t:'Faccio quelle più urgenti.',v:2},{t:'Valuto importanza e urgenza insieme.',v:4},{t:'Seguo l\'istinto.',v:1}]},
+    {d:0,note:'— struttura del pensiero',text:'Quando spieghi qualcosa, parti dal generale o dal particolare?',opts:[{t:'Dal generale. Il contesto prima.',v:3},{t:'Dal particolare. Gli esempi rendono concreto.',v:3},{t:'Dipende da chi ascolta.',v:4},{t:'Non ho un metodo fisso.',v:1}]},
+    {d:0,note:'— struttura del pensiero',text:'Come organizzi le informazioni che ricevi?',opts:[{t:'Le accumulo e le riconsidero quando servono.',v:2},{t:'Le classifico mentalmente in categorie.',v:4},{t:'Le ricordo male se non le scrivo.',v:1},{t:'Le connetto ad altre che già so.',v:4}]},
+    {d:0,note:'— struttura del pensiero',text:'Quanto tempo ti ci vuole per capire la struttura di un problema complesso?',opts:[{t:'Molto. Fatico a vedere il quadro generale.',v:1},{t:'Dipende dalla familiarità col tema.',v:3},{t:'Relativamente poco. Trovo il pattern presto.',v:4},{t:'Velocemente, ma poi verifico.',v:4}]},
+    {d:0,note:'— struttura del pensiero',text:'Quando sbagli, riesci a capire dove è andato storto il ragionamento?',opts:[{t:'Raramente. Non so trovare il punto esatto.',v:1},{t:'A volte, con fatica.',v:2},{t:'Di solito sì.',v:4},{t:'Sì, e lo uso per non ripeterlo.',v:4}]},
+    {d:0,note:'— struttura del pensiero',text:'Riesci a separare quello che sai da quello che presumi?',opts:[{t:'No. Per me è la stessa cosa.',v:1},{t:'A volte. Non è sempre facile.',v:2},{t:'Sì, cerco di distinguerlo esplicitamente.',v:4},{t:'Sì, e lo dico quando non sono certo.',v:4}]},
+    // Analisi 11-20
+    {d:1,note:'— capacità analitica',text:'Come valuti una fonte di informazione?',opts:[{t:'Se mi convince intuitivamente.',v:1},{t:'Se viene da persone che rispetto.',v:2},{t:'Verifico con altre fonti.',v:4},{t:'Guardo chi la produce e con quale interesse.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Di fronte a dati contraddittori, cosa fai?',opts:[{t:'Scelgo quelli che mi convincono di più.',v:1},{t:'Mi fermo. Non decido finché non ho chiarezza.',v:4},{t:'Cerco un\'interpretazione che li concili.',v:3},{t:'Accetto l\'ambiguità e la esplicito.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Riesci a valutare un\'idea anche se ti è antipatica?',opts:[{t:'No. Le idee vengono sempre da qualcuno.',v:1},{t:'Difficilmente. Il pregiudizio è forte.',v:1},{t:'A volte, con sforzo.',v:3},{t:'Sì. Separo l\'idea da chi la propone.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Quando leggi qualcosa, cerchi le contraddizioni?',opts:[{t:'No. Leggo per capire, non per criticare.',v:1},{t:'A volte, se qualcosa non mi convince.',v:3},{t:'Sì, quasi automaticamente.',v:4},{t:'Sì, e mi aiuta a capire meglio.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Distingui le cause dagli effetti?',opts:[{t:'Non sempre. A volte li confondo.',v:1},{t:'Di solito sì.',v:3},{t:'Sì, e la distinzione mi importa molto.',v:4},{t:'Sì, anche quando altri non la vedono.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Sai quando un argomento è circolare?',opts:[{t:'No. Non so cosa significa.',v:1},{t:'A volte lo percepisco senza saperlo nominare.',v:2},{t:'Sì, e mi disturba.',v:3},{t:'Sì, e so indicare dove il cerchio si chiude.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Come tratti le tue opinioni politiche o sociali?',opts:[{t:'Come verità. Non mi piace metterle in dubbio.',v:1},{t:'Come punti di vista provvisori.',v:4},{t:'Con fedeltà, ma ammetto le eccezioni.',v:2},{t:'Le distinguo da ciò che so essere un fatto.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Riesci a sostenere una tesi che non condividi, solo per capirla meglio?',opts:[{t:'No. Sarebbe disonesto.',v:1},{t:'Con difficoltà.',v:2},{t:'Sì. Mi aiuta a capire cosa mi convince del contrario.',v:4},{t:'Sì. È un esercizio che faccio spesso.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Quando fai una previsione sbagliata, aggiorni il modello?',opts:[{t:'No. Aspetto altri dati.',v:1},{t:'A volte, se l\'errore è evidente.',v:2},{t:'Sì, cerco di capire dove ho sbagliato.',v:4},{t:'Sì, sistematicamente.',v:4}]},
+    {d:1,note:'— capacità analitica',text:'Distingui tra "non lo so" e "non esiste risposta"?',opts:[{t:'No, per me è la stessa cosa.',v:1},{t:'A volte.',v:2},{t:'Sì, e la distinzione mi sembra importante.',v:4},{t:'Sì, e la uso spesso.',v:4}]},
+    // Decisione 21-30
+    {d:2,note:'— decisione',text:'Come prendi una decisione importante?',opts:[{t:'Di pancia. L\'istinto non sbaglia.',v:1},{t:'Con liste di pro e contro.',v:3},{t:'Raccolgo informazioni finché non sento chiarezza.',v:4},{t:'Dormo sopra e aspetto.',v:2}]},
+    {d:2,note:'— decisione',text:'Rimandi le decisioni difficili?',opts:[{t:'Spesso. La procrastinazione mi protegge.',v:1},{t:'A volte. Quando il costo dell\'errore è alto.',v:3},{t:'Raramente. Preferisco decidere anche male.',v:3},{t:'No. L\'indecisione mi costa più della scelta sbagliata.',v:4}]},
+    {d:2,note:'— decisione',text:'Come reagisci quando scopri che una tua decisione era sbagliata?',opts:[{t:'Mi difendo. Era la scelta giusta allora.',v:2},{t:'Mi pento a lungo.',v:1},{t:'Riconosco l\'errore e aggiusto.',v:4},{t:'Cerco di capire cosa avrei potuto vedere prima.',v:4}]},
+    {d:2,note:'— decisione',text:'Sai quando smettere di raccogliere informazioni e decidere?',opts:[{t:'No. Voglio sempre più dati.',v:1},{t:'A volte. La perfezione mi blocca.',v:2},{t:'Sì, riconosco il punto di rendimento decrescente.',v:4},{t:'Sì. Decido con quello che ho.',v:3}]},
+    {d:2,note:'— decisione',text:'Quando decidi sotto pressione, le tue scelte sono diverse da quelle a freddo?',opts:[{t:'Sì, molto. La pressione mi distorce.',v:1},{t:'Un po\'.',v:2},{t:'Poco. Ho sviluppato una certa stabilità.',v:4},{t:'No. Funziono meglio sotto pressione.',v:3}]},
+    {d:2,note:'— decisione',text:'Consideri le conseguenze a lungo termine quando scegli?',opts:[{t:'No. Il presente mi basta.',v:1},{t:'A volte.',v:2},{t:'Sì, anche quando complica la scelta.',v:4},{t:'Sì. È quasi automatico.',v:4}]},
+    {d:2,note:'— decisione',text:'Come gestisci le decisioni irreversibili?',opts:[{t:'Le evito. Preferisco l\'opzione di uscita.',v:1},{t:'Con cautela. Le rimando se posso.',v:2},{t:'Le affronto quando necessario, senza drammi.',v:4},{t:'Le considero come ogni altra. L\'irreversibilità non mi spaventa.',v:3}]},
+    {d:2,note:'— decisione',text:'Riesci a decidere anche quando non hai abbastanza informazioni?',opts:[{t:'No. Aspetto di sapere di più.',v:1},{t:'Con difficoltà.',v:2},{t:'Sì, valuto il rischio e procedo.',v:4},{t:'Sì. In condizioni di incertezza si ragiona a probabilità.',v:4}]},
+    {d:2,note:'— decisione',text:'Senti il peso delle decisioni che riguardano altri?',opts:[{t:'No. Ognuno è responsabile di sé.',v:1},{t:'Un po\'.',v:2},{t:'Sì, e lo considero nella scelta.',v:4},{t:'Molto. A volte troppo.',v:3}]},
+    {d:2,note:'— decisione',text:'Tendi a decidere da solo o cerchi consiglio?',opts:[{t:'Da solo. Non mi fido del giudizio altrui.',v:1},{t:'Da solo, ma ascolto.',v:3},{t:'Cerco prospettive diverse, poi decido io.',v:4},{t:'Dipende dalla posta in gioco.',v:4}]},
+    // Astrazione 31-40
+    {d:3,note:'— pensiero astratto',text:'Riesci a ragionare per principi generali?',opts:[{t:'No. Preferisco il concreto.',v:1},{t:'In parte.',v:2},{t:'Sì, e poi li applico al caso specifico.',v:4},{t:'Sì, è il mio modo naturale di pensare.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Quando ascolti una metafora, la elabori immediatamente?',opts:[{t:'No. Le metafore mi confondono.',v:1},{t:'A volte.',v:2},{t:'Sì, e spesso ne vedo la struttura logica.',v:4},{t:'Sì, e spesso le estendo per capire i limiti.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Riesci a immaginare sistemi che non esistono?',opts:[{t:'No. Parto sempre da ciò che esiste.',v:1},{t:'Un po\'.',v:2},{t:'Sì. Mi aiuta a capire cosa potrebbe essere.',v:4},{t:'Sì, è uno dei miei modi di pensare.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Quando senti un\'idea nuova, cerchi subito casi in cui non funziona?',opts:[{t:'No. La valuto per quello che è.',v:2},{t:'A volte.',v:3},{t:'Spesso. I casi limite dicono molto.',v:4},{t:'Sì, sistematicamente.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Riesci a capire un sistema complesso senza conoscerne ogni parte?',opts:[{t:'No. Ho bisogno di tutti i dettagli.',v:1},{t:'A volte.',v:2},{t:'Sì, inferendo dai pattern.',v:4},{t:'Sì. Lavoro per approssimazioni successive.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Trovi connessioni tra cose apparentemente non collegate?',opts:[{t:'Raramente.',v:1},{t:'A volte.',v:2},{t:'Spesso. Le connessioni mi interessano.',v:4},{t:'Sì, ed è quasi un piacere intellettuale.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Pensi per immagini o per concetti?',opts:[{t:'Per immagini concrete.',v:2},{t:'Per concetti astratti.',v:3},{t:'Entrambi, dipende dal problema.',v:4},{t:'Non so come penso. Succede e basta.',v:1}]},
+    {d:3,note:'— pensiero astratto',text:'Riesci a distinguere il modello dalla realtà che descrive?',opts:[{t:'No. Se il modello funziona, è la realtà.',v:1},{t:'A volte.',v:2},{t:'Sì. Ogni modello è una semplificazione.',v:4},{t:'Sì, e quella distinzione mi sembra fondamentale.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Quando qualcuno usa parole vaghe, lo noti?',opts:[{t:'No. Le parole vaghe sono normali.',v:1},{t:'A volte mi disturba.',v:2},{t:'Sì, e cerco di essere più preciso.',v:4},{t:'Sì, e lo chiedo chiaramente.',v:4}]},
+    {d:3,note:'— pensiero astratto',text:'Riesci a pensare contro te stesso?',opts:[{t:'No. Non ha senso.',v:1},{t:'Con fatica.',v:2},{t:'Sì. Cerco gli argomenti più forti contro le mie tesi.',v:4},{t:'Sì, ed è il modo in cui verifico se sto ragionando bene.',v:4}]},
+    // Adattabilità 41-50
+    {d:4,note:'— adattabilità cognitiva',text:'Come reagisci quando le regole del gioco cambiano a metà partita?',opts:[{t:'Male. Ho bisogno di stabilità.',v:1},{t:'Con difficoltà, ma mi adatto.',v:2},{t:'Con curiosità. Il cambiamento rivela qualcosa.',v:4},{t:'Mi riadatto velocemente.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Riesci a imparare da qualcuno che non rispetti?',opts:[{t:'No. Non mi interessa.',v:1},{t:'Con fatica.',v:2},{t:'Sì. L\'idea è separata da chi la porta.',v:4},{t:'Sì, e mi piace trovare il valore inatteso.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Quando una strategia non funziona, quanto ci metti a cambiarla?',opts:[{t:'Molto. Ho paura di aver sbagliato la strategia.',v:1},{t:'Un po\'.',v:2},{t:'Relativamente poco.',v:3},{t:'La cambio non appena vedo che non funziona.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Riesci a lavorare bene in ambienti molto diversi dal tuo?',opts:[{t:'No. Ho bisogno del mio contesto.',v:1},{t:'Con difficoltà.',v:2},{t:'Sì, con un po\' di rodaggio.',v:3},{t:'Sì. L\'adattamento mi stimola.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Come tratti le tue abitudini mentali?',opts:[{t:'Le difendo. Funzionano.',v:1},{t:'Le riconosco e le metto in discussione raramente.',v:2},{t:'Le osservo con curiosità.',v:4},{t:'Le metto alla prova regolarmente.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Riesci a cambiare idea pubblicamente, davanti ad altri?',opts:[{t:'No. È imbarazzante.',v:1},{t:'Con fatica.',v:2},{t:'Sì. È più imbarazzante avere torto e non ammetterlo.',v:4},{t:'Sì, senza problemi.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Come reagisci a una situazione completamente nuova?',opts:[{t:'Con ansia. Non so dove appoggiarmi.',v:1},{t:'Con cautela.',v:2},{t:'Con interesse. Il nuovo mi attiva.',v:4},{t:'Con metodo. Cerco i punti fermi.',v:3}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Impari facilmente da esperienze negative?',opts:[{t:'No. Le esperienze negative mi bloccano.',v:1},{t:'A volte, dopo che il dolore passa.',v:2},{t:'Sì, abbastanza presto.',v:3},{t:'Sì. Sono le più dense di informazione.',v:4}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Riesci a tenere aperte più interpretazioni di uno stesso evento?',opts:[{t:'No. Scelgo quella che mi convince.',v:1},{t:'A volte.',v:2},{t:'Sì, finché non ho elementi per scegliere.',v:4},{t:'Sì, a volte indefinitamente.',v:3}]},
+    {d:4,note:'— adattabilità cognitiva',text:'Completa: "Quando non so come affrontare qualcosa di nuovo…"',opts:[{t:'…aspetto che qualcuno mi mostri come.',v:1},{t:'…mi blocco.',v:1},{t:'…cerco un principio che posso applicare.',v:4},{t:'…provo e osservo cosa succede.',v:4}]},
+  ]
+},
+{
+  id:'ethics', label:'Etica', icon:'III',
+  color:'#d4a574',
+  title:'III — Etica',
+  trTitle:'Terzo specchio completato.',
+  trSub:'L\'ultimo. Il rapporto con il dolore è la dimensione meno esplorata — e spesso la più rivelatrice.',
+  trBadge:'IV',
+  dims:['Principi','Responsabilità','Confini','Giustizia','Integrità'],
+  questions:[
+    // Principi 1-10
+    {d:0,note:'— principi',text:'Hai valori che non negozeresti mai, anche a caro prezzo?',opts:[{t:'No. Tutto è negoziabile nel contesto giusto.',v:1},{t:'Forse sì, ma non li ho mai messi alla prova.',v:2},{t:'Sì. Uno o due che sono inviolabili.',v:4},{t:'Sì. E lo so perché mi è già costato qualcosa.',v:4}]},
+    {d:0,note:'— principi',text:'Faresti qualcosa di eticamente grigio per un bene maggiore?',opts:[{t:'Sì, senza troppi dubbi. Il fine giustifica.',v:1},{t:'Sì, ma con disagio.',v:2},{t:'Dipende. L\'entità del bene e del grigio.',v:3},{t:'Con molta difficoltà. I mezzi contaminano i fini.',v:4}]},
+    {d:0,note:'— principi',text:'I tuoi valori cambiano a seconda di chi hai di fronte?',opts:[{t:'Sì. Il contesto li modifica.',v:1},{t:'A volte, li attenuo.',v:2},{t:'No, ma il modo in cui li esprimo cambia.',v:4},{t:'No. I valori sono valori.',v:3}]},
+    {d:0,note:'— principi',text:'Quando le regole ti sembrano ingiuste, le segui?',opts:[{t:'Sì. Le regole esistono per essere seguite.',v:1},{t:'Sì, ma protesto.',v:2},{t:'Dipende da quanto sono ingiuste.',v:3},{t:'No, se l\'ingiustizia è chiara.',v:4}]},
+    {d:0,note:'— principi',text:'Credi che ci siano cose oggettivamente sbagliate, indipendentemente dalla cultura?',opts:[{t:'No. Tutto è relativo al contesto.',v:1},{t:'Forse alcune.',v:2},{t:'Sì. Alcune cose sono sbagliate ovunque.',v:4},{t:'Sì, e cerco di ragionare su cosa le rende tali.',v:4}]},
+    {d:0,note:'— principi',text:'Hai mai fatto qualcosa di corretto sapendo che sarebbe stato frainteso?',opts:[{t:'No. Preferisco evitare il fraintendimento.',v:1},{t:'A volte.',v:2},{t:'Sì. La correttezza non dipende da come viene letta.',v:4},{t:'Sì, e ne porto ancora il disagio.',v:3}]},
+    {d:0,note:'— principi',text:'I tuoi principi etici vengono prima dell\'interesse personale?',opts:[{t:'No. Sono realistico.',v:1},{t:'A volte.',v:2},{t:'Sì, quando il conflitto è evidente.',v:4},{t:'Sì, quasi sempre.',v:4}]},
+    {d:0,note:'— principi',text:'Come tratti le persone che hanno valori molto diversi dai tuoi?',opts:[{t:'Con distanza. Non ho molto da condividere con loro.',v:1},{t:'Con tolleranza formale.',v:2},{t:'Con curiosità. Voglio capire come arrivano a quelle conclusioni.',v:4},{t:'Con rispetto, anche nel disaccordo.',v:4}]},
+    {d:0,note:'— principi',text:'Hai mai rivisto un principio che credevi inviolabile?',opts:[{t:'No. I principi non si rivedono.',v:1},{t:'No, ma non escludo che possa succedere.',v:3},{t:'Sì. E mi ha richiesto onestà.',v:4},{t:'Sì. Non tutti reggono alla realtà.',v:4}]},
+    {d:0,note:'— principi',text:'I tuoi principi etici derivano da qualcosa di più profondo della convenzione sociale?',opts:[{t:'No. La morale è convenzione.',v:1},{t:'In parte.',v:2},{t:'Sì. Li ho costruiti nel tempo, mettendo in discussione quelli ricevuti.',v:4},{t:'Sì, e so spiegare perché.',v:4}]},
+    // Responsabilità 11-20
+    {d:1,note:'— responsabilità',text:'Quando qualcosa va storto in un contesto condiviso, qual è la tua prima reazione?',opts:[{t:'Guardo fuori. Di solito c\'è qualcun altro.',v:1},{t:'Cerco la causa senza assegnare colpe.',v:3},{t:'Mi chiedo se ho contribuito.',v:4},{t:'Dipende da quanto è grave.',v:2}]},
+    {d:1,note:'— responsabilità',text:'Riesci ad ammettere un errore davanti a qualcuno che lo usa contro di te?',opts:[{t:'No. Lo ammetto solo in privato.',v:1},{t:'Con fatica.',v:2},{t:'Sì. L\'errore è mio indipendentemente da chi lo osserva.',v:4},{t:'Sì, ma mi costa.',v:3}]},
+    {d:1,note:'— responsabilità',text:'Ti senti responsabile delle conseguenze non intenzionali delle tue azioni?',opts:[{t:'No. Non puoi essere responsabile di ciò che non intendi.',v:1},{t:'In parte.',v:2},{t:'Sì, dipende da quanto erano prevedibili.',v:4},{t:'Sì. Le conseguenze sono mie anche se non le volevo.',v:4}]},
+    {d:1,note:'— responsabilità',text:'Hai mai assunto la responsabilità di qualcosa che non era colpa tua?',opts:[{t:'No. Non lo farei.',v:1},{t:'Raramente.',v:2},{t:'Sì, per proteggere qualcuno.',v:3},{t:'Sì, quando era la cosa più utile da fare.',v:4}]},
+    {d:1,note:'— responsabilità',text:'Come tratti le promesse che non riesci a mantenere?',opts:[{t:'Le dimentico. Non ci sono riuscito, fine.',v:1},{t:'Mi scuso e spiego.',v:3},{t:'Le affronto prima che scadano.',v:4},{t:'Ne faccio meno possibile, proprio per non doverle rompere.',v:4}]},
+    {d:1,note:'— responsabilità',text:'Ti senti responsabile del benessere delle persone vicine a te?',opts:[{t:'No. Ognuno è responsabile di sé.',v:1},{t:'Un po\'.',v:2},{t:'Sì, nei limiti del rispettabile.',v:4},{t:'Sì, e a volte troppo.',v:3}]},
+    {d:1,note:'— responsabilità',text:'Quando fai qualcosa di sbagliato, cerchi scuse o le cause?',opts:[{t:'Scuse. È naturale difendersi.',v:1},{t:'Entrambe, dipende dal contesto.',v:2},{t:'Le cause. Le scuse non cambiano niente.',v:4},{t:'Le cause, anche quando è scomodo.',v:4}]},
+    {d:1,note:'— responsabilità',text:'Mantieni gli impegni anche quando costerebbe meno non farlo?',opts:[{t:'Non sempre.',v:1},{t:'Di solito sì.',v:3},{t:'Sì. La parola data è la parola data.',v:4},{t:'Sì, e questo a volte mi penalizza.',v:3}]},
+    {d:1,note:'— responsabilità',text:'Ti responsabilizzi per il modo in cui tratti le persone, anche nei momenti brutti?',opts:[{t:'No. Nei momenti brutti si è autorizzati a più.',v:1},{t:'A volte.',v:2},{t:'Sì. Lo stato emotivo non giustifica tutto.',v:4},{t:'Sì, e me ne scuso quando eccedo.',v:4}]},
+    {d:1,note:'— responsabilità',text:'Cosa pensi di chi non si assume mai le proprie responsabilità?',opts:[{t:'Che è umano. Tutti lo facciamo.',v:1},{t:'Con fastidio contenuto.',v:2},{t:'Con chiarezza. Non mi fido di loro.',v:3},{t:'Con comprensione per la paura che c\'è sotto, ma senza giustificarli.',v:4}]},
+    // Confini 21-30
+    {d:2,note:'— confini etici',text:'Hai aiutato qualcuno a fare qualcosa che non condividevi eticamente?',opts:[{t:'Sì, spesso. Non è affar mio.',v:1},{t:'A volte, per non creare conflitti.',v:2},{t:'Raramente e con disagio.',v:3},{t:'No. Posso non partecipare senza giudicare.',v:4}]},
+    {d:2,note:'— confini etici',text:'Sai dire no a qualcosa di sbagliato anche quando costa relazionalmente?',opts:[{t:'No. Preferisco mantenere la pace.',v:1},{t:'Con difficoltà.',v:2},{t:'Sì, anche se mi pesa.',v:4},{t:'Sì. Il costo del no è inferiore a quello dell\'acquiescenza.',v:4}]},
+    {d:2,note:'— confini etici',text:'Come reagisci quando le aspettative degli altri confliggono con la tua etica?',opts:[{t:'Mi adatto. Le aspettative sono potenti.',v:1},{t:'Cerco un compromesso.',v:2},{t:'Resto fermo e lo dico chiaramente.',v:4},{t:'Resto fermo, ma con rispetto.',v:4}]},
+    {d:2,note:'— confini etici',text:'Hai mai taciuto su qualcosa di sbagliato per quieto vivere?',opts:[{t:'Spesso.',v:1},{t:'A volte.',v:2},{t:'Raramente. Il silenzio mi pesa.',v:4},{t:'No. Il silenzio è già una scelta.',v:4}]},
+    {d:2,note:'— confini etici',text:'Riesci a dissentire pubblicamente da qualcuno che ami o rispetti?',opts:[{t:'No. Il rispetto richiede accordo.',v:1},{t:'Con grande difficoltà.',v:2},{t:'Sì, con tatto.',v:4},{t:'Sì. Il dissenso è una forma di rispetto.',v:4}]},
+    {d:2,note:'— confini etici',text:'Dove finisce la tua responsabilità verso gli altri?',opts:[{t:'Non ha confini. Sono responsabile di tutti.',v:1},{t:'Dove finisce la mia capacità di aiutare.',v:3},{t:'Dove inizia la loro autonomia.',v:4},{t:'Dove la mia presenza non è più voluta.',v:3}]},
+    {d:2,note:'— confini etici',text:'Hai mai partecipato a qualcosa di cui ti sei vergognato dopo?',opts:[{t:'No. Sono coerente.',v:1},{t:'Raramente.',v:3},{t:'Sì, e l\'ho usato per capire dove erano i miei confini.',v:4},{t:'Sì. E porto ancora quell\'imbarazzo con me.',v:3}]},
+    {d:2,note:'— confini etici',text:'Dici quello che pensi anche quando non è conveniente?',opts:[{t:'No. La diplomazia è necessaria.',v:1},{t:'A volte.',v:2},{t:'Sì, ma scelgo il momento.',v:4},{t:'Sì. L\'onestà scomoda mi interessa di più di quella confortante.',v:4}]},
+    {d:2,note:'— confini etici',text:'Sai quando stai razionalizzando invece di ragionare eticamente?',opts:[{t:'No. Per me è la stessa cosa.',v:1},{t:'A volte me ne accorgo dopo.',v:2},{t:'Di solito sì, mentre succede.',v:4},{t:'Sì, e quella distinzione mi importa.',v:4}]},
+    {d:2,note:'— confini etici',text:'Come tratti le persone che hanno fatto del male a qualcuno che ami?',opts:[{t:'Non perdono. Mai.',v:1},{t:'Con distanza permanente.',v:2},{t:'Dipende dalla gravità e da quello che è successo dopo.',v:4},{t:'Cerco di separare il giudizio sul fatto dal giudizio sulla persona.',v:3}]},
+    // Giustizia 31-40
+    {d:3,note:'— senso di giustizia',text:'Ti indigna di più l\'ingiustizia subita da te o da chi non può difendersi?',opts:[{t:'La mia. La sento di più.',v:1},{t:'La mia, ma mi preoccupo anche degli altri.',v:2},{t:'Quella degli altri. La mia la gestisco da solo.',v:4},{t:'Entrambe ugualmente.',v:3}]},
+    {d:3,note:'— senso di giustizia',text:'Hai mai rinunciato a qualcosa di tuo per equità?',opts:[{t:'No. L\'equità è un ideale, non una pratica.',v:1},{t:'Raramente.',v:2},{t:'Sì, qualche volta.',v:3},{t:'Sì. L\'equità mi importa come principio pratico.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'Come tratti qualcuno che ha avuto vantaggi che non si è guadagnato?',opts:[{t:'Con invidia o risentimento.',v:1},{t:'Con distanza.',v:2},{t:'Con neutralità. Non è affar mio.',v:2},{t:'Con giudizio sul sistema, non sulla persona.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'Credi che le buone intenzioni possano giustificare danni reali?',opts:[{t:'Sì. L\'intenzione è tutto.',v:1},{t:'In parte.',v:2},{t:'No. Il danno è reale indipendentemente dall\'intenzione.',v:4},{t:'Dipende dall\'entità del danno e dell\'intenzione.',v:3}]},
+    {d:3,note:'— senso di giustizia',text:'Ti batti per cause che non ti riguardano direttamente?',opts:[{t:'No. Ho già abbastanza con le mie.',v:1},{t:'A volte.',v:2},{t:'Sì, quando la posta in gioco è alta.',v:3},{t:'Sì. L\'ingiustizia mi riguarda anche quando non mi tocca.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'Come giudichi qualcuno che ha fatto qualcosa di male in circostanze difficili?',opts:[{t:'Non importa le circostanze. Il male è male.',v:1},{t:'Con più severità di quanto mostro.',v:2},{t:'Le circostanze entrano nel giudizio.',v:4},{t:'Cerco di capire prima di concludere.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'Hai mai segnalato qualcosa di sbagliato a rischio personale?',opts:[{t:'No. Non è il mio ruolo.',v:1},{t:'No, ma non escludo di poterlo fare.',v:2},{t:'Sì, una volta.',v:3},{t:'Sì. È una delle cose in cui mi riconosco.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'La giustizia per te è dare a ciascuno lo stesso o dare a ciascuno secondo il bisogno?',opts:[{t:'Lo stesso. L\'uguaglianza è la base.',v:2},{t:'Secondo il bisogno. Non tutti partono dallo stesso punto.',v:4},{t:'Dipende dal contesto.',v:3},{t:'Non ho una posizione definita.',v:1}]},
+    {d:3,note:'— senso di giustizia',text:'Hai mai perdonato qualcuno non per lui, ma per te?',opts:[{t:'No. Il perdono richiede che l\'altro se lo meriti.',v:1},{t:'Non so se l\'ho fatto consapevolmente.',v:2},{t:'Sì. Il perdono è un atto di libertà.',v:4},{t:'Sì. Portare rancore mi costava più che lasciarlo.',v:4}]},
+    {d:3,note:'— senso di giustizia',text:'Completa: "Una persona giusta è…"',opts:[{t:'…chi segue le regole.',v:1},{t:'…chi tratta tutti allo stesso modo.',v:2},{t:'…chi sa distinguere tra la legge e ciò che è giusto.',v:4},{t:'…chi fa ciò che è giusto anche quando costa.',v:4}]},
+    // Integrità 41-50
+    {d:4,note:'— integrità',text:'Sei uguale quando sei osservato e quando non lo sei?',opts:[{t:'No. L\'osservazione cambia il comportamento.',v:1},{t:'Abbastanza.',v:2},{t:'Quasi sempre.',v:3},{t:'Sì. Non distinguo tra i due.',v:4}]},
+    {d:4,note:'— integrità',text:'Hai mai usato la verità come arma?',opts:[{t:'No. La verità non ha intenti.',v:2},{t:'Raramente.',v:3},{t:'Sì, e non me ne sono sentito bene.',v:4},{t:'Sì. La verità può ferire, e a volte lo volevo.',v:1}]},
+    {d:4,note:'— integrità',text:'La tua onestà ha mai danneggiato qualcuno?',opts:[{t:'No. L\'onestà non danneggia.',v:1},{t:'Non intenzionalmente.',v:3},{t:'Sì, e me ne sono assunto la responsabilità.',v:4},{t:'Sì. E ho imparato a scegliere il momento.',v:4}]},
+    {d:4,note:'— integrità',text:'Riesci a essere fedele a ciò che sei anche quando non conviene?',opts:[{t:'No. L\'adattamento è necessario.',v:1},{t:'A volte.',v:2},{t:'Sì, quasi sempre.',v:4},{t:'Sì. È la sola condizione che mi permette di rispettarmi.',v:4}]},
+    {d:4,note:'— integrità',text:'Hai mai mentito a te stesso in modo consapevole?',opts:[{t:'No. Non mi mento.',v:1},{t:'Non so. Forse.',v:2},{t:'Sì, e me ne sono accorto dopo.',v:3},{t:'Sì, e l\'ho riconosciuto mentre lo facevo.',v:4}]},
+    {d:4,note:'— integrità',text:'Come stai quando agisci contro la tua coscienza, anche per una buona ragione?',opts:[{t:'Bene, se la ragione è buona.',v:1},{t:'Un po\' a disagio.',v:2},{t:'Male. La coscienza non si silenzia facilmente.',v:4},{t:'Lo evito, anche quando costerebbe meno cedere.',v:4}]},
+    {d:4,note:'— integrità',text:'La coerenza tra quello che dici e quello che fai è importante per te?',opts:[{t:'Non sempre. Le circostanze cambiano.',v:1},{t:'Abbastanza.',v:2},{t:'Sì. La coerenza è il modo in cui mi riconosco.',v:4},{t:'Sì. E lo vedo anche negli altri.',v:4}]},
+    {d:4,note:'— integrità',text:'Hai mai taciuto qualcosa che avresti dovuto dire per proteggere la tua immagine?',opts:[{t:'Spesso. È normale.',v:1},{t:'A volte.',v:2},{t:'Raramente. Il disagio del silenzio supera quello dell\'esposizione.',v:4},{t:'No. Preferisco l\'imbarazzo della verità.',v:4}]},
+    {d:4,note:'— integrità',text:'Cosa fai quando i tuoi valori entrano in conflitto tra loro?',opts:[{t:'Scelgo quello più conveniente.',v:1},{t:'Mi blocco.',v:2},{t:'Cerco il principio superiore che li ordina.',v:4},{t:'Accetto il conflitto e decido nel merito del caso.',v:4}]},
+    {d:4,note:'— integrità',text:'Completa: "L\'integrità è…"',opts:[{t:'…fare la cosa giusta quando qualcuno guarda.',v:1},{t:'…fare la cosa giusta quando nessuno guarda.',v:3},{t:'…fare la cosa giusta anche quando fa male.',v:4},{t:'…rimanere riconoscibile a se stessi nel tempo.',v:4}]},
+  ]
+},
+{
+  id:'pain', label:'Rapporto col Dolore', icon:'IV',
+  color:'#c07ab8',
+  title:'IV — Rapporto col Dolore',
+  trTitle:'',trSub:'',trBadge:'',
+  dims:['Riconoscimento','Elaborazione','Integrazione','Trasformazione'],
+  questions:[
+    // 20 questions on relationship with pain
+    {d:0,note:'— riconoscimento del dolore',text:'Quando stai male, lo riconosci subito o lo scopri dopo?',opts:[{t:'Lo scopro dopo. Di solito non me ne accorgo sul momento.',v:1},{t:'Lo riconosco ma lo metto da parte.',v:2},{t:'Lo riconosco abbastanza presto.',v:3},{t:'Lo riconosco mentre succede, e lo nomino.',v:4}]},
+    {d:0,note:'— riconoscimento del dolore',text:'Sai distinguere tra stanchezza e dolore emotivo?',opts:[{t:'No. Spesso li confondo.',v:1},{t:'A volte.',v:2},{t:'Quasi sempre.',v:3},{t:'Sì. Sono segnali diversi che riconosco con precisione.',v:4}]},
+    {d:0,note:'— riconoscimento del dolore',text:'Hai mai minimizzato qualcosa che ti aveva fatto male davvero?',opts:[{t:'Spesso. Non voglio sembrare fragile.',v:1},{t:'A volte.',v:2},{t:'Raramente. Cerco di essere onesto con me.',v:3},{t:'No. Minimizzare non aiuta a elaborare.',v:4}]},
+    {d:0,note:'— riconoscimento del dolore',text:'Il tuo corpo esprime dolore che la tua mente non ha ancora elaborato?',opts:[{t:'Non me ne accorgo.',v:1},{t:'A volte. Tensioni, insonnia, stanchezza.',v:3},{t:'Spesso. Il corpo parla prima.',v:4},{t:'No. Mente e corpo sono allineati.',v:2}]},
+    {d:0,note:'— riconoscimento del dolore',text:'Sai nominare il tipo di dolore che provi — perdita, tradimento, abbandono, vergogna?',opts:[{t:'No. Il dolore è dolore.',v:1},{t:'In parte.',v:2},{t:'Quasi sempre.',v:3},{t:'Sì, e quella distinzione cambia come lo affronto.',v:4}]},
+    {d:1,note:'— elaborazione del dolore',text:'Come elabori un dolore profondo?',opts:[{t:'Lo tengo per me e aspetto che passi.',v:1},{t:'Lo distraggo. Riempio il tempo.',v:1},{t:'Lo attraverso attivamente, anche se fa male.',v:4},{t:'Lo elaboro lentamente, senza forzare.',v:3}]},
+    {d:1,note:'— elaborazione del dolore',text:'Quanto tempo ci vuole prima che un dolore importante smetta di condizionarti?',opts:[{t:'Non lo so. A volte non smette.',v:1},{t:'Molto. Resto ferito a lungo.',v:2},{t:'Dipende dal tipo di dolore.',v:3},{t:'Lo elaboro fino a che non sono libero. Ci vuole quello che ci vuole.',v:4}]},
+    {d:1,note:'— elaborazione del dolore',text:'Hai mai usato il dolore degli altri per non guardare il tuo?',opts:[{t:'No. Non funzionerebbe.',v:2},{t:'Non consapevolmente.',v:2},{t:'Forse sì. L\'aiutare mi tiene occupato.',v:3},{t:'Sì, e lo riconosco.',v:4}]},
+    {d:1,note:'— elaborazione del dolore',text:'Riesci a stare nel dolore senza cercare di uscirne subito?',opts:[{t:'No. Tutto ciò che mi fa stare meglio va bene.',v:1},{t:'Con difficoltà.',v:2},{t:'Sì, anche se costa.',v:4},{t:'Sì. Ho imparato che la fretta prolunga.',v:4}]},
+    {d:1,note:'— elaborazione del dolore',text:'Hai mai cercato un dolore per evitarne un altro più profondo?',opts:[{t:'No.',v:2},{t:'Non lo so.',v:2},{t:'Forse, con il senno di poi.',v:3},{t:'Sì, e lo riconosco come meccanismo.',v:4}]},
+    {d:2,note:'— integrazione del dolore',text:'Le tue esperienze dolorose fanno parte di chi sei, o sono qualcosa che vorresti rimuovere?',opts:[{t:'Le vorrei rimuovere.',v:1},{t:'Non ci penso molto.',v:1},{t:'In parte fanno parte di me.',v:3},{t:'Sì. Le porto con me. Non le dimentico ma non mi definisco.',v:4}]},
+    {d:2,note:'— integrazione del dolore',text:'Hai mai ricavato qualcosa di utile da un\'esperienza dolorosa?',opts:[{t:'No. Il dolore è solo dolore.',v:1},{t:'A volte, col tempo.',v:3},{t:'Spesso. Il dolore mi ha insegnato qualcosa.',v:4},{t:'Quasi sempre. È la fonte più densa di comprensione.',v:4}]},
+    {d:2,note:'— integrazione del dolore',text:'Un dolore passato riemerge improvvisamente. Come lo accogli?',opts:[{t:'Con fastidio. Pensavo fosse finito.',v:1},{t:'Con sorpresa e un po\' di resistenza.',v:2},{t:'Con attenzione. Probabilmente ha ancora qualcosa da dirmi.',v:4},{t:'Come un ospite inatteso. Lo ascolto.',v:4}]},
+    {d:2,note:'— integrazione del dolore',text:'Hai cicatrici emotive di cui sei consapevole?',opts:[{t:'No. Ho superato tutto.',v:1},{t:'Forse, ma non le guardo da vicino.',v:2},{t:'Sì, e so dove sono.',v:4},{t:'Sì. Le conosco e so come influenzano il presente.',v:4}]},
+    {d:2,note:'— integrazione del dolore',text:'Il dolore ti ha mai reso più capace di stare con il dolore degli altri?',opts:[{t:'No. Il mio dolore mi ha chiuso.',v:1},{t:'In parte.',v:2},{t:'Sì, mi ha reso più capace di stare.',v:4},{t:'Sì. È l\'unica cosa che genera empatia vera.',v:4}]},
+    {d:3,note:'— trasformazione del dolore',text:'Hai mai trasformato un dolore in qualcosa di creativo, produttivo o significativo?',opts:[{t:'No. Non funziona così per me.',v:1},{t:'A volte, senza averlo cercato.',v:3},{t:'Sì, spesso.',v:4},{t:'Sì. È quasi un riflesso.',v:4}]},
+    {d:3,note:'— trasformazione del dolore',text:'Il dolore ti ha mai cambiato in meglio?',opts:[{t:'No. Il dolore è solo distruttivo.',v:1},{t:'Difficile dirlo.',v:2},{t:'Sì, alla fine.',v:3},{t:'Sì, e ne ho la prova in chi sono diventato.',v:4}]},
+    {d:3,note:'— trasformazione del dolore',text:'Usi il tuo dolore passato per capire chi sei adesso?',opts:[{t:'No. Il passato è passato.',v:1},{t:'A volte.',v:2},{t:'Sì, come mappa.',v:4},{t:'Sì. Il dolore è il terreno su cui sono cresciuto.',v:4}]},
+    {d:3,note:'— trasformazione del dolore',text:'Hai mai perdonato qualcuno non perché lo meritasse, ma perché ti liberava?',opts:[{t:'No. Il perdono richiede merito.',v:1},{t:'Non consapevolmente.',v:2},{t:'Sì.',v:3},{t:'Sì. Ho capito che il rancore era mio, non suo.',v:4}]},
+    {d:3,note:'— trasformazione del dolore',text:'Completa: "Il dolore, per me, è…"',opts:[{t:'…qualcosa da evitare il più possibile.',v:1},{t:'…qualcosa da attraversare e dimenticare.',v:2},{t:'…qualcosa da attraversare e integrare.',v:4},{t:'…una delle fonti principali di comprensione di me stesso.',v:4}]},
+  ]
+}
+];
+
+// ─────────────────────────────────────────────
+// APP
+// ─────────────────────────────────────────────
+const App = (() => {
+  let currentTest = 0;
+  let answers = {}; // {testId: {qIndex: value}}
+  let scores = {};  // {testId: 0-100}
+  let dimScores = {}; // {testId: [d0,d1,...]}
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function start() { renderTest(0); show('test-screen'); }
+
+  function renderTest(idx) {
+    currentTest = idx;
+    const t = TESTS[idx];
+    if (!answers[t.id]) answers[t.id] = {};
+    document.getElementById('test-title-bar').textContent = t.title;
+    updateProgress(t);
+    const container = document.getElementById('question-container');
+    container.innerHTML = '';
+    t.questions.forEach((q, qi) => {
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.id = `qc-${qi}`;
+      const letters = ['a','b','c','d'];
+      card.innerHTML = `
+        <div class="q-number">${qi+1}</div>
+        <div class="q-note">${q.note}</div>
+        <div class="q-text">${q.text}</div>
+        <div class="options">
+          ${q.opts.map((o,oi) => `
+            <div class="option ${answers[t.id][qi]===oi?'selected':''}" onclick="App.selectOption(${qi},${oi},${o.v},this)">
+              <span class="opt-letter">${letters[oi]}</span>
+              <span class="opt-text">${o.t}</span>
+            </div>`).join('')}
+        </div>`;
+      container.appendChild(card);
+    });
+    updateNextBtn(t);
+    setTimeout(() => {
+      document.querySelectorAll('.question-card').forEach((c,i) => {
+        setTimeout(() => c.classList.add('visible'), i * 40);
+      });
+    }, 50);
+    window.scrollTo(0,0);
+  }
+
+  function selectOption(qi, oi, val, el) {
+    const t = TESTS[currentTest];
+    answers[t.id][qi] = oi;
+    el.closest('.options').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    updateProgress(t);
+    updateNextBtn(t);
+  }
+
+  function updateProgress(t) {
+    const done = Object.keys(answers[t.id]||{}).length;
+    const total = t.questions.length;
+    document.getElementById('progress-text').textContent = `${done} / ${total}`;
+    document.getElementById('progress-bar').style.width = `${(done/total)*100}%`;
+    document.getElementById('answer-count').textContent = done < total ? `${total - done} domande rimanenti` : 'Tutte le domande completate';
+  }
+
+  function updateNextBtn(t) {
+    const done = Object.keys(answers[t.id]||{}).length;
+    const btn = document.getElementById('btn-next');
+    btn.classList.toggle('ready', done === t.questions.length);
+  }
+
+  function nextSection() {
+    computeScore(TESTS[currentTest]);
+    if (currentTest < TESTS.length - 1) {
+      const next = TESTS[currentTest + 1];
+      const curr = TESTS[currentTest];
+      document.getElementById('tr-badge').textContent = curr.trBadge;
+      document.getElementById('tr-title').textContent = curr.trTitle;
+      document.getElementById('tr-sub').textContent = curr.trSub;
+      show('transition-screen');
+    } else {
+      buildProfile();
+      show('profile-screen');
+      animateProfile();
+    }
+  }
+
+  function continueTest() {
+    renderTest(currentTest + 1);
+    show('test-screen');
+  }
+
+  function computeScore(t) {
+    const ans = answers[t.id];
+    const dimCount = t.dims.length;
+    const dimTotals = new Array(dimCount).fill(0);
+    const dimMax = new Array(dimCount).fill(0);
+    t.questions.forEach((q, qi) => {
+      const oi = ans[qi] ?? 0;
+      const val = q.opts[oi].v;
+      dimTotals[q.d] += val;
+      dimMax[q.d] += 4;
+    });
+    const dimPct = dimTotals.map((tot, i) => Math.round((tot/dimMax[i])*100));
+    dimScores[t.id] = dimPct;
+    scores[t.id] = Math.round(dimPct.reduce((a,b)=>a+b,0) / dimCount);
+  }
+
+  function buildProfile() {
+    // Set scores
+    const ids = ['ei','logic','ethics','pain'];
+    const els = {ei:'s-ei',logic:'s-logic',ethics:'s-ethics',pain:'s-pain'};
+    const bars = {ei:'b-ei',logic:'b-logic',ethics:'b-ethics',pain:'b-pain'};
+    ids.forEach(id => {
+      document.getElementById(els[id]).textContent = scores[id];
+      document.getElementById(bars[id]).style.width = scores[id]+'%';
+    });
+    // Archetype
+    const a = getArchetype();
+    document.getElementById('archetype-name').textContent = a.name;
+    document.getElementById('archetype-desc').textContent = a.desc;
+    document.getElementById('profile-title').textContent = a.name;
+    // Dimensions
+    buildDimensions();
+    // Narrative
+    buildNarrative();
+    // Radar
+    setTimeout(() => buildRadar(), 200);
+  }
+
+  function getArchetype() {
+    const ei = scores.ei, lo = scores.logic, et = scores.ethics, pa = scores.pain;
+    const avg = (ei+lo+et+pa)/4;
+    if(ei>=75 && lo>=75 && et>=75 && pa>=70) return {
+      name:'Il Testimone Lucido',
+      desc:'Sente profondamente e pensa con precisione. Porta valori solidi e ha attraversato il dolore abbastanza da conoscerlo. Non ha bisogno di scegliere tra cuore e ragione — li tiene entrambi.'
+    };
+    if(ei>=75 && lo<55 && et>=70) return {
+      name:'Il Custode Empatico',
+      desc:'Vive le relazioni con intensità e porta valori autentici. La struttura logica non è il suo punto di forza, ma la sua intelligenza relazionale e morale compensa con generosità.'
+    };
+    if(lo>=80 && ei<55 && pa<55) return {
+      name:'Il Costruttore di Sistemi',
+      desc:'Pensa con precisione e struttura. Il mondo emotivo e il dolore sono territori meno esplorati — non per mancanza di profondità, ma per un\'abitudine alla distanza.'
+    };
+    if(et>=80 && ei>=65 && lo>=65) return {
+      name:'Il Garante Consapevole',
+      desc:'La sua bussola etica è solida e agisce come filtro su ogni scelta. Combina coscienza morale con intelligenza emotiva e capacità analitica. Una rarità.'
+    };
+    if(pa>=80 && ei>=70) return {
+      name:'L\'Alchimista del Dolore',
+      desc:'Ha attraversato abbastanza da sapere cosa trasforma e cosa logora. Usa il dolore come strumento di conoscenza. La sua empatia è nata dall\'esperienza, non dalla teoria.'
+    };
+    if(et>=75 && pa>=75 && lo<60) return {
+      name:'Il Testimone Morale',
+      desc:'Porta una coscienza profonda e sa stare nel dolore. Non sempre struttura il pensiero in modo lineare, ma sa distinguere il bene dal male anche nelle zone grigie.'
+    };
+    if(ei<50 && lo<50 && et<50 && pa<50) return {
+      name:'La Mappa da Disegnare',
+      desc:'Molte aree sono ancora da esplorare. Non è un giudizio — è un punto di partenza. Queste dimensioni si sviluppano con il tempo, le esperienze e la volontà di guardarsi.'
+    };
+    if(avg>=70) return {
+      name:'La Persona Integrata',
+      desc:'Equilibrio è la parola chiave. Nessun picco estremo, ma una solidità distribuita. Sa pensare, sentire, scegliere eticamente e portare il dolore senza esserne definita.'
+    };
+    if(lo>=70 && et>=70 && ei<60) return {
+      name:'Il Giurista dell\'Anima',
+      desc:'Ragiona bene e porta valori solidi. Il mondo emotivo è meno abituale — non assente, ma meno esplorato. La precisione intellettuale e morale è il suo terreno più sicuro.'
+    };
+    return {
+      name:'Il Profilo in Transizione',
+      desc:'Un insieme di qualità che non si è ancora trovato. Alcune aree sono solide, altre in attesa. Il lavoro su di sé è già cominciato — il ritratto si chiarisce nel tempo.'
+    };
+  }
+
+  function buildDimensions() {
+    const container = document.getElementById('dimensions-grid');
+    container.innerHTML = '';
+    const colors = {ei:'#7ec99a',logic:'#7ab8d4',ethics:'#d4a574',pain:'#c07ab8'};
+    TESTS.forEach(t => {
+      t.dims.forEach((dim, di) => {
+        const val = (dimScores[t.id]||[])[di] ?? 0;
+        const row = document.createElement('div');
+        row.className = 'dim-row';
+        row.innerHTML = `
+          <div class="dim-top">
+            <span class="dim-name">${dim} <span style="font-size:0.72rem;opacity:0.45;margin-left:6px">${t.label}</span></span>
+            <span class="dim-score-text">${val}</span>
+          </div>
+          <div class="dim-bar-outer"><div class="dim-bar-inner" style="width:0%;background:${colors[t.id]}"></div></div>`;
+        container.appendChild(row);
+        setTimeout(() => { row.querySelector('.dim-bar-inner').style.width = val+'%'; }, 300);
+      });
+    });
+  }
+
+  function buildNarrative() {
+    const c = document.getElementById('narrative-container');
+    c.innerHTML = '';
+    const blocks = [
+      { color:'#7ec99a', title:'Intelligenza Emotiva', text: narrativeEI() },
+      { color:'#7ab8d4', title:'Logica', text: narrativeLogic() },
+      { color:'#d4a574', title:'Etica', text: narrativeEthics() },
+      { color:'#c07ab8', title:'Rapporto col Dolore', text: narrativePain() },
+      { color:'#c9a84c', title:'Lettura integrata', text: narrativeIntegrated() },
+    ];
+    blocks.forEach(b => {
+      const div = document.createElement('div');
+      div.className = 'narrative-block';
+      div.innerHTML = `<h3><span class="ndot" style="background:${b.color}"></span>${b.title}</h3><p>${b.text}</p>`;
+      c.appendChild(div);
+    });
+  }
+
+  function narrativeEI() {
+    const s = scores.ei;
+    const ds = dimScores.ei || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[0].dims;
+    if(s>=80) return `L\'intelligenza emotiva è una delle dimensioni più sviluppate. Sa leggere sé stessa e gli altri con accuratezza, regola le proprie reazioni senza sopprimerle, e costruisce relazioni con consapevolezza. L\'area più da osservare è <em>${dims[weak]}</em> — non un punto debole, ma uno spazio di crescita.`;
+    if(s>=60) return `L\'intelligenza emotiva è presente e funzionale. Ci sono momenti di chiara consapevolezza alternati ad altri in cui l\'emozione prende la mano. L\'area più da coltivare è <em>${dims[weak]}</em>. Il lavoro su questa dimensione è già iniziato — basta continuare.`;
+    if(s>=40) return `L\'intelligenza emotiva è in sviluppo. Alcune aree sono più accessibili di altre. Il riconoscimento di sé e la gestione delle reazioni richiedono ancora attenzione deliberata. Non è mancanza di profondità — è mancanza di abitudine all\'osservazione interna.`;
+    return `L\'intelligenza emotiva è l\'area che richiede più attenzione. Il mondo emotivo è spesso opaco o trattato come irrilevante. Non è necessariamente un limite — può essere una scelta o una difesa. Ma ogni relazione profonda richiede almeno un minimo di accesso a questo territorio.`;
+  }
+
+  function narrativeLogic() {
+    const s = scores.logic;
+    const ds = dimScores.logic || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[1].dims;
+    if(s>=80) return `Il pensiero è preciso, strutturato e capace di astrazione. Sa separare ciò che sa da ciò che presume, aggiorna i modelli quando sbaglia, e tiene aperte più interpretazioni senza perdere la direzione. L\'area da osservare è <em>${dims[weak]}</em>.`;
+    if(s>=60) return `Il pensiero è abbastanza solido. Sa strutturare problemi complessi e prendere decisioni con metodo, anche se non sempre in modo sistematico. L\'area da rafforzare è <em>${dims[weak]}</em>. La lucidità c\'è — va solo applicata con più costanza.`;
+    if(s>=40) return `Il pensiero ha zone solide e zone ancora da esplorare. Tende a fidarsi dell\'istinto più che del metodo, il che funziona in certi contesti ma limita in altri. Sviluppare l\'abitudine all\'analisi deliberata aprirebbe spazi nuovi.`;
+    return `La logica non è il terreno più familiare. Le decisioni vengono prese più per intuizione o pressione emotiva che per analisi. Non è una condanna — ma certi problemi complessi richiedono strumenti che qui andrebbero ancora costruiti.`;
+  }
+
+  function narrativeEthics() {
+    const s = scores.ethics;
+    const ds = dimScores.ethics || [];
+    const weak = ds.indexOf(Math.min(...ds));
+    const dims = TESTS[2].dims;
+    if(s>=80) return `La bussola etica è solida e non negoziabile. Non si tratta di rigidità — i principi vengono messi alla prova e tenuti dopo averli scelti. Sa stare nel grigio senza perdersi, e porta la responsabilità come fatto, non come peso. L\'area da osservare è <em>${dims[weak]}</em>.`;
+    if(s>=60) return `Il senso etico è presente e influente. La coerenza tra valori e azioni non è sempre perfetta, ma l\'intenzione è chiara. A volte la convenienza o il quieto vivere prendono il sopravvento — ma il disagio che segue è già un segnale sano. Da rafforzare: <em>${dims[weak]}</em>.`;
+    if(s>=40) return `L\'etica è presente ma non sempre prioritaria. I valori esistono ma sono spesso attenuti dal contesto, dalle aspettative, dalla fatica di sostenere il costo della coerenza. È un terreno che richiede più esercizio deliberato.`;
+    return `L\'etica non è ancora una bussola stabile. Le scelte seguono più l\'interesse o la pressione esterna che i principi. Non è un giudizio morale — è una osservazione. Costruire una coscienza etica richiede tempo e la volontà di guardarsi anche quando è scomodo.`;
+  }
+
+  function narrativePain() {
+    const s = scores.pain;
+    if(s>=80) return `Il rapporto con il dolore è uno dei più sviluppati. Sa riconoscerlo, attraversarlo senza fuggire, integrarlo e — cosa più rara — trasformarlo in comprensione. Questo non significa che faccia meno male. Significa che il dolore non viene sprecato.`;
+    if(s>=60) return `Il rapporto con il dolore è consapevole ma non sempre fluido. Sa riconoscerlo e in parte elaborarlo, ma a volte la resistenza o la fretta di uscirne interrompono il processo. C\'è abbastanza consapevolezza per andare più in profondità — se lo vuole.`;
+    if(s>=40) return `Il dolore viene attraversato, ma spesso senza essere davvero elaborato. Tende a passare — o a essere fatto passare — più che a essere integrato. Alcune ferite rimangono aperte non perché siano insanabili, ma perché non sono state ancora guardate abbastanza.`;
+    return `Il rapporto con il dolore è ancora poco esplorato. La tendenza è evitarlo, minimizzarlo o sopprimerlo. È comprensibile — il dolore fa male. Ma ciò che non viene elaborato ritorna, spesso in forme travestite. Questo è l\'area che offre il più grande potenziale di cambiamento.`;
+  }
+
+  function narrativeIntegrated() {
+    const ei=scores.ei, lo=scores.logic, et=scores.ethics, pa=scores.pain;
+    const max = Math.max(ei,lo,et,pa);
+    const min = Math.min(ei,lo,et,pa);
+    const maxLabel = ['Intelligenza Emotiva','Logica','Etica','Rapporto col Dolore'][[ei,lo,et,pa].indexOf(max)];
+    const minLabel = ['Intelligenza Emotiva','Logica','Etica','Rapporto col Dolore'][[ei,lo,et,pa].indexOf(min)];
+    const gap = max - min;
+    let text = `Il profilo integrato mostra una persona con <em>${maxLabel}</em> come dimensione più sviluppata. `;
+    if(gap > 35) {
+      text += `Esiste uno squilibrio significativo tra questa e <em>${minLabel}</em> — che è l\'area che richiede più attenzione. Gli squilibri profondi tra dimensioni tendono a creare tensioni nelle situazioni di pressione: il punto forte compensa, ma non indefinitamente. `;
+    } else if(gap > 20) {
+      text += `C\'è una certa variabilità tra le dimensioni — non una debolezza, ma un segnale che alcune aree sono più coltivate di altre. L\'area con più spazio di crescita è <em>${minLabel}</em>. `;
+    } else {
+      text += `Le dimensioni sono abbastanza equilibrate — un profilo raro. L\'equilibrio non significa mediocrità: significa che nessuna area compensa in modo disfunzionale le altre. `;
+    }
+    if(pa < 50 && ei > 65) text += `C\'è un elemento di attenzione: l\'intelligenza emotiva è alta, ma il rapporto col dolore è ancora da sviluppare. Questo può generare una capacità di stare con il dolore degli altri più solida di quella con il proprio.`;
+    if(lo > 75 && ei < 50) text += `La logica è forte, ma l\'intelligenza emotiva è ancora da sviluppare. Questo profilo funziona bene in contesti tecnici e analitici, ma può creare difficoltà nelle relazioni dove l\'accesso al mondo emotivo è necessario.`;
+    if(et > 75 && pa < 50) text += `La bussola etica è solida, ma il rapporto col dolore è meno esplorato. Vale la pena chiedersi se alcuni valori morali siano stati costruiti come struttura difensiva più che come scelta profonda.`;
+    return text;
+  }
+
+  function buildRadar() {
+    const canvas = document.getElementById('radar');
+    const ctx = canvas.getContext('2d');
+    const cx = 210, cy = 210, r = 160;
+    const allDims = [];
+    const allVals = [];
+    const allColors = [];
+    TESTS.forEach(t => {
+      const color = t.color;
+      t.dims.forEach((d,i) => {
+        allDims.push(d);
+        allVals.push((dimScores[t.id]||[])[i]??0);
+        allColors.push(color);
+      });
+    });
+    const n = allDims.length;
+    ctx.clearRect(0,0,420,420);
+    // Grid
+    for(let ring=1;ring<=5;ring++){
+      ctx.beginPath();
+      for(let i=0;i<n;i++){
+        const angle = (i/n)*Math.PI*2 - Math.PI/2;
+        const rr = r*(ring/5);
+        const x = cx + rr*Math.cos(angle), y = cy + rr*Math.sin(angle);
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle='rgba(201,168,76,0.1)';ctx.lineWidth=1;ctx.stroke();
+    }
+    // Spokes
+    for(let i=0;i<n;i++){
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+      ctx.strokeStyle='rgba(201,168,76,0.12)';ctx.stroke();
+    }
+    // Data
+    ctx.beginPath();
+    allVals.forEach((v,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r*(v/100);
+      const x=cx+rr*Math.cos(angle),y=cy+rr*Math.sin(angle);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.fillStyle='rgba(201,168,76,0.12)';ctx.fill();
+    ctx.strokeStyle='rgba(201,168,76,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+    // Dots
+    allVals.forEach((v,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r*(v/100);
+      ctx.beginPath();
+      ctx.arc(cx+rr*Math.cos(angle),cy+rr*Math.sin(angle),3.5,0,Math.PI*2);
+      ctx.fillStyle=allColors[i];ctx.fill();
+    });
+    // Labels
+    ctx.font='11px Crimson Pro, Georgia, serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    allDims.forEach((d,i)=>{
+      const angle=(i/n)*Math.PI*2-Math.PI/2;
+      const rr=r+22;
+      const x=cx+rr*Math.cos(angle),y=cy+rr*Math.sin(angle);
+      ctx.fillStyle=allColors[i];ctx.globalAlpha=0.75;
+      ctx.fillText(d,x,y);
+    });
+    ctx.globalAlpha=1;
+  }
+
+  function animateProfile() {
+    window.scrollTo(0,0);
+    setTimeout(() => {
+      document.querySelectorAll('.dim-bar-inner').forEach(b => {
+        const w = b.style.width;
+        b.style.width='0%';
+        setTimeout(()=>{ b.style.width=w; },100);
+      });
+    }, 400);
+  }
+
+  function restart() {
+    currentTest=0;answers={};scores={};dimScores={};
+    show('intro');
+  }
+
+  return { start, selectOption, nextSection, continueTest, restart };
+})();
+</script>
+</body>
+</html>
